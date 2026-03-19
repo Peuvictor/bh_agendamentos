@@ -1,0 +1,53 @@
+<div class="min-h-[60vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <%# Logo ou Nome do App %>
+    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
+      BH Agendamentos
+    </h2>
+    <p class="mt-2 text-center text-sm text-gray-600">
+      Ou
+      <%= link_to "crie sua conta gratuitamente", new_registration_path(resource_name), class: "font-medium text-blue-900 hover:text-blue-700 transition" %>
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-white py-8 px-4 shadow-xl border border-gray-100 sm:rounded-2xl sm:px-10">
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-6" }) do |f| %>
+
+        <div>
+          <%= f.label :email, class: "block text-sm font-bold text-gray-700" %>
+          <div class="mt-1">
+            <%= f.email_field :email, autofocus: true, autocomplete: "email",
+                class: "appearance-none block w-full px-3 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-900 focus:border-blue-900 sm:text-sm bg-gray-50" %>
+          </div>
+        </div>
+
+        <div>
+          <%= f.label :password, "Senha", class: "block text-sm font-bold text-gray-700" %>
+          <div class="mt-1">
+            <%= f.password_field :password, autocomplete: "current-password",
+                class: "appearance-none block w-full px-3 py-3 border border-gray-200 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-900 focus:border-blue-900 sm:text-sm bg-gray-50" %>
+          </div>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <%= f.check_box :remember_me, class: "h-4 w-4 text-blue-900 focus:ring-blue-900 border-gray-300 rounded" %>
+              <%= f.label :remember_me, "Lembrar de mim", class: "ml-2 block text-sm text-gray-900" %>
+            </div>
+
+            <div class="text-sm">
+              <%= link_to "Esqueceu a senha?", new_password_path(resource_name), class: "font-medium text-blue-900 hover:text-blue-700" %>
+            </div>
+          </div>
+        <% end %>
+
+        <div>
+          <%= f.submit "Entrar no Sistema",
+              class: "w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-extrabold text-white bg-blue-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

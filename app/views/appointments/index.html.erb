@@ -14,19 +14,20 @@
   </div>
 
   <% if @appointments.any? %>
-    <div class="grid gap-6 md:grid-cols-2">
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
       <% @appointments.each do |appointment| %>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-300 transition-colors duration-300">
           <div class="p-6">
             <div class="flex justify-between items-start mb-4">
               <div class="flex-1">
-                <h3 class="text-lg font-bold text-gray-900 truncate"><%= appointment.service.name %></h3>
+                <%# AJUSTE: Usando .nome e .preco conforme o seu console mostrou %>
+                <h3 class="text-lg font-bold text-gray-900 truncate"><%= appointment.service.nome %></h3>
                 <p class="text-blue-900 font-semibold mt-1">
-                  <%= number_to_currency(appointment.service.price, unit: "R$", separator: ",", delimiter: ".") %>
+                  <%= number_to_currency(appointment.service.preco, unit: "R$", separator: ",", delimiter: ".") %>
                 </p>
               </div>
 
-              <%# Tradução automática do status via I18n %>
+              <%# Badge de Status (Tradução via I18n) %>
               <% status_classes = appointment.confirmado? ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200" %>
               <span class="px-3 py-1 rounded-full text-xs font-bold border <%= status_classes %> uppercase tracking-tighter">
                 <%= Appointment.human_attribute_name("status.#{appointment.status}") %>
@@ -38,7 +39,7 @@
                 <svg class="mr-3 h-5 w-5 text-blue-900/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <%# Localização da Data (Formato: 19 de março de 2026) %>
+                <%# Localização da Data via I18n %>
                 <span class="font-medium text-gray-900"><%= l(appointment.start_time, format: :long) %></span>
               </div>
 
@@ -46,7 +47,6 @@
                 <svg class="mr-3 h-5 w-5 text-blue-900/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <%# Localização da Hora (Formato: 10:30) %>
                 <span>
                   <%= l(appointment.start_time, format: "%H:%M") %> — <%= l(appointment.end_time, format: "%H:%M") %>
                 </span>
@@ -70,6 +70,7 @@
       <% end %>
     </div>
   <% else %>
+    <%# Estado Vazio: Fundamental para um portfólio profissional %>
     <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100 shadow-inner">
       <div class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

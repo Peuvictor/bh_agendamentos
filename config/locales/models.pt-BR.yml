@@ -1,0 +1,14 @@
+pt-BR:
+  activerecord:
+    models:
+      appointment: "Agendamento"
+    attributes:
+      appointment:
+        service_id: "Serviço"
+        start_time: "Horário de início"
+        end_time: "Horário de término"
+        status: "Status"
+  errors:
+    messages:
+      blank: "não pode ficar em branco"
+      after: "deve ser depois de %{restriction}"

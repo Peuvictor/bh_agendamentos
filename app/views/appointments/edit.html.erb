@@ -1,10 +1,33 @@
-<h1>Editing appointment</h1>
+<div class="max-w-2xl mx-auto mt-10 px-4">
+  <%# Card Principal %>
+  <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
 
-<%= render "form", appointment: @appointment %>
+    <%# Header Azul (Diferente da 'New' para o usuário saber onde está) %>
+    <div class="bg-blue-900 px-8 py-6">
+      <h1 class="text-2xl font-bold text-white tracking-tight">Editar Agendamento</h1>
+      <p class="text-blue-100 text-sm opacity-80">Altere os detalhes da sua reserva abaixo.</p>
+    </div>
 
-<br>
+    <div class="p-8">
+      <%# Reutilizando o mesmo formulário %>
+      <%= render "form", appointment: @appointment %>
 
-<div>
-  <%= link_to "Show this appointment", @appointment %> |
-  <%= link_to "Back to appointments", appointments_path %>
+      <div class="mt-8 flex justify-center space-x-6">
+        <%= link_to appointment_path(@appointment), class: "text-gray-400 hover:text-blue-900 text-sm font-medium transition inline-flex items-center" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          Visualizar detalhes
+        <% end %>
+
+        <%= link_to appointments_path, class: "text-gray-400 hover:text-gray-600 text-sm font-medium transition inline-flex items-center" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Voltar para a lista
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>
