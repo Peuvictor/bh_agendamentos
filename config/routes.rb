@@ -1,13 +1,12 @@
 Rails.application.routes.draw do
+  # A rota raiz que substitui a página padrão do Rails
+  root "home#index"
+
+  # Suas outras rotas do sistema
   resources :appointments
   resources :services
   devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Rota de health check do Docker/Rails
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Defines the root path route ("/")
-  # root "posts#index"
 end

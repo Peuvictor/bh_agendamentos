@@ -75,3 +75,7 @@ gem "redis", "~> 5.4"
 gem "sidekiq", "~> 7.2"
 
 gem "connection_pool", "= 2.4.1"
+
+gem "tailwindcss-rails", "~> 4.4"
+
+gem "importmap-rails", "~> 2.2"
