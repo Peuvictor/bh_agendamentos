@@ -6,14 +6,43 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+  <body class="bg-gray-50 text-gray-800">
+
+    <nav class="bg-blue-900 p-4 text-white shadow-md">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="font-bold text-xl tracking-tight">
+          <%= link_to "BH Agendamentos", root_path %>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <% if user_signed_in? %>
+            <span class="text-sm text-gray-300">Logado como: <%= current_user.email %></span>
+            <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold transition" %>
+          <% else %>
+            <%= link_to "Entrar", new_user_session_path, class: "text-gray-300 hover:text-white font-semibold transition" %>
+            <%= link_to "Cadastrar", new_user_registration_path, class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-semibold transition" %>
+          <% end %>
+        </div>
+      </div>
+    </nav>
+    <main class="container mx-auto mt-10 px-5">
+
+      <% if notice %>
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <span class="block sm:inline"><%= notice %></span>
+        </div>
+      <% end %>
+      <% if alert %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <span class="block sm:inline"><%= alert %></span>
+        </div>
+      <% end %>
+
       <%= yield %>
     </main>
   </body>

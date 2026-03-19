@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   root "home#index"
 
   # Suas outras rotas do sistema
-  resources :appointments
+  resources :appointments, only: [:new, :create]
   resources :services
   devise_for :users
 

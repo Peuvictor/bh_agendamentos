@@ -1,5 +1,5 @@
 class Appointment < ApplicationRecord
-  belongs_to :client, class_name: 'User'
+  belongs_to :client, class_name: 'User', foreign_key: 'client_id'
   belongs_to :service
 
   enum :status, { confirmado: 0, cancelado: 1 }
@@ -20,13 +20,14 @@ class Appointment < ApplicationRecord
   end
 
   def no_overlapping_appointments
-    # Busca agendamentos do MESMO serviço que estejam confirmados e que batam no mesmo horário
-    overlapping = Appointment.where(service_id: service_id, status: :confirmado)
-                             .where.not(id: id) # Ignora a si mesmo na hora de editar
-                             .where("start_time < ? AND end_time > ?", end_time, start_time)
+  # Verificamos todos os agendamentos que NÃO foram cancelados
+  # e que NÃO são o próprio registro (em caso de edição)
+  overlapping = Appointment.where.not(status: :cancelado)
+                           .where.not(id: id)
+                           .where("start_time < ? AND end_time > ?", end_time, start_time)
 
     if overlapping.exists?
-      errors.add(:base, "Esse horário já está reservado.")
+    errors.add(:base, "Ops! Este horário já está ocupado por outro agendamento.")
     end
   end
 end

@@ -1,14 +1,86 @@
-<p style="color: green"><%= notice %></p>
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Meus Agendamentos</h1>
+      <p class="text-gray-500 text-sm mt-1">Gerencie suas reservas no BH Agendamentos.</p>
+    </div>
 
-<h1>Appointments</h1>
+    <%= link_to new_appointment_path, class: "inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-blue-900 hover:bg-blue-800 transition-all focus:ring-4 focus:ring-blue-200" do %>
+      <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Novo Agendamento
+    <% end %>
+  </div>
 
-<div id="appointments">
-  <% @appointments.each do |appointment| %>
-    <%= render appointment %>
-    <p>
-      <%= link_to "Show this appointment", appointment %>
-    </p>
+  <% if @appointments.any? %>
+    <div class="grid gap-6 md:grid-cols-2">
+      <% @appointments.each do |appointment| %>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-300 transition-colors duration-300">
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-gray-900 truncate"><%= appointment.service.name %></h3>
+                <p class="text-blue-900 font-semibold mt-1">
+                  <%= number_to_currency(appointment.service.price, unit: "R$", separator: ",", delimiter: ".") %>
+                </p>
+              </div>
+
+              <%# Tradução automática do status via I18n %>
+              <% status_classes = appointment.confirmado? ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200" %>
+              <span class="px-3 py-1 rounded-full text-xs font-bold border <%= status_classes %> uppercase tracking-tighter">
+                <%= Appointment.human_attribute_name("status.#{appointment.status}") %>
+              </span>
+            </div>
+
+            <div class="space-y-3 py-4 border-y border-gray-50">
+              <div class="flex items-center text-sm text-gray-600">
+                <svg class="mr-3 h-5 w-5 text-blue-900/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <%# Localização da Data (Formato: 19 de março de 2026) %>
+                <span class="font-medium text-gray-900"><%= l(appointment.start_time, format: :long) %></span>
+              </div>
+
+              <div class="flex items-center text-sm text-gray-600">
+                <svg class="mr-3 h-5 w-5 text-blue-900/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <%# Localização da Hora (Formato: 10:30) %>
+                <span>
+                  <%= l(appointment.start_time, format: "%H:%M") %> — <%= l(appointment.end_time, format: "%H:%M") %>
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+              <%= link_to "Ver detalhes", appointment, class: "text-sm font-medium text-gray-400 hover:text-blue-900 transition" %>
+
+              <% if appointment.confirmado? && appointment.start_time > Time.current %>
+                <%= button_to appointment_path(appointment),
+                               method: :delete,
+                               form: { data: { turbo_confirm: "Deseja realmente cancelar este agendamento?" } },
+                               class: "text-sm font-bold text-red-500 hover:text-red-700 transition cursor-pointer" do %>
+                  Cancelar reserva
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100 shadow-inner">
+      <div class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900">Agenda vazia</h3>
+      <p class="mt-2 text-sm text-gray-500 max-w-xs mx-auto">Você ainda não tem nenhum serviço agendado em Belo Horizonte.</p>
+      <div class="mt-8">
+        <%= link_to "Fazer meu primeiro agendamento", new_appointment_path, class: "bg-blue-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-800 transition shadow-lg" %>
+      </div>
+    </div>
   <% end %>
 </div>
-
-<%= link_to "New appointment", new_appointment_path %>
