@@ -1,9 +1,13 @@
 Rails.application.routes.draw do
+  # Se o usuário estiver logado, a home dele é a lista de agendamentos
+  authenticated :user do
+    root "appointments#index", as: :authenticated_root
+  end
+
+  # Se NÃO estiver logado, ele vê a página de marketing/bem-vindo
   root "home#index"
 
-  # Removemos o 'only' para liberar as 7 rotas padrão (index, show, new, create, edit, update, destroy)
   resources :appointments
-
   resources :services
   devise_for :users
 

@@ -1,10 +1,53 @@
-<p style="color: green"><%= notice %></p>
+<div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+  <div class="bg-green-500 p-6 text-center">
+    <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-3 shadow-sm">
+      <span class="text-3xl">✅</span>
+    </div>
+    <h2 class="text-white text-xl font-bold italic">Agendamento Confirmado!</h2>
+  </div>
 
-<%= render @appointment %>
+  <div class="p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-extrabold text-gray-900 mb-1"><%= @appointment.service.nome %></h1>
+      <p class="text-gray-500 text-sm italic">Belo Horizonte, MG</p>
+    </div>
 
-<div>
-  <%= link_to "Edit this appointment", edit_appointment_path(@appointment) %> |
-  <%= link_to "Back to appointments", appointments_path %>
+    <div class="space-y-4 border-t border-b border-dashed border-gray-200 py-6 mb-8">
+      <div class="flex justify-between">
+        <span class="text-gray-500 font-medium">Data:</span>
+        <span class="text-gray-900 font-bold"><%= @appointment.start_time.strftime("%d/%m/%Y") %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500 font-medium">Início:</span>
+        <span class="text-gray-900 font-bold"><%= @appointment.start_time.strftime("%H:%M") %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500 font-medium">Fim (previsto):</span>
+        <span class="text-gray-900 font-bold"><%= @appointment.end_time&.strftime("%H:%M") %></span>
+      </div>
+      <div class="flex justify-between pt-2">
+        <span class="text-gray-500 font-medium">Valor:</span>
+        <span class="text-green-600 font-extrabold text-lg">
+          <%= number_to_currency(@appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
+        </span>
+      </div>
+    </div>
 
-  <%= button_to "Destroy this appointment", @appointment, method: :delete %>
+    <div class="space-y-3">
+      <%
+        # Gerando link básico para o Google Agenda
+        google_url = "https://www.google.com/calendar/render?action=TEMPLATE" +
+                     "&text=#{u(@appointment.service.nome)} - Agenda BH" +
+                     "&dates=#{@appointment.start_time.strftime('%Y%m%dT%H%M%SZ')}/#{@appointment.end_time&.strftime('%Y%m%dT%H%M%SZ')}" +
+                     "&details=Agendamento realizado pelo app BH Agendamentos." +
+                     "&location=Belo Horizonte, MG"
+      %>
+
+      <%= link_to google_url, target: "_blank", class: "w-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition" do %>
+        <span>🗓️ Adicionar ao Google Agenda</span>
+      <% end %>
+
+      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg" %>
+    </div>
+  </div>
 </div>

@@ -1,2 +1,40 @@
-<h1>Bem-vindo ao BH Agendamentos</h1>
-<p>O sistema está oficialmente no ar e a infraestrutura está 100% conteinerizada.</p>
+<div class="bg-white rounded-3xl p-8 mb-12 text-center shadow-sm border border-gray-100">
+  <h1 class="text-4xl font-extrabold text-gray-900 mb-4">
+    Agende seus serviços em <span class="text-blue-600">Belo Horizonte</span>
+  </p>
+  <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+    Praticidade para marcar seus horários nas melhores barbearias, clínicas e estúdios da capital mineira.
+  </p>
+  <% unless user_signed_in? %>
+    <div class="flex justify-center space-x-4">
+      <%= link_to "Começar Agora", new_user_registration_path, class: "bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg" %>
+    </div>
+  <% end %>
+</div>
+
+<div class="mb-10">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Serviços Disponíveis</h2>
+
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <% @services.each do |service| %>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2"><%= service.nome %></h3>
+          <p class="text-gray-600 text-sm mb-4 line-clamp-2"><%= service.descricao %></p>
+
+          <div class="flex items-center text-sm font-medium text-gray-500 mb-6">
+            <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full mr-3">
+              ⏱️ <%= service.duracao_minutos %> min
+            </span>
+            <span class="text-green-600 font-bold">
+              <%= number_to_currency(service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
+            </span>
+          </div>
+        </div>
+
+        <%= link_to "Agendar este", new_appointment_path(service_id: service.id),
+            class: "w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition" %>
+      </div>
+    <% end %>
+  </div>
+</div>

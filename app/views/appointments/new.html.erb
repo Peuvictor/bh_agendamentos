@@ -1,25 +1,47 @@
-<div class="max-w-2xl mx-auto mt-10 px-4">
-  <%# Card Principal com sombra suave e bordas arredondadas (estilo Cruzeiro/Premium) %>
-  <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
+<div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Novo Agendamento em BH</h1>
 
-    <%# Header Azul do Formulário %>
-    <div class="bg-blue-900 px-8 py-6">
-      <h1 class="text-2xl font-bold text-white tracking-tight">Novo Agendamento</h1>
-      <p class="text-blue-100 text-sm opacity-80">Preencha os dados abaixo para reservar seu horário em BH.</p>
+  <%= form_with(model: @appointment, local: true, class: "space-y-6") do |f| %>
+
+    <% if @appointment.errors.any? %>
+      <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
+        <p class="font-bold mb-1">Ops! Verifique os erros abaixo:</p>
+        <ul class="list-disc list-inside">
+          <% @appointment.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :service_id, "Qual o serviço?", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.collection_select :service_id, @services, :id, :nome,
+          { prompt: "Selecione um serviço...", selected: params[:service_id] },
+          { class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
     </div>
 
-    <div class="p-8">
-      <%# Chamamos o "Partial" aqui. Passamos o objeto @appointment para ele %>
-      <%= render "form", appointment: @appointment %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <%= label_tag :appointment_date, "Dia do Agendamento", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= date_field_tag :appointment_date, params[:appointment_date] || Date.today,
+            min: Date.today,
+            class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
+      </div>
 
-      <div class="mt-8 text-center">
-        <%= link_to appointments_path, class: "text-gray-400 hover:text-blue-900 text-sm font-medium transition inline-flex items-center" do %>
-          <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Voltar para meus agendamentos
-        <% end %>
+      <div>
+        <%= label_tag :appointment_hour, "Horário Disponível", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= select_tag :appointment_hour, options_for_select(@available_slots, params[:appointment_hour]),
+            class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
       </div>
     </div>
-  </div>
+
+    <p class="mt-1 text-xs text-gray-500 italic text-center">O tempo de término será calculado automaticamente, uai!</p>
+
+    <div class="flex items-center justify-between pt-4 border-t border-gray-50">
+      <%= link_to "Voltar", appointments_path, class: "text-sm text-gray-600 hover:text-gray-900 underline" %>
+      <%= f.submit "Confirmar Agendamento",
+          class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200 shadow-lg cursor-pointer" %>
+    </div>
+  <% end %>
 </div>

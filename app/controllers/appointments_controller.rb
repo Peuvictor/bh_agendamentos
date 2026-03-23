@@ -1,42 +1,46 @@
 class AppointmentsController < ApplicationController
-  # Garante que só quem está logado acessa essas páginas
   before_action :authenticate_user!
-
-  # Filtros de segurança e carregamento de dados
   before_action :set_appointment, only: %i[ show edit update destroy ]
   before_action :set_services, only: %i[ new edit create update ]
+  before_action :set_available_slots, only: %i[ new edit create update ]
 
   def index
-    # Segurança: O usuário só vê os PRÓPRIOS agendamentos
-    # Usamos .includes(:service) para evitar o problema de N+1 queries
     @appointments = current_user.appointments_as_client.includes(:service).order(start_time: :asc)
   end
 
   def show
-    # O set_appointment já garantiu que o agendamento pertence ao current_user
   end
 
   def new
-    @appointment = current_user.appointments_as_client.build
+    @appointment = current_user.appointments_as_client.build(service_id: params[:service_id])
   end
 
   def edit
-    # O set_appointment já buscou o agendamento no banco para nós
   end
 
   def create
     @appointment = current_user.appointments_as_client.build(appointment_params)
 
+    # Juntando a Data (appointment_date) e a Hora (appointment_hour) no start_time
+    if params[:appointment_date].present? && params[:appointment_hour].present?
+      begin
+        combined_time = "#{params[:appointment_date]} #{params[:appointment_hour]}".to_datetime
+        @appointment.start_time = combined_time
+      rescue ArgumentError
+        @appointment.errors.add(:start_time, "inválido. Verifique a data e hora.")
+      end
+    end
+
     if @appointment.save
-      redirect_to appointments_path, notice: "Agendamento realizado com sucesso!"
+      redirect_to @appointment, notice: "Agendamento realizado com sucesso!"
     else
+      # Se falhar, renderiza o formulário de novo com os erros
       render :new, status: :unprocessable_entity
     end
   end
 
   def update
     if @appointment.update(appointment_params)
-      # status: :see_other é importante para o Turbo do Rails 7 em redirecionamentos após PATCH
       redirect_to appointments_path, notice: "Agendamento atualizado com sucesso!", status: :see_other
     else
       render :edit, status: :unprocessable_entity
@@ -45,29 +49,29 @@ class AppointmentsController < ApplicationController
 
   def destroy
     @appointment.destroy
-
-    respond_to do |format|
-      format.html { redirect_to appointments_path, notice: "Agendamento cancelado com sucesso.", status: :see_other }
-      format.json { head :no_content }
-    end
+    redirect_to appointments_path, notice: "Agendamento cancelado com sucesso.", status: :see_other
   end
 
   private
 
   def set_appointment
-    # Segurança Máxima: Buscamos apenas nos agendamentos QUE PERTENCEM ao usuário logado
-    # Se alguém tentar acessar o ID de outra pessoa, o Rails lança RecordNotFound
     @appointment = current_user.appointments_as_client.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to appointments_path, alert: "Agendamento não encontrado ou acesso negado."
   end
 
   def set_services
-    @services = Service.all
+    @services = Service.order(:nome)
+  end
+
+  def set_available_slots
+    # Gera horários de 30 em 30 min (08h às 18h)
+    @available_slots = (8..18).flat_map { |hour| ["#{hour}:00", "#{hour}:30"] }
   end
 
   def appointment_params
-    # Proteção de Strong Parameters: client_id é definido pelo sistema, não pelo usuário
-    params.require(:appointment).permit(:service_id, :start_time, :end_time, :status)
+    # Permitimos apenas service_id e status.
+    # O start_time é montado manualmente no create e o end_time no model.
+    params.require(:appointment).permit(:service_id, :status)
   end
 end
