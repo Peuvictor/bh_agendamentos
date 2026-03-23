@@ -64,9 +64,20 @@ class AppointmentsController < ApplicationController
   private
 
   def set_appointment
-    @appointment = current_user.appointments_as_client.find(params[:id])
+    # 1. Busca o agendamento no banco de dados geral
+    @appointment = Appointment.find(params[:id])
+
+    # 2. Regra de Negócio: O usuário logado é o cliente OU o prestador dono do serviço?
+    is_client = @appointment.client_id == current_user.id
+    is_provider = @appointment.service.user_id == current_user.id
+
+    # 3. Se não for nenhum dos dois, barra o acesso
+    unless is_client || is_provider
+      redirect_to root_path, alert: "Agendamento não encontrado ou acesso negado."
+    end
+
   rescue ActiveRecord::RecordNotFound
-    redirect_to appointments_path, alert: "Agendamento não encontrado ou acesso negado."
+    redirect_to root_path, alert: "Agendamento não encontrado."
   end
 
   def set_services
