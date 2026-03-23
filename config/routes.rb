@@ -1,15 +1,23 @@
 Rails.application.routes.draw do
-  # Se o usuário estiver logado, a home dele é a lista de agendamentos
+  # 1. Se o usuário estiver logado, a Home é o Dashboard de Agendamentos (como cliente)
   authenticated :user do
     root "appointments#index", as: :authenticated_root
   end
 
-  # Se NÃO estiver logado, ele vê a página de marketing/bem-vindo
+  # 2. Se NÃO estiver logado, a Home é a vitrine de serviços
   root "home#index"
 
-  resources :appointments
+  # 3. Rotas de Agendamentos com o Dashboard do Prestador
+  resources :appointments do
+    collection do
+      get :dashboard # Rota: /appointments/dashboard
+    end
+  end
+
+  # 4. Outras rotas do sistema
   resources :services
   devise_for :users
 
+  # Health check para o Docker
   get "up" => "rails/health#show", as: :rails_health_check
 end

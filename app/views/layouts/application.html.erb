@@ -22,10 +22,18 @@
             <%= link_to "Meus Agendamentos", appointments_path, class: "hover:text-blue-200 text-sm font-medium" %>
             <%= link_to "Serviços", services_path, class: "hover:text-blue-200 text-sm font-medium" %>
 
-            <span class="hidden sm:inline text-blue-200 text-xs ml-4">Oi, <%= current_user.email.split('@').first %>!</span>
+            <% if current_user.services.any? %>
+              <div class="h-6 w-px bg-blue-500 mx-2 hidden md:block"></div>
+              <%= link_to "Minha Agenda ⚒️", dashboard_appointments_path,
+                  class: "bg-blue-900 text-yellow-400 hover:bg-black px-3 py-2 rounded-lg text-sm font-bold shadow-inner transition" %>
+            <% end %>
+
+            <span class="hidden lg:inline text-blue-200 text-xs ml-4">
+              Oi, <%= current_user.email.split('@').first %>!
+            </span>
 
             <%= button_to "Sair", destroy_user_session_path, method: :delete,
-                class: "bg-blue-800 hover:bg-red-600 px-3 py-1 rounded text-xs transition font-semibold" %>
+                class: "bg-blue-800 hover:bg-red-600 px-3 py-1 rounded text-xs transition font-semibold ml-2" %>
           <% else %>
             <%= link_to "Entrar", new_user_session_path, class: "hover:underline text-sm font-medium" %>
             <%= link_to "Criar Conta", new_user_registration_path, class: "bg-white text-blue-700 px-4 py-2 rounded-lg text-sm font-bold shadow-md" %>
@@ -36,7 +44,7 @@
 
     <main class="container mx-auto px-5 max-w-7xl">
       <% if notice %>
-        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded shadow-sm" role="alert">
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded shadow-sm animate-pulse-once" role="alert">
           <p class="text-sm font-bold">Sucesso:</p>
           <p><%= notice %></p>
         </div>

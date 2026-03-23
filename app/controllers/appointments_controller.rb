@@ -51,6 +51,15 @@ class AppointmentsController < ApplicationController
     @appointment.destroy
     redirect_to appointments_path, notice: "Agendamento cancelado com sucesso.", status: :see_other
   end
+  def dashboard
+  # Buscamos os serviços que EU criei
+  my_service_ids = current_user.services.pluck(:id)
+
+  # Buscamos os agendamentos feitos nesses meus serviços
+  @provider_appointments = Appointment.where(service_id: my_service_ids)
+                                      .includes(:service, :client)
+                                      .order(start_time: :asc)
+  end
 
   private
 
