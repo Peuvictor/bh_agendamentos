@@ -1,42 +1,39 @@
-<%= form_with(model: service) do |form| %>
+<%= form_with(model: service, class: "space-y-6") do |form| %>
   <% if service.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(service.errors.count, "error") %> prohibited this service from being saved:</h2>
-
-      <ul>
-        <% service.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+    <div class="bg-red-50 text-red-800 p-4 rounded-lg border border-red-200 mb-6">
+      <h2 class="font-bold text-sm"><%= pluralize(service.errors.count, "erro") %> impediram de salvar:</h2>
+      <ul class="list-disc list-inside text-sm mt-2">
+        <% service.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
 
   <div>
-    <%= form.label :nome, style: "display: block" %>
-    <%= form.text_field :nome %>
+    <%= form.label :nome, "Nome do Serviço", class: "block text-base font-bold text-gray-700" %>
+    <%= form.text_field :nome, class: "mt-2 block w-full rounded-lg border-gray-300 px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500 transition" %>
   </div>
 
   <div>
-    <%= form.label :descricao, style: "display: block" %>
-    <%= form.text_area :descricao %>
+    <%= form.label :descricao, "Descrição", class: "block text-base font-bold text-gray-700" %>
+    <%= form.text_area :descricao, rows: 4, class: "mt-2 block w-full rounded-lg border-gray-300 px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500 transition" %>
   </div>
 
-  <div>
-    <%= form.label :duracao_minutos, style: "display: block" %>
-    <%= form.number_field :duracao_minutos %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :duracao_minutos, "Duração (Minutos)", class: "block text-base font-bold text-gray-700" %>
+      <%= form.number_field :duracao_minutos, step: 15, class: "mt-2 block w-full rounded-lg border-gray-300 px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500 transition" %>
+    </div>
+
+    <div>
+      <%= form.label :preco, "Preço (R$)", class: "block text-base font-bold text-gray-700" %>
+      <%= form.number_field :preco, step: "0.01", class: "mt-2 block w-full rounded-lg border-gray-300 px-4 py-3 text-base shadow-sm focus:border-blue-500 focus:ring-blue-500 transition" %>
+    </div>
   </div>
 
-  <div>
-    <%= form.label :preco, style: "display: block" %>
-    <%= form.text_field :preco %>
-  </div>
-
-  <div>
-    <%= form.label :user_id, style: "display: block" %>
-    <%= form.text_field :user_id %>
-  </div>
-
-  <div>
-    <%= form.submit %>
+  <div class="pt-6 flex justify-end gap-3 border-t mt-8">
+    <%= link_to "Cancelar", services_path, class: "py-3 px-6 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition" %>
+    <%= form.submit "Salvar Serviço", class: "py-3 px-6 border border-transparent rounded-lg shadow-sm text-base font-bold text-yellow-400 bg-blue-800 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition" %>
   </div>
 <% end %>

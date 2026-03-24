@@ -1,14 +1,40 @@
-<p style="color: green"><%= notice %></p>
+<div class="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+  <div class="flex justify-between items-center mb-8 border-b pb-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-blue-900 italic">Meus Serviços</h1>
+      <p class="text-gray-500 text-sm mt-1">Gerencie os serviços que você oferece no Agenda BH</p>
+    </div>
+    <%= link_to "+ Novo Serviço", new_service_path, class: "bg-blue-800 hover:bg-black text-yellow-400 font-bold py-2 px-6 rounded-lg transition shadow-md" %>
+  </div>
 
-<h1>Services</h1>
+  <% if @services.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% @services.each do |service| %>
+        <div class="border border-gray-200 rounded-xl p-5 hover:shadow-lg transition bg-gray-50">
+          <div class="flex justify-between items-start mb-2">
+            <h2 class="text-xl font-bold text-gray-800"><%= service.nome %></h2>
+            <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded border border-green-200">
+              <%= number_to_currency(service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
+            </span>
+          </div>
+          <p class="text-sm text-gray-600 mb-4 line-clamp-2"><%= service.descricao %></p>
 
-<div id="services">
-  <% @services.each do |service| %>
-    <%= render service %>
-    <p>
-      <%= link_to "Show this service", service %>
-    </p>
+          <div class="flex items-center text-xs text-gray-500 font-medium mb-4">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Duração: <%= service.duracao_minutos %> min
+          </div>
+
+          <div class="flex space-x-3 pt-3 border-t border-gray-200">
+            <%= link_to "Editar", edit_service_path(service), class: "text-sm text-blue-600 hover:text-blue-900 font-bold" %>
+            <%= button_to "Excluir", service, method: :delete, form: { data: { turbo_confirm: 'Tem certeza, uai? Essa ação não tem volta.' } }, class: "text-sm text-red-600 hover:text-red-900 font-bold" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-10">
+      <p class="text-gray-500 text-lg">Você ainda não cadastrou nenhum serviço.</p>
+      <p class="text-sm text-gray-400 mt-2">Clique no botão acima para começar a vender seu tempo!</p>
+    </div>
   <% end %>
 </div>
-
-<%= link_to "New service", new_service_path %>

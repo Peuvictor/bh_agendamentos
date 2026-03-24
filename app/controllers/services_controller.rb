@@ -1,70 +1,62 @@
 class ServicesController < ApplicationController
+  # 1. Trava principal: Só entra quem estiver logado!
+  before_action :authenticate_user!
+
+  # 2. Executa o filtro de segurança antes destas ações
   before_action :set_service, only: %i[ show edit update destroy ]
 
-  # GET /services or /services.json
   def index
-    @services = Service.all
+    # Regra de Negócio: O prestador SÓ vê os serviços que pertencem a ele
+    @services = current_user.services
   end
 
-  # GET /services/1 or /services/1.json
   def show
   end
 
-  # GET /services/new
   def new
-    @service = Service.new
+    # Prepara um serviço novo já atrelado ao usuário logado
+    @service = current_user.services.build
   end
 
-  # GET /services/1/edit
   def edit
   end
 
-  # POST /services or /services.json
   def create
-    @service = Service.new(service_params)
+    # Cria o serviço garantindo que o dono é o usuário atual (ignora hackers no formulário)
+    @service = current_user.services.build(service_params)
 
-    respond_to do |format|
-      if @service.save
-        format.html { redirect_to @service, notice: "Service was successfully created." }
-        format.json { render :show, status: :created, location: @service }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
-      end
+    if @service.save
+      redirect_to services_path, notice: "Serviço criado com sucesso, uai!"
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /services/1 or /services/1.json
   def update
-    respond_to do |format|
-      if @service.update(service_params)
-        format.html { redirect_to @service, notice: "Service was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @service }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
-      end
+    if @service.update(service_params)
+      redirect_to services_path, notice: "Serviço atualizado com sucesso."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
-  # DELETE /services/1 or /services/1.json
   def destroy
     @service.destroy!
-
-    respond_to do |format|
-      format.html { redirect_to services_path, notice: "Service was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
-    end
+    redirect_to services_path, notice: "Serviço removido com sucesso.", status: :see_other
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
+
     def set_service
-      @service = Service.find(params[:id])
+      # A Mágica da Segurança: Busca o serviço APENAS dentro da lista do usuário logado!
+      # Se ele tentar passar o ID do serviço de outro prestador, o Rails bloqueia.
+      @service = current_user.services.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      redirect_to services_path, alert: "Serviço não encontrado ou você não tem permissão."
     end
 
-    # Only allow a list of trusted parameters through.
     def service_params
-      params.require(:service).permit(:nome, :descricao, :duracao_minutos, :preco, :user_id)
+      # Removemos o :user_id daqui. O usuário não pode mandar isso pela tela.
+      params.require(:service).permit(:nome, :descricao, :duracao_minutos, :preco)
     end
 end
