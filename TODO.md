@@ -8,11 +8,11 @@
 - [x] Comprovativo de Agendamento (Página de Show estilizada).
 - [x] Dashboard de Gestão para o Prestador.
 - [x] Proteção e autorização no cancelamento de agendamentos.
+- [x] Estilizar as páginas do Devise: Aplicar o tema "Azul BH" e o Tailwind nas páginas de Login e Registo.
 
 ## 🚧 A Fazer (Sprint Atual - Máximo 3 Tarefas)
-- [ ] **1. Estilizar as páginas do Devise:** Aplicar o tema "Azul BH" e o Tailwind nas páginas de Login e Registo.
-- [ ] **2. Filtro de Horários:** Impedir que o formulário mostre horários que já passaram no dia de hoje.
-- [ ] **3. Gestão de Serviços:** Criar uma página para o Prestador conseguir adicionar, editar ou remover os seus próprios serviços (CRUD de Serviços).
+- [ ] **1. Filtro de Horários:** Impedir que o formulário mostre horários que já passaram no dia de hoje.
+- [ ] **2. Gestão de Serviços:** Criar uma página para o Prestador conseguir adicionar, editar ou remover os seus próprios serviços (CRUD de Serviços).
 
 ## 💡 Backlog (Ideias para o futuro)
 - [ ] Envio de e-mail automático quando um horário é cancelado.
