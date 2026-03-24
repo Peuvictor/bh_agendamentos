@@ -10,6 +10,8 @@ class Appointment < ApplicationRecord
   # Callback: calcula o fim antes de validar e salvar
   before_validation :calculate_end_time
 
+  validate :horario_deve_ser_no_futuro
+
   private
 
   def calculate_end_time
@@ -29,6 +31,13 @@ class Appointment < ApplicationRecord
 
     if overlapping.exists?
       errors.add(:base, "Ops! Este horário já está ocupado para este serviço aqui em BH.")
+    end
+  end
+
+  def horario_deve_ser_no_futuro
+    # Se a data/hora existir e for menor que o relógio exato de agora
+    if start_time.present? && start_time < Time.current
+      errors.add(:start_time, "não pode ser no passado, uai! Escolha um horário válido.")
     end
   end
 end

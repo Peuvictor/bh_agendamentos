@@ -45,3 +45,71 @@
     </div>
   <% end %>
 </div>
+<script>
+  function aplicarFiltroDeHorarios() {
+    console.log("1. 🚀 Script de horários iniciado!");
+
+    const dateInput = document.getElementById("appointment_date");
+    const timeSelect = document.getElementById("appointment_hour");
+
+    if (!dateInput || !timeSelect) {
+      console.log("❌ Erro: Campos não encontrados. dateInput:", !!dateInput, "timeSelect:", !!timeSelect);
+      return;
+    }
+
+    console.log("2. ✅ Campos encontrados! Data atual no campo:", dateInput.value);
+
+    function atualizarHorarios() {
+      if (!dateInput.value) return;
+
+      // Código blindado contra bugs de fuso horário do JS
+      const [ano, mes, dia] = dateInput.value.split('-');
+      const dataEscolhida = new Date(ano, mes - 1, dia);
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      const isHoje = dataEscolhida.getTime() === hoje.getTime();
+      const horaAtual = new Date().getHours();
+      const minutoAtual = new Date().getMinutes();
+
+      console.log(`3. 📅 É hoje? ${isHoje}. Relógio do PC: ${horaAtual}:${minutoAtual}`);
+
+      Array.from(timeSelect.options).forEach(option => {
+        if (!option.value || option.value === "") return;
+
+        // Pega só as horas limpas para não acumular texto
+        const valorLimpo = option.value.substring(0, 5);
+        const partes = valorLimpo.split(':');
+
+        if (partes.length !== 2) return;
+
+        const horaOpcao = parseInt(partes[0], 10);
+        const minutoOpcao = parseInt(partes[1], 10);
+
+        if (isHoje && (horaOpcao < horaAtual || (horaOpcao === horaAtual && minutoOpcao <= minutoAtual))) {
+          option.disabled = true;
+          option.text = valorLimpo + " (Já passou)";
+          option.classList.add("text-gray-400", "bg-gray-100");
+        } else {
+          option.disabled = false;
+          option.text = valorLimpo;
+          option.classList.remove("text-gray-400", "bg-gray-100");
+        }
+      });
+
+      console.log("4. ⏱️ Filtro aplicado aos horários do select.");
+    }
+
+    // Escuta quando o usuário mexe no calendário
+    dateInput.addEventListener("change", atualizarHorarios);
+
+    // Roda a primeira vez
+    atualizarHorarios();
+  }
+
+  // Cobre todas as formas do Rails carregar a página (Turbo ou F5 normal)
+  document.addEventListener("turbo:load", aplicarFiltroDeHorarios);
+  document.addEventListener("DOMContentLoaded", aplicarFiltroDeHorarios);
+  aplicarFiltroDeHorarios(); // Fallback imediato
+</script>
