@@ -66,3 +66,4 @@ class ServicesController < ApplicationController
       params.require(:service).permit(:nome, :descricao, :duracao_minutos, :preco)
     end
 end
+end

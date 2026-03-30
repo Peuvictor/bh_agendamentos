@@ -20,20 +20,26 @@ class Appointment < ApplicationRecord
     self.end_time = start_time + service.duracao_minutos.minutes
   end
 
-  def no_overlapping_appointments
-    return if start_time.blank? || end_time.blank?
+ def no_overlapping_appointments
+    
+    return if start_time.blank? || end_time.blank? || service.blank?
 
-    # Busca conflitos apenas para o mesmo serviço
-    overlapping = Appointment.where(service_id: service_id)
-                             .where.not(status: :cancelado)
-                             .where.not(id: id)
+    prestador_id = service.user_id
+
+
+    servicos_do_prestador_ids = Service.where(user_id: prestador_id).pluck(:id)
+
+    overlapping = Appointment.where(service_id: servicos_do_prestador_ids)
                              .where("start_time < ? AND end_time > ?", end_time, start_time)
 
+
+    overlapping = overlapping.where.not(id: id) if persisted?
+
+    # 6. A trava final
     if overlapping.exists?
-      errors.add(:base, "Ops! Este horário já está ocupado para este serviço aqui em BH.")
+      errors.add(:base, "Ops! O prestador já está atendendo outro cliente neste horário.")
     end
   end
-
   def horario_deve_ser_no_futuro
     # Se a data/hora existir e for menor que o relógio exato de agora
     if start_time.present? && start_time < Time.current

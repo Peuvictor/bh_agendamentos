@@ -11,6 +11,8 @@ module BhAgendamentos
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
 
+    config.time_zone = 'Brasilia'
+
     config.i18n.default_locale = :'pt-BR'
 
     config.autoload_lib(ignore: %w(assets tasks))
