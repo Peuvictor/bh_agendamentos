@@ -2,6 +2,8 @@ class ServicesController < ApplicationController
   # 1. Trava principal: Só entra quem estiver logado!
   before_action :authenticate_user!
 
+  before_action :check_provider_role
+
   # 2. Executa o filtro de segurança antes destas ações
   before_action :set_service, only: %i[ show edit update destroy ]
 
@@ -46,6 +48,10 @@ class ServicesController < ApplicationController
   end
 
   private
+  def check_provider_role
+    unless current_user.provider?
+      redirect_to root_path, alert: "Acesso negado. Apenas prestadores podem acessar esta seção."
+    end
 
     def set_service
       # A Mágica da Segurança: Busca o serviço APENAS dentro da lista do usuário logado!
