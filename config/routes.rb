@@ -9,6 +9,8 @@ Rails.application.routes.draw do
 
   # 3. Rota VIP para o Painel do Prestador (localhost:3000/dashboard)
   get 'dashboard', to: 'appointments#dashboard', as: 'dashboard'
+# Rota para ver o próprio perfil
+  get 'perfil', to: 'profiles#show', as: 'perfil'
 
   # 4. Outras rotas do sistema
   resources :appointments
