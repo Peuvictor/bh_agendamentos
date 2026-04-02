@@ -16,6 +16,7 @@
             <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Serviço</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Contato do Cliente</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-extrabold text-gray-500 uppercase tracking-wider">Cancelamento</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -48,6 +49,13 @@
                   <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
                   Confirmado
                 </span>
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <%= button_to "Cancelar", appointment_path(appointment),
+                    method: :delete,
+                    onclick: "return confirm('⚠️ Tem certeza que deseja desmarcar este cliente? O horário voltará a ficar livre na sua agenda.');",
+                    class: "text-red-600 hover:text-white hover:bg-red-600 border border-transparent hover:border-red-600 px-3 py-1 rounded-md font-bold transition-all duration-200" %>
               </td>
             </tr>
           <% end %>

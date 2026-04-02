@@ -47,8 +47,17 @@ class AppointmentsController < ApplicationController
   end
 
   def destroy
-    @appointment.destroy
-    redirect_to appointments_path, notice: "Agendamento cancelado com sucesso.", status: :see_other
+    @appointment = Appointment.find(params[:id])
+
+    # Trava de Segurança: Só cancela se o usuário logado for o dono do serviço (Prestador) ou o cliente que agendou
+    if @appointment.service.user_id == current_user.id || @appointment.client_id == current_user.id
+      @appointment.destroy
+
+      # Redireciona de volta para a página que a pessoa estava (Dashboard ou Meus Agendamentos)
+      redirect_back(fallback_location: root_path, notice: "Agendamento cancelado com sucesso. O horário já está livre na agenda!")
+    else
+      redirect_to root_path, alert: "Você não tem permissão para fazer isso."
+    end
   end
 
   def dashboard
