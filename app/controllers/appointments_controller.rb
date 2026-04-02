@@ -52,10 +52,13 @@ class AppointmentsController < ApplicationController
   end
 
   def dashboard
-    my_service_ids = current_user.services.pluck(:id)
-    @provider_appointments = Appointment.where(service_id: my_service_ids)
-                                        .includes(:service, :client)
-                                        .order(start_time: :asc)
+    authenticate_user!
+
+    # Filtramos e ordenamos usando a coluna real do banco: start_time
+    @my_appointments = Appointment.joins(:service)
+                                  .where(services: { user_id: current_user.id })
+                                  .where("start_time >= ?", Time.current.beginning_of_day)
+                                  .order(start_time: :asc)
   end
 
   private

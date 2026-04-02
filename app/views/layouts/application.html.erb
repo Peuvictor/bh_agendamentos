@@ -24,7 +24,8 @@
 
             <% if current_user.services.any? %>
               <div class="h-6 w-px bg-blue-500 mx-2 hidden md:block"></div>
-              <%= link_to "Minha Agenda ⚒️", dashboard_appointments_path,
+              <%# Reparou? Mudamos apenas para dashboard_path aqui embaixo 👇 %>
+              <%= link_to "Minha Agenda ⚒️", dashboard_path,
                   class: "bg-blue-900 text-yellow-400 hover:bg-black px-3 py-2 rounded-lg text-sm font-bold shadow-inner transition" %>
             <% end %>
 

@@ -1,67 +1,66 @@
-<div class="max-w-6xl mx-auto mt-10 px-4">
-  <div class="flex justify-between items-center mb-8">
+<div class="max-w-5xl mx-auto mt-10 p-6">
+  <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-3xl font-extrabold text-gray-900 italic">Sua Agenda de Trabalho ⚒️</h1>
-      <p class="text-gray-500 text-sm">Gerencie seus compromissos e clientes em um só lugar.</p>
+      <h1 class="text-3xl font-bold text-gray-800">Minha Agenda 📅</h1>
+      <p class="text-gray-600 mt-1">Acompanhe os próximos clientes agendados com você.</p>
     </div>
-    <div class="bg-blue-600 text-white px-6 py-2 rounded-2xl font-bold text-sm shadow-lg">
-      Total: <%= @provider_appointments.count %> atendimentos
-    </div>
+    <%= link_to "Novo Serviço", new_service_path, class: "bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg shadow transition" %>
   </div>
 
-  <% if @provider_appointments.any? %>
-    <div class="overflow-hidden bg-white shadow-xl rounded-2xl border border-gray-100">
+  <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+    <% if @my_appointments.any? %>
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Horário</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Cliente</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Serviço</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-            <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Ações</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Data e Hora</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Serviço</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Contato do Cliente</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200 bg-white">
-          <% @provider_appointments.each do |appointment| %>
-            <tr class="hover:bg-blue-50/50 transition duration-150">
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @my_appointments.each do |appointment| %>
+            <tr class="hover:bg-gray-50 transition-colors">
+
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-bold text-gray-900"><%= appointment.start_time.strftime("%d/%m") %></div>
-                <div class="text-xs text-blue-600 font-semibold"><%= appointment.start_time.strftime("%H:%M") %> - <%= appointment.end_time&.strftime("%H:%M") %></div>
+                <div class="text-sm font-bold text-gray-900">
+                  <%= appointment.start_time.strftime("%d/%m/%Y") %>
+                </div>
+                <div class="text-sm text-gray-500 flex items-center mt-1">
+                  <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <%= appointment.start_time.strftime("%H:%M") %>
+                </div>
               </td>
+
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900"><%= appointment.client.email.split('@').first.capitalize %></div>
-                <div class="text-xs text-gray-500"><%= appointment.client.email %></div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                <span class="font-medium"><%= appointment.service.nome %></span>
-                <div class="text-xs text-green-600 font-bold"><%= number_to_currency(appointment.service.preco, unit: "R$") %></div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full <%= appointment.confirmado? ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
-                  <%= appointment.status.capitalize %>
+                <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                  <%= appointment.service.nome %>
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                <div class="flex justify-center items-center space-x-4">
-                  <%= link_to "Ver", appointment_path(appointment), class: "text-blue-600 hover:text-blue-900 font-bold" %>
 
-                  <div class="w-px h-4 bg-gray-200"></div>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-bold text-gray-900"><%= appointment.client.nome %></div>
+                <div class="text-xs text-gray-500"><%= appointment.client.email %></div>
+              </td>
 
-                  <%= button_to "Cancelar", appointment_path(appointment),
-                      method: :delete,
-                      form: { data: { turbo_confirm: "Tem certeza que deseja cancelar o horário do cliente, uai?" } },
-                      class: "text-red-500 hover:text-red-700 font-bold transition" %>
-                </div>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span class="text-green-600 font-bold flex items-center">
+                  <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                  Confirmado
+                </span>
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
-    </div>
-  <% else %>
-    <div class="bg-white p-20 text-center rounded-3xl border-2 border-dashed border-gray-200">
-      <span class="text-4xl mb-4 block">☕</span>
-      <p class="text-gray-500 text-lg italic">Nenhum cliente agendou com você ainda, uai! Aproveite o café.</p>
-    </div>
-  <% end %>
+    <% else %>
+      <div class="p-12 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+          <span class="text-2xl">😴</span>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900">Agenda Vazia</h3>
+        <p class="mt-2 text-sm text-gray-500">Você ainda não tem clientes marcados para os próximos dias.</p>
+      </div>
+    <% end %>
+  </div>
 </div>
