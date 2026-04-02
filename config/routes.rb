@@ -15,6 +15,11 @@ Rails.application.routes.draw do
   resources :services
   devise_for :users
 
+  # 5. Rota para a Caixa de Entrada de testes (Letter Opener Web)
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
   # Health check para o Docker
   get "up" => "rails/health#show", as: :rails_health_check
 end

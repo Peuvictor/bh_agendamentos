@@ -1,0 +1,15 @@
+<div style="font-family: Arial, sans-serif; max-w-md; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+  <h2 style="color: #1e3a8a;">Olá, <%= @client.nome %>!</h2>
+
+  <p>Seu horário está garantido na nossa agenda. Confira os detalhes abaixo:</p>
+
+  <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
+    <p><strong>💈 Serviço:</strong> <%= @service.nome %></p>
+    <p><strong>📅 Data:</strong> <%= @appointment.start_time.strftime("%d/%m/%Y") %></p>
+    <p><strong>⏰ Horário:</strong> <%= @appointment.start_time.strftime("%H:%M") %></p>
+  </div>
+
+  <p style="margin-top: 20px; color: #4b5563; font-size: 14px;">
+    Se precisar cancelar, acesse o painel do sistema ou entre em contato.
+  </p>
+</div>

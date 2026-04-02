@@ -19,7 +19,8 @@ class AppointmentsController < ApplicationController
   end
 
   def create
-    @appointment = current_user.appointments_as_client.build(appointment_params)
+    @appointment = Appointment.new(appointment_params)
+    @appointment.client_id = current_user.id
 
     # Juntando a Data (appointment_date) e a Hora (appointment_hour) no start_time
     if params[:appointment_date].present? && params[:appointment_hour].present?
@@ -32,8 +33,12 @@ class AppointmentsController < ApplicationController
     end
 
     if @appointment.save
-      redirect_to @appointment, notice: "Agendamento realizado com sucesso!"
+      # GATILHO DO E-MAIL NA FILA (O jeito Sênior)
+      AppointmentMailer.confirmation_email(@appointment).deliver_later
+
+      redirect_to appointments_path, notice: "Agendamento realizado com sucesso!"
     else
+      # O que faltava: Devolver o usuário para a tela se houver erro de validação
       render :new, status: :unprocessable_entity
     end
   end
