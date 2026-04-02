@@ -1,114 +1,63 @@
-<div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Novo Agendamento em BH</h1>
+<div class="mb-4">
+          <label class="block text-sm font-extrabold text-gray-700 mb-2">1. Escolha o Profissional</label>
+          <select id="provider_select" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2 border bg-white">
+            <option value="">Selecione um profissional...</option>
+            <% User.provider.each do |provider| %>
+              <option value="<%= provider.id %>"><%= provider.nome %></option>
+            <% end %>
+          </select>
+        </div>
 
-  <%= form_with(model: @appointment, local: true, class: "space-y-6") do |f| %>
+        <div class="mb-6">
+          <label class="block text-sm font-extrabold text-gray-700 mb-2">2. Escolha o Serviço</label>
+          <select id="service_select" name="appointment[service_id]" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2 border bg-gray-100 cursor-not-allowed" disabled>
+            <option value="">Primeiro selecione um profissional...</option>
 
-    <% if @appointment.errors.any? %>
-      <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
-        <p class="font-bold mb-1">Ops! Verifique os erros abaixo:</p>
-        <ul class="list-disc list-inside">
-          <% @appointment.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
+            <% Service.all.each do |service| %>
+              <option value="<%= service.id %>" data-provider-id="<%= service.user_id %>" style="display: none;">
+                <%= service.nome %>
+              </option>
+            <% end %>
+          </select>
+        </div>
 
-   <div>
-      <%= f.label :service_id, "Qual o serviço?", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%# AQUI ESTÁ A MÁGICA PARA ELE NÃO ESQUECER O SERVIÇO: %>
-      <%= f.collection_select :service_id, @services, :id, :nome,
-          { prompt: "Selecione um serviço...", selected: params.dig(:appointment, :service_id) || @appointment.service_id },
-          { class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
-    </div>
+        <script>
+          // O turbo:load garante que o script rode mesmo navegando pelos links do Rails
+          document.addEventListener("turbo:load", function() {
+            const providerSelect = document.getElementById("provider_select");
+            const serviceSelect = document.getElementById("service_select");
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <%= label_tag :appointment_date, "Dia do Agendamento", class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= date_field_tag :appointment_date, params[:appointment_date] || Date.today,
-            min: Date.today,
-            class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-      </div>
+            if(providerSelect && serviceSelect) {
+              providerSelect.addEventListener("change", function() {
+                const selectedProviderId = this.value;
 
-      <div>
-        <%= label_tag :appointment_hour, "Horário Disponível", class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= select_tag :appointment_hour, options_for_select(@available_slots, params[:appointment_hour]),
-            prompt: "Selecione a data primeiro...",
-            class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-      </div>
-    </div>
+                // Reseta o campo de serviço
+                serviceSelect.value = "";
 
-    <p class="mt-1 text-xs text-gray-500 italic text-center">O tempo de término será calculado automaticamente, uai!</p>
+                if(selectedProviderId) {
+                  // Habilita o campo de serviço
+                  serviceSelect.disabled = false;
+                  serviceSelect.classList.remove("bg-gray-100", "cursor-not-allowed");
+                  serviceSelect.classList.add("bg-white");
+                  serviceSelect.options[0].text = "Agora selecione o serviço...";
+                } else {
+                  // Desabilita se o cara voltar para "Selecione um profissional..."
+                  serviceSelect.disabled = true;
+                  serviceSelect.classList.add("bg-gray-100", "cursor-not-allowed");
+                  serviceSelect.options[0].text = "Primeiro selecione um profissional...";
+                }
 
-    <div class="flex items-center justify-between pt-4 border-t border-gray-50">
-      <%= link_to "Voltar", appointments_path, class: "text-sm text-gray-600 hover:text-gray-900 underline" %>
-      <%= f.submit "Confirmar Agendamento",
-          class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200 shadow-lg cursor-pointer" %>
-    </div>
-  <% end %>
-</div>
+                // O truque da mágica: Mostra só os serviços do dono certo
+                Array.from(serviceSelect.options).forEach(option => {
+                  if (option.value === "") return; // Pula a opção principal
 
-<div id="dados-agendamentos" data-ocupados="<%= @busy_slots.to_json %>" class="hidden"></div>
-
-<script>
-  function aplicarFiltroDeHorarios() {
-    const dateInput = document.getElementById("appointment_date");
-    const timeSelect = document.getElementById("appointment_hour");
-    const serviceSelect = document.querySelector("select[name='appointment[service_id]']") || document.querySelector("select[name='service_id']");
-    const dadosDiv = document.getElementById("dados-agendamentos");
-
-    if (!dateInput || !timeSelect || !serviceSelect || !dadosDiv) return;
-
-    const horariosOcupados = JSON.parse(dadosDiv.dataset.ocupados);
-
-    function atualizarHorarios() {
-      if (!dateInput.value || !serviceSelect.value) return;
-
-      const dataEscolhida = dateInput.value;
-      // TRIM tira qualquer espaço invisível que o HTML possa ter colocado sem querer
-      const servicoSelecionadoId = serviceSelect.value.trim();
-      const ocupadosDoPrestador = horariosOcupados[servicoSelecionadoId] || [];
-
-      // O NOSSO RAIO-X
-      console.log("=== RAIO-X DEFINITIVO ===");
-      console.log("1. ID exato na caixa de seleção:", `"${servicoSelecionadoId}"`);
-      console.log("2. Tem esse ID no JSON do Rails?", horariosOcupados.hasOwnProperty(servicoSelecionadoId) ? "SIM!" : "NÃO ACHEI!");
-      console.log("3. Array de Horários Ocupados:", ocupadosDoPrestador);
-      console.log("4. Data montada:", `"${dataEscolhida}"`);
-
-      Array.from(timeSelect.options).forEach(option => {
-        if (!option.value || option.value === "") return;
-
-        const valorLimpo = option.value.substring(0, 5);
-        const dataHoraCombo = `${dataEscolhida} ${valorLimpo}`;
-
-        // Vamos logar o horário exato que ele tentou buscar pra ver se bate
-        if (valorLimpo === "15:00") {
-             console.log("5. Procurando EXATAMENTE por:", `"${dataHoraCombo}"`);
-        }
-
-        const jaOcupado = ocupadosDoPrestador.includes(dataHoraCombo);
-
-        if (jaOcupado) {
-          console.log(`🚨 DEU MATCH! Bloqueando: ${dataHoraCombo}`);
-          option.disabled = true;
-          option.text = valorLimpo + " (Ocupado)";
-          option.classList.remove("text-gray-400", "bg-gray-100");
-          option.classList.add("text-red-600", "font-bold");
-        } else {
-          option.disabled = false;
-          option.text = valorLimpo;
-          option.classList.remove("text-gray-400", "bg-gray-100", "text-red-600", "font-bold");
-        }
-      });
-    }
-
-    dateInput.addEventListener("change", atualizarHorarios);
-    serviceSelect.addEventListener("change", atualizarHorarios);
-    atualizarHorarios();
-  }
-
-  document.addEventListener("turbo:load", aplicarFiltroDeHorarios);
-  document.addEventListener("DOMContentLoaded", aplicarFiltroDeHorarios);
-  aplicarFiltroDeHorarios();
-</script>
+                  if (option.dataset.providerId === selectedProviderId) {
+                    option.style.display = ""; // Mostra
+                  } else {
+                    option.style.display = "none"; // Esconde
+                  }
+                });
+              });
+            }
+          });
+        </script>

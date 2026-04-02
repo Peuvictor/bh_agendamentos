@@ -6,18 +6,23 @@
 - [x] Vitrine de Serviços na Home.
 - [x] Lógica de Agendamento com slots de 30 min.
 - [x] Comprovativo de Agendamento (Show).
-- [x] Bloqueio de horários passados no JavaScript.
 - [x] CRUD de Serviços protegido para o usuário logado.
 - [x] Criação do perfil de Prestador com Devise (Roles).
 - [x] Trava de segurança no `ServicesController` (Apenas Prestadores criam serviços).
 - [x] Regra de Anti-Overbooking no Banco de Dados (Backend blindado devolvendo erro 422).
+- [x] **Front-end Blindado:** Bloqueio visual de horários passados e horários já agendados (integração Front e Back via JS).
+- [x] **Painel do Prestador (Dashboard):** Tela exclusiva para gestão de clientes e horários do dia.
+- [x] **Cancelamento Inteligente:** Fluxo seguro com pop-up nativo e liberação imediata do slot na agenda.
+- [x] **Comunicação Assíncrona:** Action Mailer rodando em background com Sidekiq para e-mails de confirmação e cancelamento (Testado via `letter_opener_web`).
+- [x] **Edição de Perfil Avançada:** Upload de imagens com Active Storage, campos de Telefone, Bio e Endereço integrados ao Devise e interface estilizada.
+- [x] **Vitrine do Profissional (`/perfil`):** Tela pública/cartão de visitas com a foto flutuante e dados de contato.
 
-## 🚧 A Fazer (Sprint de Amanhã - Máximo 3 Tarefas)
-- [ ] **1. O Fantasma do Front-end (Debug JS):** O backend já bloqueia o overbooking, mas o front-end ainda não pinta o botão de vermelho antes do clique. Investigar por que o JavaScript (`aplicarFiltroDeHorarios`) não está lendo a lista do `@busy_slots` quando a página recarrega (Testar cache do Sprockets/Importmap, logs do console e o carregamento do DOM).
-- [ ] **2. Painel do Prestador (Dashboard):** Criar a interface da rota `dashboard` no `AppointmentsController`. Fazer uma tela onde o prestador consiga ver, em formato de lista ou tabela, todos os clientes que agendaram horários com ele, ordenados por data e hora.
-- [ ] **3. Cancelamento Inteligente:** Testar e garantir o fluxo de cancelamento (Destroy). Se um cliente ou prestador cancelar um agendamento, aquele horário específico precisa voltar a aparecer como disponível (verde) no calendário de marcações.
+## 🚧 A Fazer (Próximo Desafio - O Chefão Final do MVP)
+- [ ] **1. Dashboard de Administrador (O Grande Irmão):** Fazer o controle total. Criar a lógica para um "Dono do App" (Admin) conseguir visualizar o faturamento, acessar os dados de todos os prestadores e cancelar qualquer agendamento do sistema.
 
-## 💡 Backlog (Ideias para o futuro)
-- [ ] Envio de e-mail automático quando um horário é cancelado ou confirmado.
-- [ ] Dashboard de Administrador (Dono geral do App, com acesso a todos os dados).
-- [ ] Edição de Perfil (Permitir que o Prestador adicione foto, telefone e bio).
+## 💡 Backlog (O Caminho para Nível Pleno / Portfólio de Elite)
+- [ ] Melhoria de UX no Agendamento: Implementar Select em Cascata (Escolher o Profissional primeiro -> Filtrar Serviços depois) via JavaScript nativo e data-attributes.
+- [ ] Notificações via WhatsApp (Integração de API para mandar mensagem no celular do cliente).
+- [ ] Pagamento de Sinal/Reserva (Integração com Stripe ou MercadoPago cobrando taxa anti-falta).
+- [ ] Cobertura de Testes Automatizados (Garantir a integridade do sistema com RSpec).
+- [ ] Deploy para Produção (Hospedar na nuvem com banco PostgreSQL real e fotos no Amazon S3).
