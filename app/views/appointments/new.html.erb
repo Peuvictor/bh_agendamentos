@@ -14,10 +14,11 @@
       </div>
     <% end %>
 
-    <div>
+   <div>
       <%= f.label :service_id, "Qual o serviço?", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%# AQUI ESTÁ A MÁGICA PARA ELE NÃO ESQUECER O SERVIÇO: %>
       <%= f.collection_select :service_id, @services, :id, :nome,
-          { prompt: "Selecione um serviço...", selected: params[:service_id] },
+          { prompt: "Selecione um serviço...", selected: params.dig(:appointment, :service_id) || @appointment.service_id },
           { class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
     </div>
 
@@ -64,36 +65,32 @@
       if (!dateInput.value || !serviceSelect.value) return;
 
       const dataEscolhida = dateInput.value;
-      const servicoSelecionadoId = parseInt(serviceSelect.value, 10);
+      // TRIM tira qualquer espaço invisível que o HTML possa ter colocado sem querer
+      const servicoSelecionadoId = serviceSelect.value.trim();
       const ocupadosDoPrestador = horariosOcupados[servicoSelecionadoId] || [];
 
-      // Lógica do Fuso Horário para bloquear o passado
-      const [ano, mes, dia] = dataEscolhida.split('-');
-      const dataFormatada = new Date(ano, mes - 1, dia);
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const isHoje = dataFormatada.getTime() === hoje.getTime();
-      const horaAtual = new Date().getHours();
-      const minutoAtual = new Date().getMinutes();
+      // O NOSSO RAIO-X
+      console.log("=== RAIO-X DEFINITIVO ===");
+      console.log("1. ID exato na caixa de seleção:", `"${servicoSelecionadoId}"`);
+      console.log("2. Tem esse ID no JSON do Rails?", horariosOcupados.hasOwnProperty(servicoSelecionadoId) ? "SIM!" : "NÃO ACHEI!");
+      console.log("3. Array de Horários Ocupados:", ocupadosDoPrestador);
+      console.log("4. Data montada:", `"${dataEscolhida}"`);
 
       Array.from(timeSelect.options).forEach(option => {
         if (!option.value || option.value === "") return;
 
         const valorLimpo = option.value.substring(0, 5);
-        const partes = valorLimpo.split(':');
-        const horaOpcao = parseInt(partes[0], 10);
-        const minutoOpcao = parseInt(partes[1], 10);
-
         const dataHoraCombo = `${dataEscolhida} ${valorLimpo}`;
-        const jaOcupado = ocupadosDoPrestador.includes(dataHoraCombo);
-        const jaPassou = isHoje && (horaOpcao < horaAtual || (horaOpcao === horaAtual && minutoOpcao <= minutoAtual));
 
-        if (jaPassou) {
-          option.disabled = true;
-          option.text = valorLimpo + " (Já passou)";
-          option.classList.remove("text-red-600", "font-bold");
-          option.classList.add("text-gray-400", "bg-gray-100");
-        } else if (jaOcupado) {
+        // Vamos logar o horário exato que ele tentou buscar pra ver se bate
+        if (valorLimpo === "15:00") {
+             console.log("5. Procurando EXATAMENTE por:", `"${dataHoraCombo}"`);
+        }
+
+        const jaOcupado = ocupadosDoPrestador.includes(dataHoraCombo);
+
+        if (jaOcupado) {
+          console.log(`🚨 DEU MATCH! Bloqueando: ${dataHoraCombo}`);
           option.disabled = true;
           option.text = valorLimpo + " (Ocupado)";
           option.classList.remove("text-gray-400", "bg-gray-100");
