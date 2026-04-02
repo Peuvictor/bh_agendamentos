@@ -54,12 +54,21 @@ class AppointmentsController < ApplicationController
   def destroy
     @appointment = Appointment.find(params[:id])
 
-    # Trava de Segurança: Só cancela se o usuário logado for o dono do serviço (Prestador) ou o cliente que agendou
     if @appointment.service.user_id == current_user.id || @appointment.client_id == current_user.id
+
+      # 1. SALVANDO OS DADOS ANTES DE DESTRUIR (Para o Sidekiq não se perder)
+      client_name = @appointment.client.nome
+      client_email = @appointment.client.email
+      service_name = @appointment.service.nome
+      start_time = @appointment.start_time
+
+      # 2. A Guilhotina (Apaga do Banco)
       @appointment.destroy
 
-      # Redireciona de volta para a página que a pessoa estava (Dashboard ou Meus Agendamentos)
-      redirect_back(fallback_location: root_path, notice: "Agendamento cancelado com sucesso. O horário já está livre na agenda!")
+      # 3. Dispara o E-mail de Cancelamento com os dados a salvo
+      AppointmentMailer.cancellation_email(client_name, client_email, service_name, start_time).deliver_later
+
+      redirect_back(fallback_location: root_path, notice: "Agendamento cancelado com sucesso. O horário já está livre!")
     else
       redirect_to root_path, alert: "Você não tem permissão para fazer isso."
     end
