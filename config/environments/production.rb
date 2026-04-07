@@ -94,4 +94,16 @@ Rails.application.configure do
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+# Força a migração do banco no deploy (Truque para o Render Free)
+  config.after_initialize do
+    ActiveRecord::Base.connection_pool.with_connection do |connection|
+      ActiveRecord::MigrationContext.new(
+        Rails.root.join("db/migrate"),
+        connection.schema_migration
+      ).migrate
+    end
+  rescue => e
+    puts "Erro na migração automática: #{e.message}"
+  end
+
 end
