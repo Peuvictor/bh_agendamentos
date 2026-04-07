@@ -14,12 +14,27 @@
       </div>
     <% end %>
 
-    <div>
-      <%= f.label :service_id, "Qual o serviço?", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%# O segredo do Rails para lembrar o serviço após o erro está aqui no selected: %>
-      <%= f.collection_select :service_id, @services, :id, :nome,
-          { prompt: "Selecione um serviço...", selected: params.dig(:appointment, :service_id) || appointment.service_id },
-          { class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" } %>
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">1. Qual o profissional?</label>
+      <select id="provider_select" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
+        <option value="">Selecione um profissional...</option>
+        <% User.provider.each do |provider| %>
+          <option value="<%= provider.id %>"><%= provider.nome %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <div class="mb-6">
+      <%= f.label :service_id, "2. Qual o serviço?", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <select id="service_select" name="appointment[service_id]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 cursor-not-allowed" disabled>
+        <option value="">Primeiro selecione um profissional...</option>
+
+        <% Service.all.each do |service| %>
+          <option value="<%= service.id %>" data-provider-id="<%= service.user_id %>" style="display: none;" <%= 'selected' if (params.dig(:appointment, :service_id) || appointment.service_id).to_s == service.id.to_s %>>
+            <%= service.nome %>
+          </option>
+        <% end %>
+      </select>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -53,26 +68,67 @@
 <div id="dados-agendamentos" data-ocupados="<%= @busy_slots.to_json %>" class="hidden"></div>
 
 <script>
-  function aplicarFiltroDeHorarios() {
+  function iniciarScriptsDeAgendamento() {
+    const providerSelect = document.getElementById("provider_select");
+    const serviceSelect = document.getElementById("service_select");
     const dateInput = document.getElementById("appointment_date");
     const timeSelect = document.getElementById("appointment_hour");
-    const serviceSelect = document.querySelector("select[name='appointment[service_id]']") || document.querySelector("select[name='service_id']");
     const dadosDiv = document.getElementById("dados-agendamentos");
 
-    // Se algum campo não existir na tela, para por aqui
-    if (!dateInput || !timeSelect || !serviceSelect || !dadosDiv) return;
+    if (!dateInput || !timeSelect || !serviceSelect || !dadosDiv || !providerSelect) return;
 
     const horariosOcupados = JSON.parse(dadosDiv.dataset.ocupados);
 
+    // --- 1. SCRIPT DA CASCATA (Profissional -> Serviço) ---
+    providerSelect.addEventListener("change", function() {
+      const selectedProviderId = this.value;
+
+      // Reseta o campo de serviço
+      serviceSelect.value = "";
+
+      // DICA DE SÊNIOR: Avisa o script de horários que o serviço mudou!
+      serviceSelect.dispatchEvent(new Event('change'));
+
+      if(selectedProviderId) {
+        serviceSelect.disabled = false;
+        serviceSelect.classList.remove("bg-gray-100", "cursor-not-allowed");
+        serviceSelect.classList.add("bg-white");
+        serviceSelect.options[0].text = "Agora selecione o serviço...";
+      } else {
+        serviceSelect.disabled = true;
+        serviceSelect.classList.add("bg-gray-100", "cursor-not-allowed");
+        serviceSelect.options[0].text = "Primeiro selecione um profissional...";
+      }
+
+      Array.from(serviceSelect.options).forEach(option => {
+        if (option.value === "") return;
+
+        if (option.dataset.providerId === selectedProviderId) {
+          option.style.display = ""; // Mostra os serviços do profissional
+        } else {
+          option.style.display = "none"; // Esconde os outros
+        }
+      });
+    });
+
+    // --- 2. SEU SCRIPT ORIGINAL DE HORÁRIOS (Serviço + Data -> Hora) ---
     function atualizarHorarios() {
-      // Se a data ou o serviço estiverem vazios, não faz nada
-      if (!dateInput.value || !serviceSelect.value) return;
+      if (!dateInput.value || !serviceSelect.value) {
+        // Se apagou o serviço, reseta os horários
+        Array.from(timeSelect.options).forEach(option => {
+           if (option.value !== "") {
+             option.disabled = false;
+             option.classList.remove("text-gray-400", "bg-gray-100", "text-red-600", "font-bold");
+             option.text = option.value.substring(0, 5);
+           }
+        });
+        return;
+      }
 
       const dataEscolhida = dateInput.value;
       const servicoSelecionadoId = serviceSelect.value;
       const ocupadosDoPrestador = horariosOcupados[servicoSelecionadoId] || [];
 
-      // Lógica do Fuso Horário (Bloqueia o passado no dia atual)
       const [ano, mes, dia] = dataEscolhida.split('-');
       const dataFormatada = new Date(ano, mes - 1, dia);
       const hoje = new Date();
@@ -89,12 +145,8 @@
         const horaOpcao = parseInt(partes[0], 10);
         const minutoOpcao = parseInt(partes[1], 10);
 
-        // Monta a string igual a que vem do banco de dados (ex: "2026-04-02 15:00")
         const dataHoraCombo = `${dataEscolhida} ${valorLimpo}`;
-
-        // Verifica se já está agendado
         const jaOcupado = ocupadosDoPrestador.includes(dataHoraCombo);
-        // Verifica se a hora já passou hoje
         const jaPassou = isHoje && (horaOpcao < horaAtual || (horaOpcao === horaAtual && minutoOpcao <= minutoAtual));
 
         if (jaPassou) {
@@ -115,16 +167,16 @@
       });
     }
 
-    // Escuta mudanças de data e serviço
     dateInput.addEventListener("change", atualizarHorarios);
     serviceSelect.addEventListener("change", atualizarHorarios);
 
-    // Roda logo que a página carrega para pintar caso a tela tenha voltado com erro
     atualizarHorarios();
   }
 
-  // Previne bugs de carregamento do Rails Turbo
-  document.addEventListener("turbo:load", aplicarFiltroDeHorarios);
-  document.addEventListener("DOMContentLoaded", aplicarFiltroDeHorarios);
-  aplicarFiltroDeHorarios();
+  // Registra os eventos para rodar no load e no turbo:load
+  document.addEventListener("turbo:load", iniciarScriptsDeAgendamento);
+  document.addEventListener("DOMContentLoaded", iniciarScriptsDeAgendamento);
+
+  // Roda imediatamente caso a página não use turbo e já esteja carregada
+  iniciarScriptsDeAgendamento();
 </script>
