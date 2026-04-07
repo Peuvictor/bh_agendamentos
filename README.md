@@ -21,14 +21,33 @@
 
 ---
 
-## ✨ Funcionalidades Principais (Highlights Técnicos)
+✨ Funcionalidades Principais (Highlights Técnicos)
+⚡ Select em Cascata (UX de Elite): Filtro dinâmico via JavaScript Vanilla que permite ao cliente escolher o profissional e ver apenas os serviços vinculados a ele, sem recarregar a página e integrado à lógica de bloqueio de horários.
 
-- **🛡️ Prevenção de Overbooking (Full-Stack):** Lógica no JavaScript desabilita horários passados e ocupados no Front-end em tempo real, enquanto o Model do Rails blinda o banco de dados contra concorrência e falsificação de requisições.
-- **✉️ Comunicação Assíncrona (Sidekiq + Action Mailer):** Envio de e-mails transacionais (confirmação e cancelamento) processados em background no Redis, garantindo que o usuário não enfrente telas de carregamento travadas.
-- **🖼️ Upload de Mídias Nuvem-Ready:** Gerenciamento de fotos de perfil com `Active Storage`, configurado para rodar localmente no momento, mas pronto para integração com Amazon S3 alterando apenas uma linha de configuração.
-- **🔐 Autorização e Permissões:** Sistema robusto de contas (Devise) separando Clientes e Prestadores de Serviço, onde a interface se adapta de acordo com o nível de acesso (Role) do usuário logado.
+🛡️ Prevenção de Overbooking (Full-Stack): Lógica no JavaScript desabilita horários passados e ocupados no Front-end em tempo real, enquanto o Model do Rails blinda o banco de dados contra concorrência.
 
----
+👑 Painel Administrativo (Modo Deus): Dashboard centralizado com métricas globais do sistema, permitindo que o administrador gerencie prestadores, clientes e tenha controle total sobre cancelamentos.
+
+✉️ Comunicação Assíncrona (Sidekiq + Action Mailer): Envio de e-mails transacionais (confirmação e cancelamento) processados em background no Redis, garantindo alta performance.
+
+🖼️ Onboarding Completo: Fluxo de cadastro inteligente onde o usuário escolhe seu perfil (Cliente/Prestador) e já preenche Bio, Endereço e Foto de Perfil via Active Storage.
+
+🗺️ Roadmap de Evolução
+[x] Dashboard exclusivo para o Prestador de Serviços.
+
+[x] E-mails em background com Action Mailer e Sidekiq.
+
+[x] Edição de perfil e cartão de visitas (Avatar com Active Storage).
+
+[x] Painel do Administrador Geral do Sistema.
+
+[x] Filtro dinâmico de serviços por profissional (Cascata JS).
+
+[ ] Implementação de notificações via API de WhatsApp.
+
+[ ] Deploy para Produção (Hospedagem em nuvem).
+
+[ ] Testes automatizados com RSpec.
 
 ## 🛠️ Como rodar o projeto na sua máquina
 
@@ -53,18 +72,6 @@ Aplicação: http://localhost:3000
 
 Caixa de E-mails de Teste: http://localhost:3000/letter_opener
 
-🗺️ Roadmap de Evolução
-[x] Dashboard exclusivo para o Prestador de Serviços.
-
-[x] E-mails em background com Action Mailer e Sidekiq.
-
-[x] Edição de perfil e cartão de visitas (Avatar com Active Storage).
-
-[ ] Painel do Administrador Geral do Sistema.
-
-[ ] Implementação de pagamentos (Sinal de reserva) via API.
-
-[ ] Testes automatizados com RSpec.
 
 👨‍💻 Autor
 Pedro Guimarães
