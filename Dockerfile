@@ -20,6 +20,9 @@ RUN bundle install
 # Copia o restante do projeto
 COPY . .
 
+# Compila os assets (CSS/JS) para produção
+RUN bundle exec rails assets:precompile
+
 EXPOSE 3000
 
 ENV PORT=10000
