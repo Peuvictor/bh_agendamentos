@@ -21,3 +21,9 @@ RUN bundle install
 COPY . .
 
 EXPOSE 3000
+
+# Define a porta padrão (o Render vai sobrescrever isso, mas é bom ter)
+ENV PORT=10000
+
+# O comando mágico: Migra o banco e liga o servidor
+CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0 -p ${PORT:-3000}"]
