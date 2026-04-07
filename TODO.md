@@ -14,15 +14,17 @@
 - [x] **Painel do Prestador (Dashboard):** Tela exclusiva para gestão de clientes e horários do dia.
 - [x] **Cancelamento Inteligente:** Fluxo seguro com pop-up nativo e liberação imediata do slot na agenda.
 - [x] **Comunicação Assíncrona:** Action Mailer rodando em background com Sidekiq para e-mails de confirmação e cancelamento (Testado via `letter_opener_web`).
-- [x] **Edição de Perfil Avançada:** Upload de imagens com Active Storage, campos de Telefone, Bio e Endereço integrados ao Devise e interface estilizada.
 - [x] **Vitrine do Profissional (`/perfil`):** Tela pública/cartão de visitas com a foto flutuante e dados de contato.
+- [x] **Dashboard de Administrador (Modo Deus):** Painel protegido para visão panorâmica das métricas e poder de cancelamento de qualquer agendamento do sistema.
+- [x] **UX de Elite no Agendamento:** Select em Cascata via JavaScript Vanilla (Escolhe o Profissional -> Filtra dinamicamente os Serviços), integrado com o bloqueio de horários.
+- [x] **Onboarding Profissional:** Fluxo de criação de conta (Sign Up) aprimorado com upload de Avatar, Endereço, Bio e escolha de Tipo de Conta diretamente no formulário do Devise.
 
-## 🚧 A Fazer (Próximo Desafio - O Chefão Final do MVP)
-- [ ] **1. Dashboard de Administrador (O Grande Irmão):** Fazer o controle total. Criar a lógica para um "Dono do App" (Admin) conseguir visualizar o faturamento, acessar os dados de todos os prestadores e cancelar qualquer agendamento do sistema.
+## 🚧 A Fazer (A Encruzilhada Final do Portfólio)
+> *O MVP está 100% pronto. A meta agora é escolher o próximo grande diferencial para brilhar nas entrevistas.*
+- [ ] **O Troféu (Deploy):** Hospedar a aplicação na nuvem (Render ou Fly.io), configurar um banco de dados PostgreSQL de produção e armazenar as imagens em nuvem (ex: Amazon S3 ou Cloudinary).
+- [ ] **O Diferencial (WhatsApp):** Trocar ou adicionar notificações via WhatsApp utilizando uma API de mensagens.
+- [ ] **O Selo de Qualidade (RSpec):** Implementar cobertura de testes automatizados para garantir a estabilidade do código a longo prazo.
 
-## 💡 Backlog (O Caminho para Nível Pleno / Portfólio de Elite)
-- [ ] Melhoria de UX no Agendamento: Implementar Select em Cascata (Escolher o Profissional primeiro -> Filtrar Serviços depois) via JavaScript nativo e data-attributes.
-- [ ] Notificações via WhatsApp (Integração de API para mandar mensagem no celular do cliente).
+## 💡 Backlog (Ideias de Expansão Futura)
 - [ ] Pagamento de Sinal/Reserva (Integração com Stripe ou MercadoPago cobrando taxa anti-falta).
-- [ ] Cobertura de Testes Automatizados (Garantir a integridade do sistema com RSpec).
-- [ ] Deploy para Produção (Hospedar na nuvem com banco PostgreSQL real e fotos no Amazon S3).
+- [ ] Relatórios de Faturamento exportáveis em PDF ou CSV no Painel do Administrador.
