@@ -12,6 +12,11 @@ Rails.application.routes.draw do
 # Rota para ver o próprio perfil
   get 'perfil', to: 'profiles#show', as: 'perfil'
 
+  # Rota do "Modo Deus" (Painel do Admin Geral)
+  namespace :admin do
+    get 'dashboard', to: 'dashboard#index', as: 'dashboard'
+  end
+
   # 4. Outras rotas do sistema
   resources :appointments
   resources :services

@@ -11,4 +11,10 @@ class ApplicationController < ActionController::Base
     # Bônus: Se quiser que eles já preencham o nome na hora de criar a conta (sign_up)
     devise_parameter_sanitizer.permit(:sign_up, keys: [:nome])
   end
+
+  def authorize_admin!
+    unless current_user&.admin?
+      redirect_to root_path, alert: "Acesso Negado: Área restrita para administradores do sistema."
+    end
+  end
 end
