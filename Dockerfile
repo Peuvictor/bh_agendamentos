@@ -13,14 +13,20 @@ RUN apt-get update -qq && apt-get install -y \
 
 WORKDIR /myapp
 
+
+
 # Copia os arquivos de gems primeiro para aproveitar o cache do Docker
 COPY Gemfile Gemfile.lock ./
+COPY package.json package-lock.json* ./
+
+# Instala as gems e as dependências do Node (onde o Tailwind mora)
 RUN bundle install
+RUN npm install
 
 # Copia o restante do projeto
 COPY . .
 
-# Compila os assets (CSS/JS) para produção
+# Comando crucial: Gera o CSS do Tailwind antes de compilar os assets
 RUN bundle exec rails assets:precompile
 
 EXPOSE 3000
