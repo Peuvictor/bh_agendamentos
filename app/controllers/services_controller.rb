@@ -2,7 +2,7 @@ class ServicesController < ApplicationController
   # 1. Trava principal: Só entra quem estiver logado!
   before_action :authenticate_user!
 
-  before_action :check_provider_role
+  #before_action :check_provider_role
 
   # 2. Executa o filtro de segurança antes destas ações
   before_action :set_service, only: %i[ show edit update destroy ]
