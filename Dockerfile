@@ -1,36 +1,37 @@
+# Usamos a imagem que já tem Ruby e o ambiente pronto
 FROM ruby:3.3.0
 
-# Instala as dependências do sistema operacional, banco e frontend
+# Instala as dependências (Atualizado para Node 20)
 RUN apt-get update -qq && apt-get install -y \
   build-essential \
   libpq-dev \
   postgresql-client \
-  nodejs \
-  npm \
   tzdata \
   bash \
+  curl \
+  && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+  && apt-get install -y nodejs \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /myapp
 
-
-
-# Copia os arquivos de gems primeiro para aproveitar o cache do Docker
+# Copia dependências
 COPY Gemfile Gemfile.lock ./
 COPY package.json package-lock.json* ./
 
-# Instala as gems e as dependências do Node (onde o Tailwind mora)
+# Instala tudo e FORÇA o binário do Tailwind para Linux
 RUN bundle install
 RUN npm install
+RUN npm install @tailwindcss/oxide-linux-x64-gnu
 
-# Copia o restante do projeto
+# Copia o projeto
 COPY . .
 
-# Comando crucial: Gera o CSS do Tailwind antes de compilar os assets
+# Compila os assets
 RUN bundle exec rails assets:precompile
 
 EXPOSE 3000
-
 ENV PORT=10000
 
+# Mantemos o nosso truque da migração automática
 CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0 -p ${PORT:-3000}"]
