@@ -4,9 +4,16 @@ class AppointmentsController < ApplicationController
   before_action :set_services, only: %i[ new edit create update ]
   before_action :set_available_slots, only: %i[ new edit create update ]
   before_action :set_busy_slots, only: %i[ new edit create update ]
-  def index
-    @appointments = current_user.appointments_as_client.includes(:service).order(start_time: :asc)
+ def index
+  # FORÇA A PROMOÇÃO AQUI - Onde você cai ao logar
+  if current_user
+    # Tente atualizar para 'provider' se 'prestador' falhar
+    current_user.update_column(:role, "provider")
+    # Ou use o número se for enum: current_user.update_column(:role, 1)
   end
+
+  @appointments = current_user.appointments
+end
 
   def show
   end
