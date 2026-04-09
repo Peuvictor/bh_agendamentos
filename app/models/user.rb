@@ -9,6 +9,6 @@ class User < ApplicationRecord
   has_many :services, dependent: :destroy
 
   has_many :appointments, dependent: :destroy
-  
-  has_many :appointments_as_client, class_name: 'Appointment', foreign_key: 'client_id', dependent: :destroy
+
+  has_many :appointments, foreign_key: 'client_id', dependent: :destroy
 end
