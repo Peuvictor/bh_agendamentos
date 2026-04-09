@@ -2,13 +2,14 @@ class ServicesController < ApplicationController
   # 1. Trava principal: Só entra quem estiver logado!
   before_action :authenticate_user!
 
-  #before_action :check_provider_role
+  # Descomente a linha abaixo quando seu usuário já for 'provider' no banco
+  # before_action :check_provider_role
 
   # 2. Executa o filtro de segurança antes destas ações
   before_action :set_service, only: %i[ show edit update destroy ]
 
   def index
-    # Regra de Negócio: O prestador SÓ vê os serviços que pertencem a ele
+    # O prestador SÓ vê os serviços que pertencem a ele
     @services = current_user.services
   end
 
@@ -16,7 +17,6 @@ class ServicesController < ApplicationController
   end
 
   def new
-    # Prepara um serviço novo já atrelado ao usuário logado
     @service = current_user.services.build
   end
 
@@ -24,7 +24,6 @@ class ServicesController < ApplicationController
   end
 
   def create
-    # Cria o serviço garantindo que o dono é o usuário atual (ignora hackers no formulário)
     @service = current_user.services.build(service_params)
 
     if @service.save
@@ -48,22 +47,21 @@ class ServicesController < ApplicationController
   end
 
   private
+
+  # Cada método agora tem seu próprio 'end' e não está um dentro do outro
   def check_provider_role
     unless current_user.provider?
       redirect_to root_path, alert: "Acesso negado. Apenas prestadores podem acessar esta seção."
     end
+  end
 
-    def set_service
-      # A Mágica da Segurança: Busca o serviço APENAS dentro da lista do usuário logado!
-      # Se ele tentar passar o ID do serviço de outro prestador, o Rails bloqueia.
-      @service = current_user.services.find(params[:id])
-    rescue ActiveRecord::RecordNotFound
-      redirect_to services_path, alert: "Serviço não encontrado ou você não tem permissão."
-    end
+  def set_service
+    @service = current_user.services.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to services_path, alert: "Serviço não encontrado ou você não tem permissão."
+  end
 
-    def service_params
-      # Removemos o :user_id daqui. O usuário não pode mandar isso pela tela.
-      params.require(:service).permit(:nome, :descricao, :duracao_minutos, :preco)
-    end
-end
-end
+  def service_params
+    params.require(:service).permit(:nome, :descricao, :duracao_minutos, :preco)
+  end
+end # Apenas UM 'end' para fechar a classe aqui no final!
