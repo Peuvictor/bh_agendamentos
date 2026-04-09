@@ -19,7 +19,7 @@ end
   end
 
   def new
-    @appointment = current_user.appointments_as_client.build(service_id: params[:service_id])
+   @appointment = current_user.appointments.build(service_id: params[:service_id])
   end
 
   def edit
