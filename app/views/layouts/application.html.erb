@@ -35,17 +35,14 @@
           </div>
 
           <div class="flex items-center gap-4">
-            <% if user_signed_in? %>
-              <div class="hidden md:flex items-center gap-6 mr-4 border-r border-gray-100 pr-6">
-                <%= link_to "Meus Agendamentos", appointments_path, class: "text-sm font-medium text-gray-600 hover:text-blue-600 transition" %>
-                <%= link_to "Serviços", services_path, class: "text-sm font-medium text-gray-600 hover:text-blue-600 transition" %>
-              </div>
+          <% if user_signed_in? %>
+  <div class="hidden md:flex items-center gap-6 mr-4 border-r border-gray-100 pr-6">
+    <%= link_to "Meus Agendamentos", appointments_path, class: "text-sm font-medium text-gray-600 hover:text-blue-600 transition" %>
 
-              <% if current_user.services.any? %>
-                <%= link_to dashboard_path, class: "bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-full text-sm font-bold border border-blue-100 transition flex items-center gap-2" do %>
-                  <span class="text-lg">⚒️</span> Minha Agenda
-                <% end %>
-              <% end %>
+    <% if current_user.provider? %>
+      <%= link_to "Meus Serviços", services_path, class: "text-sm font-medium text-gray-600 hover:text-blue-600 transition" %>
+    <% end %>
+  </div>
 
               <div class="flex items-center gap-2 ml-2">
                 <%= link_to edit_user_registration_path, class: "p-2 text-gray-400 hover:text-blue-600 hover:bg-gray-50 rounded-full transition", title: "Configurações" do %>
