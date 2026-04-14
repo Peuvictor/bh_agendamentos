@@ -1,13 +1,13 @@
 class ServicesController < ApplicationController
-  # 1. Trava principal: Só entra quem estiver logado!
+ # 1. Trava principal: Só entra quem estiver logado!
   before_action :authenticate_user!
 
-  # Descomente a linha abaixo quando seu usuário já for 'provider' no banco
-  # before_action :check_provider_role
+  # 2. ATIVAÇÃO: Agora bloqueamos quem não for 'provider'
+  before_action :check_provider_role
 
-  # 2. Executa o filtro de segurança antes destas ações
+  # 3. Localiza o serviço apenas se o usuário for o dono (segurança extra)
   before_action :set_service, only: %i[ show edit update destroy ]
-
+  
   def index
     # O prestador SÓ vê os serviços que pertencem a ele
     @services = current_user.services
