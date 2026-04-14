@@ -1,14 +1,9 @@
 class HomeController < ApplicationController
-  # Não precisa estar logado para ver a home
+  # A Home deve ser leve e apenas exibir dados
   def index
-    if current_user
-      # Forçamos o seu usuário a ser 'provider' (valor 2 no seu Enum)
-      # Usamos 'provider' porque é assim que está no seu model User
-      current_user.update_column(:role, 2)
-    end
+    # Removemos a lógica de update_column daqui!
+    # Agora, novos usuários permanecerão como 'client' (valor 0) por padrão.
 
-    # .includes(:user) evita que o banco de dados seja consultado
-    # toda vez que o loop da Home tentar mostrar a foto de um prestador.
     @services = Service.all.includes(:user)
   end
 end
