@@ -5,11 +5,13 @@ class ApplicationController < ActionController::Base
   protected
 
   def configure_permitted_parameters
-    # Libera os campos na hora de atualizar a conta (account_update)
-    devise_parameter_sanitizer.permit(:account_update, keys: [:nome, :telefone, :bio, :endereco, :avatar])
+    # 1. CADASTRO INICIAL (Cliente Padrão):
+    # Libera apenas o básico. Ninguém consegue enviar 'role' ou 'bio' pela porta da frente.
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:nome, :telefone])
 
-    # AQUI ESTÁ A MÁGICA: Liberamos o :nome E o :role na hora de criar a conta (sign_up)
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:nome, :telefone, :bio, :endereco, :avatar])
+    # 2. EDIÇÃO DE PERFIL:
+    # Libera todos os campos. (A view já protege para que só o Prestador veja os campos de bio/foto/endereço).
+    devise_parameter_sanitizer.permit(:account_update, keys: [:nome, :telefone, :bio, :endereco, :avatar])
   end
 
   def authorize_admin!
