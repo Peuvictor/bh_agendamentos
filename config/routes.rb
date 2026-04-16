@@ -1,11 +1,14 @@
 Rails.application.routes.draw do
-  # 1. Se o usuário estiver logado, a Home é a lista de agendamentos dele (cliente)
+  # 1. Se o usuário estiver logado, a Home é a lista de agendamentos dele
   authenticated :user do
     root "appointments#index", as: :authenticated_root
   end
 
   # 2. Se NÃO estiver logado, a Home é a vitrine de serviços
   root "home#index"
+
+  # A ROTA DE FUGA: Uma URL fixa para a vitrine de serviços, independente do login
+  get '/vitrine', to: 'home#index', as: 'vitrine'
 
   # 3. Rota VIP para o Painel do Prestador
   get 'dashboard', to: 'appointments#dashboard', as: 'dashboard'
@@ -18,9 +21,17 @@ Rails.application.routes.draw do
     get 'dashboard', to: 'dashboard#index', as: 'dashboard'
   end
 
-  # 4. Outras rotas do sistema
-  resources :appointments
-  resources :services
+  # ------------------------------------------------------------------
+  # 4. As Rotas de Domínio (A Mágica do Aninhamento)
+  # ------------------------------------------------------------------
+  resources :services do
+    # O cliente SÓ consegue chegar no formulário de agendamento se passar por um serviço
+    resources :appointments, only: [:new, :create]
+  end
+
+  # As rotas para gerenciar um agendamento que já foi criado (soltas)
+  resources :appointments, only: [:index, :show, :edit, :update, :destroy]
+
 
   # ------------------------------------------------------------------
   # Configuração do Devise (Autenticação)

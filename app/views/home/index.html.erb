@@ -48,8 +48,7 @@
       </div>
     </div>
 
-    <%= link_to "Agendar agora", new_appointment_path(service_id: service.id),
-        class: "w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition" %>
+    <%= link_to "Agendar agora", new_service_appointment_path(service), class: "w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition" %>
   </div>
 <% end %>
   </div>

@@ -1,35 +1,39 @@
 class AppointmentsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_appointment, only: %i[ show edit update destroy ]
-  before_action :set_services, only: %i[ new edit create update ]
-  before_action :set_available_slots, only: %i[ new edit create update ]
-  before_action :set_busy_slots, only: %i[ new edit create update ]
- def index
-  # FORÇA A PROMOÇÃO AQUI - Onde você cai ao logar
-  if current_user
-    # Tente atualizar para 'provider' se 'prestador' falhar
-    current_user.update_column(:role, "provider")
-    # Ou use o número se for enum: current_user.update_column(:role, 1)
-  end
 
-  @appointments = current_user.appointments
-end
+  # 1. Configurações baseadas na Rota Aninhada
+  before_action :set_service, only: %i[new create]
+  before_action :set_appointment, only: %i[show edit update destroy]
+
+  # 2. Carrega os horários apenas quando formos renderizar a tela
+  before_action :set_available_slots, only: %i[new create edit update]
+  before_action :set_busy_slots, only: %i[new create edit update]
+
+  def index
+    # Roteamento inteligente: O que eu vejo depende de quem eu sou.
+    if current_user.provider?
+      @appointments = current_user.received_appointments.order(start_time: :asc)
+    else
+      @appointments = current_user.appointments.order(start_time: :asc)
+    end
+  end
 
   def show
   end
 
   def new
-   @appointment = current_user.appointments.build(service_id: params[:service_id])
+    # O agendamento já nasce atrelado ao serviço da URL
+    @appointment = @service.appointments.build
   end
 
-  def edit
-  end
+ def create
+    # Cria o agendamento em branco atrelado ao serviço atual
+    @appointment = @service.appointments.build
 
-  def create
-    @appointment = Appointment.new(appointment_params)
+    # A INJEÇÃO DE SEGURANÇA: O cliente é quem está logado.
     @appointment.client_id = current_user.id
 
-    # Juntando a Data (appointment_date) e a Hora (appointment_hour) no start_time
+    # A sua lógica de conversão de Data/Hora
     if params[:appointment_date].present? && params[:appointment_hour].present?
       begin
         combined_time = Time.zone.parse("#{params[:appointment_date]} #{params[:appointment_hour]}")
@@ -40,14 +44,13 @@ end
     end
 
     if @appointment.save
-      # GATILHO DO E-MAIL NA FILA (O jeito Sênior)
       AppointmentMailer.confirmation_email(@appointment).deliver_later
-
-      redirect_to appointments_path, notice: "Agendamento realizado com sucesso!"
+      redirect_to appointments_path, notice: "Agendamento realizado com sucesso no serviço #{@service.nome}!"
     else
-      # O que faltava: Devolver o usuário para a tela se houver erro de validação
       render :new, status: :unprocessable_entity
     end
+  end
+  def edit
   end
 
   def update
@@ -59,22 +62,16 @@ end
   end
 
   def destroy
-    @appointment = Appointment.find(params[:id])
-
+    # A sua lógica de guilhotina e backup para o Mailer está perfeita
     if @appointment.service.user_id == current_user.id || @appointment.client_id == current_user.id
-
-      # 1. SALVANDO OS DADOS ANTES DE DESTRUIR (Para o Sidekiq não se perder)
       client_name = @appointment.client.nome
       client_email = @appointment.client.email
       service_name = @appointment.service.nome
       start_time = @appointment.start_time
 
-      # 2. A Guilhotina (Apaga do Banco)
       @appointment.destroy
 
-      # 3. Dispara o E-mail de Cancelamento com os dados a salvo
       AppointmentMailer.cancellation_email(client_name, client_email, service_name, start_time).deliver_later
-
       redirect_back(fallback_location: root_path, notice: "Agendamento cancelado com sucesso. O horário já está livre!")
     else
       redirect_to root_path, alert: "Você não tem permissão para fazer isso."
@@ -82,9 +79,7 @@ end
   end
 
   def dashboard
-    authenticate_user!
-
-    # Filtramos e ordenamos usando a coluna real do banco: start_time
+    # Painel exclusivo do prestador
     @my_appointments = Appointment.joins(:service)
                                   .where(services: { user_id: current_user.id })
                                   .where("start_time >= ?", Time.current.beginning_of_day)
@@ -92,6 +87,11 @@ end
   end
 
   private
+
+  # NOVO: Busca o serviço com base na URL aninhada (ex: /services/5/appointments/new)
+  def set_service
+    @service = Service.find(params[:service_id])
+  end
 
   def set_appointment
     @appointment = Appointment.find(params[:id])
@@ -105,34 +105,27 @@ end
     redirect_to root_path, alert: "Agendamento não encontrado."
   end
 
-  def set_services
-    @services = Service.order(:nome)
-  end
-
   def set_available_slots
     @available_slots = (8..18).flat_map { |hour| [format('%02d:00', hour), format('%02d:30', hour)] }
   end
+
   def set_busy_slots
-    @busy_slots = {}
+    # REFATORAÇÃO DE PERFORMANCE:
+    # Em vez de carregar TODOS os agendamentos do banco, carrega apenas os do serviço atual.
+    # O @service já foi carregado no before_action :set_service
 
-    # 1. Pega os agendamentos futuros no banco de dados
-    futuros = Appointment.includes(service: :user).where("start_time >= ?", Time.zone.now.beginning_of_day)
+    # Se estivermos no método index, show ou dashboard, não precisamos calcular slots de um serviço específico
+    return unless @service
 
-    # 2. Agrupa eles pelo ID do Prestador
-    agendamentos_por_prestador = futuros.group_by { |a| a.service.user_id }
+    futuros = @service.appointments.where("start_time >= ?", Time.zone.now.beginning_of_day)
 
-    # 3. Monta um mapa { ID_DO_SERVICO => ["2026-03-30 10:00", "2026-03-30 10:30"] }
-    @services.each do |service|
-      prestador_id = service.user_id
-      agendamentos_dele = agendamentos_por_prestador[prestador_id] || []
-
-    @busy_slots[service.id] = agendamentos_dele.map do |app|
-        app.start_time.in_time_zone.strftime("%Y-%m-%d %H:%M")
-      end
+    @busy_slots = futuros.map do |app|
+      app.start_time.in_time_zone.strftime("%Y-%m-%d %H:%M")
     end
   end
 
   def appointment_params
-    params.require(:appointment).permit(:service_id, :status)
+    # O service_id não vem mais daqui, ele vem da URL aninhada (@service.appointments.build)
+    params.require(:appointment).permit(:status)
   end
 end

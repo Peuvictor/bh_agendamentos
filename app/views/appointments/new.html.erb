@@ -1,7 +1,8 @@
 <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
   <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Novo Agendamento em BH</h1>
 
-  <%= form_with(model: @appointment, local: true, class: "space-y-6") do |f| %>
+  <%# A INJEÇÃO DE ROTA: Passamos o @service e o @appointment para o Rails montar a URL do POST %>
+  <%= form_with(model: [@service, @appointment], local: true, class: "space-y-6") do |f| %>
 
     <% if @appointment.errors.any? %>
       <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
@@ -14,27 +15,18 @@
       </div>
     <% end %>
 
-    <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1">1. Qual o profissional?</label>
-      <select id="provider_select" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white">
-        <option value="">Selecione um profissional...</option>
-        <% User.provider.each do |provider| %>
-          <option value="<%= provider.id %>"><%= provider.nome %></option>
-        <% end %>
-      </select>
-    </div>
-
-    <div class="mb-6">
-      <%= f.label :service_id, "2. Qual o serviço?", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <select id="service_select" name="appointment[service_id]" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 cursor-not-allowed" disabled>
-        <option value="">Primeiro selecione um profissional...</option>
-
-        <% Service.all.each do |service| %>
-          <option value="<%= service.id %>" data-provider-id="<%= service.user_id %>" style="display: none;" <%= 'selected' if (params.dig(:appointment, :service_id) || @appointment.service_id).to_s == service.id.to_s %>>
-            <%= service.nome %>
-          </option>
-        <% end %>
-      </select>
+    <%# DADOS ESTÁTICOS: O cliente já escolheu na Home, apenas mostramos para confirmar %>
+    <div class="p-5 bg-gray-50 rounded-xl border border-gray-200 mb-6">
+      <div class="mb-3">
+        <p class="text-sm text-gray-500 font-medium">Profissional</p>
+        <p class="font-bold text-gray-900 text-lg"><%= @service.user.nome %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 font-medium">Serviço Selecionado</p>
+        <p class="font-bold text-blue-900 text-lg">
+          <%= @service.nome %> — <%= number_to_currency(@service.preco, unit: "R$", separator: ",", delimiter: ".") %>
+        </p>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -55,12 +47,12 @@
       </div>
     </div>
 
-    <p class="mt-1 text-xs text-gray-500 italic text-center">O tempo de término será calculado automaticamente, uai!</p>
+    <p class="mt-2 text-xs text-gray-500 italic text-center">O tempo de término será calculado automaticamente, uai!</p>
 
-    <div class="flex items-center justify-between pt-4 border-t border-gray-50">
-      <%= link_to "Voltar", appointments_path, class: "text-sm text-gray-600 hover:text-gray-900 underline" %>
+    <div class="flex items-center justify-between pt-6 border-t border-gray-100">
+      <%= link_to "Voltar", root_path, class: "text-sm text-gray-600 hover:text-gray-900 font-medium underline" %>
       <%= f.submit "Confirmar Agendamento",
-          class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200 shadow-lg cursor-pointer" %>
+          class: "bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-xl transition duration-200 shadow-md cursor-pointer" %>
     </div>
   <% end %>
 </div>
@@ -69,72 +61,17 @@
 
 <script>
   function iniciarScriptsDeAgendamento() {
-    const providerSelect = document.getElementById("provider_select");
-    const serviceSelect = document.getElementById("service_select");
     const dateInput = document.getElementById("appointment_date");
     const timeSelect = document.getElementById("appointment_hour");
     const dadosDiv = document.getElementById("dados-agendamentos");
 
-    if (!dateInput || !timeSelect || !serviceSelect || !dadosDiv || !providerSelect) return;
+    if (!dateInput || !timeSelect || !dadosDiv) return;
 
-    const horariosOcupados = JSON.parse(dadosDiv.dataset.ocupados);
-// --- PARTE 1: A CASCATA (Profissional -> Serviço) COM DEBUG ---
-    providerSelect.addEventListener("change", function() {
-      const selectedProviderId = this.value;
+    // A refatoração do Controller nos entrega um Array simples agora
+    const horariosOcupadosDoServico = JSON.parse(dadosDiv.dataset.ocupados || "[]");
 
-      // RASTREADOR 1: Vai imprimir no Console qual ID você selecionou
-      console.log("🕵️‍♂️ Profissional selecionado ID:", selectedProviderId);
-
-      serviceSelect.value = "";
-      serviceSelect.dispatchEvent(new Event('change'));
-
-      if(selectedProviderId) {
-        serviceSelect.disabled = false;
-        serviceSelect.classList.remove("bg-gray-100", "cursor-not-allowed");
-        serviceSelect.classList.add("bg-white");
-        serviceSelect.options[0].text = "Agora selecione o serviço...";
-      } else {
-        serviceSelect.disabled = true;
-        serviceSelect.classList.add("bg-gray-100", "cursor-not-allowed");
-        serviceSelect.options[0].text = "Primeiro selecione um profissional...";
-      }
-
-      let encontrouAlgumServico = false;
-
-      Array.from(serviceSelect.options).forEach(option => {
-        if (option.value === "") return;
-
-        // RASTREADOR 2: Mostra de quem é o serviço que o JS está olhando agora
-        console.log("🔍 Lendo serviço:", option.text, "| ID do Dono:", option.dataset.providerId);
-
-        if (option.dataset.providerId === selectedProviderId) {
-          // Solução à prova de balas para navegadores (Mostra)
-          option.style.display = "";
-          option.hidden = false;
-          option.disabled = false;
-          encontrouAlgumServico = true;
-        } else {
-          // Solução à prova de balas para navegadores (Esconde)
-          option.style.display = "none";
-          option.hidden = true;
-          option.disabled = true;
-        }
-      });
-
-      // Se o cara não tem serviço nenhum cadastrado, avisa o cliente!
-      if(selectedProviderId && !encontrouAlgumServico) {
-        serviceSelect.options[0].text = "❌ Profissional sem serviços cadastrados";
-        serviceSelect.disabled = true;
-        serviceSelect.classList.add("bg-red-50", "text-red-600");
-      } else {
-        serviceSelect.classList.remove("bg-red-50", "text-red-600");
-      }
-    });
-
-    // --- PARTE 2: SUA LÓGICA DE HORÁRIOS (Serviço + Data -> Hora) ---
     function atualizarHorarios() {
-      if (!dateInput.value || !serviceSelect.value) {
-        // Se apagou o serviço, reseta os horários para o padrão
+      if (!dateInput.value) {
         Array.from(timeSelect.options).forEach(option => {
            if (option.value !== "") {
              option.disabled = false;
@@ -146,14 +83,13 @@
       }
 
       const dataEscolhida = dateInput.value;
-      const servicoSelecionadoId = serviceSelect.value;
-      const ocupadosDoPrestador = horariosOcupados[servicoSelecionadoId] || [];
-
       const [ano, mes, dia] = dataEscolhida.split('-');
       const dataFormatada = new Date(ano, mes - 1, dia);
+
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
       const isHoje = dataFormatada.getTime() === hoje.getTime();
+
       const horaAtual = new Date().getHours();
       const minutoAtual = new Date().getMinutes();
 
@@ -166,7 +102,9 @@
         const minutoOpcao = parseInt(partes[1], 10);
 
         const dataHoraCombo = `${dataEscolhida} ${valorLimpo}`;
-        const jaOcupado = ocupadosDoPrestador.includes(dataHoraCombo);
+
+        // Verifica se a combinação data + hora bate com nosso array de ocupados
+        const jaOcupado = horariosOcupadosDoServico.includes(dataHoraCombo);
         const jaPassou = isHoje && (horaOpcao < horaAtual || (horaOpcao === horaAtual && minutoOpcao <= minutoAtual));
 
         if (jaPassou) {
@@ -188,15 +126,10 @@
     }
 
     dateInput.addEventListener("change", atualizarHorarios);
-    serviceSelect.addEventListener("change", atualizarHorarios);
-
     atualizarHorarios();
   }
 
-  // Registra os eventos para rodar no load e no turbo:load
   document.addEventListener("turbo:load", iniciarScriptsDeAgendamento);
   document.addEventListener("DOMContentLoaded", iniciarScriptsDeAgendamento);
-
-  // Roda imediatamente
   iniciarScriptsDeAgendamento();
 </script>
