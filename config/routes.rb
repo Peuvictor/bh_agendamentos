@@ -1,3 +1,5 @@
+require 'sidekiq/web' # 1. DEPÊNDENCIA OBRIGATÓRIA
+
 Rails.application.routes.draw do
   # 1. Se o usuário estiver logado, a Home é a lista de agendamentos dele
   authenticated :user do
@@ -32,6 +34,11 @@ Rails.application.routes.draw do
   # As rotas para gerenciar um agendamento que já foi criado (soltas)
   resources :appointments, only: [:index, :show, :edit, :update, :destroy]
 
+  # ------------------------------------------------------------------
+  # 👇 PAINEL DE CONTROLE DO SIDEKIQ 👇
+  # Em produção, você deve proteger essa rota com autenticação de admin.
+  # ------------------------------------------------------------------
+  mount Sidekiq::Web => '/sidekiq'
 
   # ------------------------------------------------------------------
   # Configuração do Devise (Autenticação)

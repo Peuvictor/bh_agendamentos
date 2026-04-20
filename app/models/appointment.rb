@@ -16,12 +16,14 @@ class Appointment < ApplicationRecord
 
   def calculate_end_time
     return unless start_time && service
-    # AJUSTE: Usando 'duracao_minutos' que é o nome real da sua coluna
-    self.end_time = start_time + service.duracao_minutos.minutes
+
+    # AJUSTE: Fallback inteligente. Tenta usar duracao_minutos, se for nil, tenta duration, se for nil, assume 30.
+    minutos = service.duracao_minutos || service.duration || 30
+    self.end_time = start_time + minutos.minutes
   end
 
  def no_overlapping_appointments
-    
+
     return if start_time.blank? || end_time.blank? || service.blank?
 
     prestador_id = service.user_id

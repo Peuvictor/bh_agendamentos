@@ -7,7 +7,7 @@ class ServicesController < ApplicationController
 
   # 3. Localiza o serviço apenas se o usuário for o dono (segurança extra)
   before_action :set_service, only: %i[ show edit update destroy ]
-  
+
   def index
     # O prestador SÓ vê os serviços que pertencem a ele
     @services = current_user.services
@@ -62,6 +62,7 @@ class ServicesController < ApplicationController
   end
 
   def service_params
-    params.require(:service).permit(:nome, :descricao, :duracao_minutos, :preco)
+    # Adicionamos :photo e :duration na lista de permissões
+    params.require(:service).permit(:nome, :descricao, :duracao_minutos, :duration, :preco, :photo)
   end
 end # Apenas UM 'end' para fechar a classe aqui no final!

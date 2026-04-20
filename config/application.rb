@@ -17,6 +17,11 @@ module BhAgendamentos
 
     config.autoload_lib(ignore: %w(assets tasks))
 
+    # 👇 A INJEÇÃO DE BACKGROUND JOB ENTRA AQUI 👇
+    # Força o Rails a enviar os emails e rotinas pesadas para o Sidekiq
+    config.active_job.queue_adapter = :sidekiq
+    # 👆 ======================================== 👆
+
     # 👇 A MÁGICA DO UUID ENTRA AQUI 👇
     # Força o Rails a usar UUID como chave primária em todas as tabelas geradas
     config.generators do |g|
