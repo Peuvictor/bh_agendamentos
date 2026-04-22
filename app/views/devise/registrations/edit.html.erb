@@ -1,56 +1,91 @@
 <div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+  <div class="max-w-xl w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
     <div class="text-center mb-8">
       <h2 class="text-3xl font-extrabold text-blue-900 italic">Editar Perfil ✏️</h2>
+      <p class="mt-2 text-sm text-gray-500">Mantenha seus dados atualizados na plataforma</p>
     </div>
 
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: "space-y-6", multipart: true }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
-      <div>
-        <%= f.label :nome, "Nome Completo", class: "block text-sm font-bold text-gray-700" %>
-        <div class="mt-1"><%= f.text_field :nome, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" %></div>
-      </div>
+      <%# DADOS BÁSICOS %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= f.label :nome, "Nome Completo", class: "block text-sm font-bold text-gray-700" %>
+          <div class="mt-1"><%= f.text_field :nome, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
+        </div>
 
-      <div>
-        <%= f.label :telefone, "Telefone", class: "block text-sm font-bold text-gray-700" %>
-        <div class="mt-1"><%= f.text_field :telefone, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" %></div>
+        <div>
+          <%= f.label :telefone, "Telefone / WhatsApp", class: "block text-sm font-bold text-gray-700" %>
+          <div class="mt-1"><%= f.text_field :telefone, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
+        </div>
       </div>
 
       <div>
         <%= f.label :email, "E-mail", class: "block text-sm font-bold text-gray-700" %>
-        <div class="mt-1"><%= f.email_field :email, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" %></div>
+        <div class="mt-1"><%= f.email_field :email, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
       </div>
 
+      <%# ÁREA EXCLUSIVA DO PRESTADOR %>
       <% if current_user.provider? %>
-        <div class="space-y-6 bg-blue-50 p-5 rounded-xl border border-blue-100">
-          <h3 class="text-sm font-bold text-blue-800 border-b border-blue-200 pb-2">Área do Prestador</h3>
+        <div class="space-y-6 bg-blue-50 p-6 rounded-xl border border-blue-100 mt-6">
+          <h3 class="text-sm font-extrabold text-blue-900 border-b border-blue-200 pb-2 uppercase tracking-wide">💼 Área do Prestador</h3>
 
           <div>
-            <%= f.label :avatar, "Foto Profissional", class: "block text-sm font-bold text-gray-700" %>
-            <div class="mt-1"><%= f.file_field :avatar, class: "block w-full text-sm text-gray-500" %></div>
+            <%= f.label :avatar, "Foto de Perfil (Avatar)", class: "block text-sm font-bold text-gray-700 mb-2" %>
+            <div class="flex items-center gap-4">
+              <% if current_user.avatar.attached? %>
+                <%= image_tag current_user.avatar, class: "h-16 w-16 object-cover rounded-full border-2 border-blue-200 shadow-sm" %>
+              <% else %>
+                <div class="h-16 w-16 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xl shadow-sm">
+                  <%= current_user.nome[0].upcase if current_user.nome.present? %>
+                </div>
+              <% end %>
+              <%= f.file_field :avatar, direct_upload: true, class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer" %>
+            </div>
           </div>
 
           <div>
-            <%= f.label :bio, "Biografia", class: "block text-sm font-bold text-gray-700" %>
-            <div class="mt-1"><%= f.text_area :bio, rows: 3, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" %></div>
+            <%= f.label :bio, "Biografia (Aparece na Vitrine)", class: "block text-sm font-bold text-gray-700" %>
+            <div class="mt-1"><%= f.text_area :bio, rows: 3, placeholder: "Conte um pouco sobre sua experiência...", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
           </div>
 
           <div>
-            <%= f.label :endereco, "Endereço", class: "block text-sm font-bold text-gray-700" %>
-            <div class="mt-1"><%= f.text_field :endereco, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" %></div>
+            <%= f.label :endereco, "Endereço do Atendimento", class: "block text-sm font-bold text-gray-700" %>
+            <div class="mt-1"><%= f.text_field :endereco, placeholder: "Ex: Rua Savassi, 100", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
           </div>
         </div>
       <% end %>
 
-      <div class="border-t border-gray-100 pt-6">
-        <%= f.label :current_password, "Senha Atual (obrigatória para salvar)", class: "block text-sm font-bold text-gray-700" %>
-        <%= f.password_field :current_password, class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm mt-1" %>
+      <%# TROCAR SENHA %>
+      <div class="border-t border-gray-100 pt-6 mt-6">
+        <h3 class="text-sm font-extrabold text-gray-700 mb-4">Trocar Senha (Opcional)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <%= f.label :password, "Nova Senha", class: "block text-xs font-bold text-gray-500" %>
+            <%= f.password_field :password, autocomplete: "new-password", placeholder: "Deixe em branco para manter", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1" %>
+          </div>
+          <div>
+            <%= f.label :password_confirmation, "Confirmar Nova Senha", class: "block text-xs font-bold text-gray-500" %>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1" %>
+          </div>
+        </div>
       </div>
 
-      <div class="pt-2">
-        <%= f.submit "Atualizar Perfil", class: "w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-yellow-400 bg-blue-800 hover:bg-black transition cursor-pointer" %>
+      <%# CONFIRMAÇÃO OBRIGATÓRIA %>
+      <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-xl mt-6">
+        <%= f.label :current_password, "Senha Atual (obrigatória para salvar as mudanças)", class: "block text-sm font-bold text-yellow-800" %>
+        <%= f.password_field :current_password, autocomplete: "current-password", class: "appearance-none block w-full px-3 py-2 border border-yellow-300 rounded-lg shadow-sm focus:ring-yellow-500 focus:border-yellow-500 mt-2 bg-white" %>
+      </div>
+
+      <div class="pt-4">
+        <%= f.submit "Salvar Alterações", class: "w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-bold text-yellow-400 bg-blue-900 hover:bg-black transition-all cursor-pointer" %>
       </div>
     <% end %>
+
+    <div class="mt-8 text-center border-t border-gray-100 pt-6 flex flex-col items-center">
+      <p class="text-sm text-gray-500 mb-2">Deseja encerrar sua conta?</p>
+      <%= button_to "Excluir minha conta", registration_path(resource_name), data: { turbo_confirm: "Tem certeza absoluta, uai?" }, method: :delete, class: "text-red-500 hover:text-red-700 font-bold text-sm transition" %>
+    </div>
   </div>
 </div>

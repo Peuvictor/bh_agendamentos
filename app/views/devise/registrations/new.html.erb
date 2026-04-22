@@ -3,12 +3,13 @@
 
     <div class="text-center mb-8">
       <h2 class="text-3xl font-extrabold text-blue-900 italic">Criar Conta 🚀</h2>
-      <p class="mt-2 text-sm text-gray-500">Cadastre-se para agendar o seu horário</p>
+      <p class="mt-2 text-sm text-gray-500">Cadastre-se na plataforma</p>
     </div>
 
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
+      <%# NOME %>
       <div>
         <%= f.label :nome, "Nome Completo", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
@@ -16,6 +17,7 @@
         </div>
       </div>
 
+      <%# TELEFONE %>
       <div>
         <%= f.label :telefone, "Telefone / WhatsApp", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
@@ -23,6 +25,18 @@
         </div>
       </div>
 
+      <%# TIPO DE CONTA (A MÁGICA ACONTECE AQUI) %>
+      <div>
+        <%= f.label :role, "O que você deseja fazer?", class: "block text-sm font-bold text-gray-700" %>
+        <div class="mt-1">
+          <%= f.select :role,
+              [['Quero agendar serviços (Cliente)', 'client'], ['Quero oferecer meus serviços (Prestador)', 'provider']],
+              {},
+              class: "block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" %>
+        </div>
+      </div>
+
+      <%# E-MAIL %>
       <div>
         <%= f.label :email, "E-mail", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
@@ -30,6 +44,7 @@
         </div>
       </div>
 
+      <%# SENHA %>
       <div>
         <%= f.label :password, "Senha", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
@@ -37,6 +52,7 @@
         </div>
       </div>
 
+      <%# CONFIRMAÇÃO %>
       <div>
         <%= f.label :password_confirmation, "Confirmar Senha", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
