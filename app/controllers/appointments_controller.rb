@@ -86,21 +86,28 @@ class AppointmentsController < ApplicationController
                                   .order(start_time: :asc)
   end
 
-  def update_status
-  @appointment = Appointment.find(params[:id])
+ def update_status
+    @appointment = Appointment.find(params[:id])
 
-  # Trava de Segurança: Só o prestador dono do serviço pode alterar
-  if @appointment.service.user == current_user
-    if @appointment.update(status: params[:status])
-      redirect_to dashboard_path, notice: "Status do agendamento atualizado com sucesso!"
+    # Trava de Segurança: Só o prestador dono do serviço pode alterar
+    if @appointment.service.user == current_user
+      if @appointment.update(status: params[:status])
+
+        # 👇 GATILHO DO SIDEKIQ 👇
+        if @appointment.confirmado?
+          AppointmentMailer.confirmation_email(@appointment).deliver_later
+        elsif @appointment.cancelado?
+          AppointmentMailer.cancellation_email(@appointment).deliver_later
+        end
+
+        redirect_to dashboard_path, notice: "Status atualizado e cliente notificado por e-mail!"
+      else
+        redirect_to dashboard_path, alert: "Erro ao atualizar status."
+      end
     else
-      redirect_to dashboard_path, alert: "Erro ao atualizar status."
+      redirect_to dashboard_path, alert: "Você não tem permissão, uai!"
     end
-  else
-    redirect_to dashboard_path, alert: "Você não tem permissão, uai!"
   end
-end
-
   private
 
   # NOVO: Busca o serviço com base na URL aninhada (ex: /services/5/appointments/new)
