@@ -1,0 +1,34 @@
+{
+  "name": "Ruby on Rails & Postgres - Pedro Victor",
+  "image": "mcr.microsoft.com/devcontainers/ruby:3",
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/devcontainers/features/common-utils:1": {
+      "configureZshAsDefaultShell": true
+    }
+  },
+  "appPort": [3000],
+  "containerEnv": {
+    "DATABASE_URL": "postgres://postgres:password@localhost:5432/bh_agendamentos_development",
+    "REDIS_URL": "redis://localhost:6379/1"
+  },
+  "remoteUser": "vscode",
+  "onCreateCommand": "bundle install",
+  "updateContentCommand": "bin/rails db:prepare",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rebornix.Ruby",
+        "wingrunr21.vscode-ruby",
+        "castwide.solargraph",
+        "kaiwood.endwise",
+        "shopify.ruby-lsp",
+        "GitHub.copilot",
+        "vscjava.vscode-java-pack"
+      ]
+    }
+  },
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace"
+}
