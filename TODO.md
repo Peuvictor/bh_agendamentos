@@ -1,30 +1,30 @@
 📋 BH Agendamentos - Gestão de Tarefas (Atualizado)
-✅ Concluído (Arquitetura Sênior)
+✅ Concluído (Arquitetura Sênior & UX)
 [x] Banco de Dados Pro: Migração completa para UUID em todas as tabelas (Segurança e Escalabilidade).
 
-[x] Persistência de Imagens: Integração total com Cloudinary (As fotos agora são eternas e não somem no deploy).
+[x] Persistência de Imagens: Integração total com Cloudinary via Active Storage com Direct Upload.
 
 [x] Background Jobs: Setup de Sidekiq + Redis finalizado e testado via Dashboard.
 
 [x] Fluxo de Agendamento: Refatorado para rotas aninhadas e lógica de cálculo de fim de horário automática.
 
-[x] Validação de Conflitos: O prestador agora está protegido contra agendamentos sobrepostos em todos os seus serviços.
+[x] Validação de Conflitos: O prestador agora está protegido contra agendamentos sobrepostos.
 
-[x] UI/UX Fix: Barra de navegação corrigida (fim do problema do hidden) e botões de gestão visíveis para Prestadores.
+[x] Onboarding Dinâmico: Usuário escolhe se é Cliente ou Prestador no ato do cadastro inicial (Permissão no Devise resolvida).
 
-🚧 In Progress (Foco na Experiência do Dono)
-[ ] Dashboard do Prestador: Criar a visão centralizada para o barbeiro/estúdio ver quem agendou e quando.
+[x] Refinamento de Perfil: Campos de WhatsApp, Endereço, Bio e Avatar adicionados e funcionais na edição de perfil.
 
-[ ] Gestão de Status: Implementar botões para o prestador Confirmar ou Cancelar agendamentos.
+[x] Dashboard do Prestador (Visão): Tabela centralizada criada com botão dinâmico de integração direto com o WhatsApp do cliente.
 
-[ ] Notificações Reais: Disparar os e-mails transacionais via Sidekiq assim que o cliente agendar.
+🚧 In Progress (Foco na Lógica de Negócio)
+[ ] Gestão de Status: Criar a rota (patch) e a ação no controller para os botões Confirmar ou Cancelar da Dashboard alterarem o status no banco de dados.
+
+[ ] Notificações Reais: Disparar os e-mails transacionais (Action Mailer) via Sidekiq assim que o cliente agendar ou o status mudar.
 
 🎯 Próximos Passos (O "Tapa" no Produto)
-[ ] Refinamento de Perfil: Adicionar campos de WhatsApp e Endereço (essencial para o cliente chegar ao local).
+[ ] Filtros de Busca: Sistema de busca na Home (Vitrine) para filtrar serviços em BH por nome ou categoria.
 
-[ ] Filtros de Busca: Sistema de busca na Home para filtrar serviços em BH por nome.
-
-[ ] Refatoração de Código: Limpar a coluna duplicada duracao_minutos vs duration no banco de dados.
+[ ] Refatoração de Código: Limpar a coluna duplicada duracao_minutos vs duration na tabela de serviços.
 
 💡 Ideias de Expansão
 [ ] Integração WhatsApp API: Enviar lembretes automáticos 2h antes do serviço.
