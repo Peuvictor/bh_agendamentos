@@ -31,8 +31,12 @@ Rails.application.routes.draw do
     resources :appointments, only: [:new, :create]
   end
 
-  # As rotas para gerenciar um agendamento que já foi criado (soltas)
-  resources :appointments, only: [:index, :show, :edit, :update, :destroy]
+  #  Rota customizada para atualizar o status do agendamento
+  resources :appointments, only: [:index, :show, :edit, :update, :destroy] do
+    member do
+      patch :update_status
+    end
+  end
 
   # ------------------------------------------------------------------
   # 👇 PAINEL DE CONTROLE DO SIDEKIQ 👇

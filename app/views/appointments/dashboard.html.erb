@@ -16,16 +16,17 @@
             <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Serviço</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Contato do Cliente</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Status</th>
-            <th scope="col" class="px-6 py-3 text-right text-xs font-extrabold text-gray-500 uppercase tracking-wider">Ação</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-extrabold text-gray-500 uppercase tracking-wider">Ações</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <% @my_appointments.each do |appointment| %>
-            <tr class="hover:bg-gray-50 transition-colors">
+            <%# Muda a cor da linha se estiver cancelado para dar destaque visual %>
+            <tr class="hover:bg-gray-50 transition-colors <%= 'opacity-60 bg-gray-50' if appointment.cancelado? %>">
 
               <%# DATA E HORA %>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-bold text-gray-900">
+                <div class="text-sm font-bold <%= appointment.cancelado? ? 'line-through text-gray-400' : 'text-gray-900' %>">
                   <%= appointment.start_time.strftime("%d/%m/%Y") %>
                 </div>
                 <div class="text-sm text-gray-500 flex items-center mt-1">
@@ -56,20 +57,44 @@
                 <% end %>
               </td>
 
-              <%# STATUS %>
+              <%# STATUS DINÂMICO %>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class="text-green-600 font-bold flex items-center">
-                  <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
-                  Confirmado
-                </span>
+                <% if appointment.confirmado? %>
+                  <span class="text-green-600 font-bold flex items-center">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                    Confirmado
+                  </span>
+                <% elsif appointment.cancelado? %>
+                  <span class="text-red-500 font-bold flex items-center">
+                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                    Cancelado
+                  </span>
+                <% else %>
+                  <span class="text-yellow-600 font-bold flex items-center">
+                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                    Pendente
+                  </span>
+                <% end %>
               </td>
 
-              <%# CANCELAMENTO %>
+              <%# AÇÕES (CONFIRMAR E CANCELAR) %>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <%= button_to "Cancelar", appointment_path(appointment),
-                    method: :delete,
-                    data: { turbo_confirm: "⚠️ Tem certeza que deseja desmarcar este cliente? O horário voltará a ficar livre na sua agenda, uai." },
-                    class: "text-red-600 hover:text-white hover:bg-red-600 border border-transparent hover:border-red-600 px-3 py-1 rounded-md font-bold transition-all duration-200" %>
+                <div class="flex flex-col items-end gap-2">
+                  <%# Mostra botão de confirmar se estiver pendente %>
+                  <% if appointment.pendente? %>
+                    <%= button_to "Confirmar", update_status_appointment_path(appointment, status: :confirmado),
+                        method: :patch,
+                        class: "text-green-600 hover:bg-green-50 border border-green-600 px-3 py-1 rounded-md font-bold text-xs w-24 text-center transition" %>
+                  <% end %>
+
+                  <%# Mostra botão de cancelar se NÃO estiver cancelado %>
+                  <% unless appointment.cancelado? %>
+                    <%= button_to "Cancelar", update_status_appointment_path(appointment, status: :cancelado),
+                        method: :patch,
+                        data: { turbo_confirm: "⚠️ Tem certeza que deseja cancelar este agendamento, uai?" },
+                        class: "text-red-600 hover:bg-red-50 border border-red-600 px-3 py-1 rounded-md font-bold text-xs w-24 text-center transition" %>
+                  <% end %>
+                </div>
               </td>
             </tr>
           <% end %>

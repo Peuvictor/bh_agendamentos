@@ -2,15 +2,15 @@ class Appointment < ApplicationRecord
   belongs_to :client, class_name: 'User', foreign_key: 'client_id'
   belongs_to :service
 
-  enum :status, { confirmado: 0, cancelado: 1 }
+  # 👇 A CORREÇÃO ESTÁ AQUI: Adicionado 'pendente' e definido como estado inicial
+  enum :status, { confirmado: 0, cancelado: 1, pendente: 2 }, default: :pendente
 
   validates :start_time, presence: true
   validate :no_overlapping_appointments
+  validate :horario_deve_ser_no_futuro
 
   # Callback: calcula o fim antes de validar e salvar
   before_validation :calculate_end_time
-
-  validate :horario_deve_ser_no_futuro
 
   private
 
@@ -22,18 +22,15 @@ class Appointment < ApplicationRecord
     self.end_time = start_time + minutos.minutes
   end
 
- def no_overlapping_appointments
-
+  def no_overlapping_appointments
     return if start_time.blank? || end_time.blank? || service.blank?
 
     prestador_id = service.user_id
-
 
     servicos_do_prestador_ids = Service.where(user_id: prestador_id).pluck(:id)
 
     overlapping = Appointment.where(service_id: servicos_do_prestador_ids)
                              .where("start_time < ? AND end_time > ?", end_time, start_time)
-
 
     overlapping = overlapping.where.not(id: id) if persisted?
 
@@ -42,6 +39,7 @@ class Appointment < ApplicationRecord
       errors.add(:base, "Ops! O prestador já está atendendo outro cliente neste horário.")
     end
   end
+
   def horario_deve_ser_no_futuro
     # Se a data/hora existir e for menor que o relógio exato de agora
     if start_time.present? && start_time < Time.current
