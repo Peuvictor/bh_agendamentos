@@ -1,5 +1,5 @@
 class ServicesController < ApplicationController
- # 1. Trava principal: Só entra quem estiver logado!
+  # 1. Trava principal: Só entra quem estiver logado!
   before_action :authenticate_user!
 
   # 2. ATIVAÇÃO: Agora bloqueamos quem não for 'provider'
@@ -48,7 +48,6 @@ class ServicesController < ApplicationController
 
   private
 
-  # Cada método agora tem seu próprio 'end' e não está um dentro do outro
   def check_provider_role
     unless current_user.provider?
       redirect_to root_path, alert: "Acesso negado. Apenas prestadores podem acessar esta seção."
@@ -62,7 +61,7 @@ class ServicesController < ApplicationController
   end
 
   def service_params
-    # Adicionamos :photo e :duration na lista de permissões
-    params.require(:service).permit(:nome, :descricao, :duracao_minutos, :duration, :preco, :photo)
+    # 👇 A FAXINA ACONTECE AQUI: Removemos o :duracao_minutos. O Rails agora só aceita a coluna oficial :duration.
+    params.require(:service).permit(:nome, :descricao, :duration, :preco, :photo)
   end
-end # Apenas UM 'end' para fechar a classe aqui no final!
+end

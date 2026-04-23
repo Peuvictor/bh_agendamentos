@@ -9,6 +9,7 @@ class Service < ApplicationRecord
   validates :nome, presence: true, length: { minimum: 3 }
   validates :preco, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
-  # Como você tem as colunas duracao_minutos e duration, vamos garantir que pelo menos uma exista
-  validates :duration, presence: true, numericality: { greater_than: 0 }, if: -> { duracao_minutos.blank? }
+  # 3. VALIDAÇÃO DE TEMPO OFICIAL
+  # Agora usamos apenas a coluna 'duration', obrigatória e sempre maior que zero.
+  validates :duration, presence: true, numericality: { greater_than: 0 }
 end

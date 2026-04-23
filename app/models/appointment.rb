@@ -2,7 +2,7 @@ class Appointment < ApplicationRecord
   belongs_to :client, class_name: 'User', foreign_key: 'client_id'
   belongs_to :service
 
-  # 👇 A CORREÇÃO ESTÁ AQUI: Adicionado 'pendente' e definido como estado inicial
+  # Enum de status mantido e blindado
   enum :status, { confirmado: 0, cancelado: 1, pendente: 2 }, default: :pendente
 
   validates :start_time, presence: true
@@ -17,8 +17,8 @@ class Appointment < ApplicationRecord
   def calculate_end_time
     return unless start_time && service
 
-    # AJUSTE: Fallback inteligente. Tenta usar duracao_minutos, se for nil, tenta duration, se for nil, assume 30.
-    minutos = service.duracao_minutos || service.duration || 30
+    # FIM DA GAMBIARRA: Puxa direto da coluna oficial, com fallback de 30 minutos por segurança
+    minutos = service.duration || 30
     self.end_time = start_time + minutos.minutes
   end
 
@@ -34,7 +34,7 @@ class Appointment < ApplicationRecord
 
     overlapping = overlapping.where.not(id: id) if persisted?
 
-    # 6. A trava final
+    # A trava final
     if overlapping.exists?
       errors.add(:base, "Ops! O prestador já está atendendo outro cliente neste horário.")
     end
