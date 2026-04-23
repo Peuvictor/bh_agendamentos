@@ -1,6 +1,6 @@
 {
-  "name": "BH Agendamentos - Pedro Victor",
-  "image": "mcr.microsoft.com/devcontainers/ruby:3.3",
+  "name": "BH Agendamentos - Full Stack",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
     "ghcr.io/devcontainers/features/postgres:1": {
       "version": "15"
@@ -16,7 +16,5 @@
       ]
     }
   },
-  "onCreateCommand": "bundle install",
-  "postCreateCommand": "bin/rails db:prepare",
-  "remoteUser": "vscode"
+  "remoteUser": "codespace"
 }
