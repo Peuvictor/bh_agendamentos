@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="h-full bg-gray-50">
   <head>
-    <title>BH Agendamentos | Minas Tech</title>
+    <title>BH Agendamentos | Modo Admin</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -10,9 +10,7 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
     <%= javascript_importmap_tags %>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-      body { font-family: 'Inter', sans-serif; }
-    </style>
+    <style>body { font-family: 'Inter', sans-serif; }</style>
   </head>
 
   <body class="h-full text-gray-900 antialiased">
@@ -20,81 +18,78 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-20">
 
+          <%# 1. LOGO %>
           <div class="flex items-center">
             <%= link_to root_path, class: "flex items-center gap-3 group" do %>
-              <div class="bg-blue-600 p-2 rounded-xl group-hover:bg-blue-700 transition-colors shadow-blue-200 shadow-lg">
+              <div class="bg-blue-600 p-2 rounded-xl group-hover:bg-blue-700 transition-all shadow-blue-200 shadow-lg">
                 <svg class="w-7 h-7 text-white" viewBox="0 0 100 100" fill="currentColor">
                   <path d="M10 40L30 20L50 35L70 15L90 30V80C90 85.5 85.5 90 80 90H20C14.5 90 10 85.5 10 80V40ZM25 75V65H35V75H25ZM25 55V45H35V55H25ZM45 75V65H55V75H45ZM45 55V45H55V55H45ZM65 75V65H75V75H65ZM65 55V45H75V55H65Z"/>
                 </svg>
               </div>
               <div class="flex flex-col">
-                <span class="text-xl font-bold tracking-tight text-gray-900 leading-none">BH <span class="text-blue-600 font-extrabold">Agendamentos</span></span>
-                <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mt-1 italic">Minas Technology</span>
+                <span class="text-xl font-bold tracking-tight text-gray-900">BH <span class="text-blue-600 font-extrabold">Agendamentos</span></span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold italic">Minas Technology</span>
               </div>
             <% end %>
           </div>
 
+          <%# 2. NAVEGAÇÃO POR ROLE %>
           <div class="flex items-center gap-4">
             <% if user_signed_in? %>
-              <div class="flex items-center gap-4 mr-4 border-r border-gray-100 pr-6">
-                <%= link_to "Meus Agendamentos", appointments_path, class: "text-sm font-medium text-gray-600 hover:text-blue-600 transition mr-2" %>
 
-                <%# AQUI ESTÁ A MUDANÇA: Os botões de gestão exclusivos para o Prestador %>
+              <%# --- SEÇÃO ADMIN (MODO DEUS) --- %>
+              <% if current_user.admin? %>
+                <%= link_to "/admin", class: "flex items-center gap-2 bg-gradient-to-r from-purple-700 to-indigo-800 text-white px-4 py-2 rounded-lg text-xs font-black shadow-lg hover:brightness-110 transition-all border-2 border-purple-400 animate-pulse" do %>
+                  <span>👑 MODO DEUS</span>
+                <% end %>
+                <div class="h-8 w-px bg-gray-200 mx-2"></div>
+              <% end %>
+
+              <%# --- SEÇÃO COMUM / PRESTADOR --- %>
+              <div class="flex items-center gap-4 border-r border-gray-100 pr-4">
+                <%= link_to "📅 Agendamentos", appointments_path,
+                    class: "text-sm font-bold #{current_page?(appointments_path) ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'}" %>
+
                 <% if current_user.provider? %>
-                  <%= link_to "Dashboard", dashboard_path, class: "text-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200 px-4 py-2 rounded-lg transition shadow-sm" %>
-                  <%= link_to "Meus Serviços", services_path, class: "text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 px-4 py-2 rounded-lg transition shadow-sm" %>
+                  <%= link_to "📊 Dashboard", dashboard_path, class: "text-sm font-bold text-gray-800 bg-gray-100 px-3 py-1.5 rounded-md hover:bg-gray-200" %>
+                  <%= link_to "✂️ Serviços", services_path, class: "text-sm font-bold text-white bg-blue-900 px-3 py-1.5 rounded-md hover:bg-blue-800" %>
                 <% end %>
               </div>
 
+              <%# 3. ACTIONS PERFIL %>
               <div class="flex items-center gap-2 ml-2">
-                <%= link_to edit_user_registration_path, class: "p-2 text-gray-400 hover:text-blue-600 hover:bg-gray-50 rounded-full transition", title: "Configurações" do %>
+                <%= link_to edit_user_registration_path, class: "p-2 text-gray-400 hover:text-blue-600 transition", title: "Configurações" do %>
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 <% end %>
 
-                <%= button_to destroy_user_session_path, method: :delete, class: "text-gray-400 hover:text-red-500 p-2 rounded-full transition", title: "Sair" do %>
+                <%= button_to destroy_user_session_path, method: :delete, class: "text-gray-400 hover:text-red-500 p-2", title: "Sair" do %>
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                 <% end %>
               </div>
+
             <% else %>
-              <%= link_to "Entrar", new_user_session_path, class: "text-sm font-semibold text-gray-700 hover:text-blue-600 mr-4" %>
-              <%= link_to "Criar Conta", new_user_registration_path, class: "bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 hover:-translate-y-0.5 transition-all" %>
+              <%= link_to "Entrar", new_user_session_path, class: "text-sm font-semibold text-gray-700 mr-4" %>
+              <%= link_to "Criar Conta", new_user_registration_path, class: "bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-bold" %>
             <% end %>
           </div>
         </div>
       </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <main class="max-w-7xl mx-auto px-4 py-10">
+      <%# Flash Messages %>
       <% if notice %>
-        <div class="mb-8 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
-          <span class="bg-emerald-500 text-white p-1 rounded-full">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-          </span>
-          <p class="text-sm font-medium"><%= notice %></p>
-        </div>
+        <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm font-medium"><%= notice %></div>
       <% end %>
-
       <% if alert %>
-        <div class="mb-8 flex items-center gap-3 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl shadow-sm">
-          <span class="bg-amber-500 text-white p-1 rounded-full text-xs font-bold px-2 italic">!</span>
-          <p class="text-sm font-medium"><%= alert %></p>
-        </div>
+        <div class="mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl text-sm font-medium"><%= alert %></div>
       <% end %>
 
-      <div class="animate-in fade-in zoom-in-95 duration-700">
-        <%= yield %>
-      </div>
+      <%= yield %>
     </main>
-
-    <footer class="mt-20 border-t border-gray-100 py-10">
-      <div class="max-w-7xl mx-auto px-4 text-center">
-        <p class="text-sm text-gray-400 font-medium">© 2026 BH Agendamentos - Feito com 💙 em Belo Horizonte por um Dev Ruby.</p>
-      </div>
-    </footer>
   </body>
 </html>

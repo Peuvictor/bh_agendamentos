@@ -1,72 +1,57 @@
-require 'sidekiq/web' # 1. DEPÊNDENCIA OBRIGATÓRIA
+require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  # 1. Se o usuário estiver logado, a Home é a lista de agendamentos dele
+  # 1. REDIRECIONAMENTO DE HOME
   authenticated :user do
     root "appointments#index", as: :authenticated_root
   end
-
-  # 2. Se NÃO estiver logado, a Home é a vitrine de serviços
   root "home#index"
 
-  # A ROTA DE FUGA: Uma URL fixa para a vitrine de serviços, independente do login
+  # 2. ROTAS PÚBLICAS E PERFIL
   get '/vitrine', to: 'home#index', as: 'vitrine'
-
-  # 3. Rota VIP para o Painel do Prestador
   get 'dashboard', to: 'appointments#dashboard', as: 'dashboard'
-
-  # Rota para ver o próprio perfil
   get 'perfil', to: 'profiles#show', as: 'perfil'
 
-  # Rota do "Modo Deus" (Painel do Admin Geral)
+  # 3. 🕴️ MODO DEUS (NAMESPACE ADMIN)
   namespace :admin do
+    # 1. Atalho principal: /admin já cai no Dashboard
+    root to: 'dashboard#index'
     get 'dashboard', to: 'dashboard#index', as: 'dashboard'
+
+    # 2. Gestão de Usuários
+    resources :users, only: [:index, :destroy]
+
+    # 3. Gestão de Serviços (Substituindo os 'gets' genéricos)
+    resources :services, only: [:index, :destroy]
   end
 
-  # ------------------------------------------------------------------
-  # 4. As Rotas de Domínio (A Mágica do Aninhamento)
-  # ------------------------------------------------------------------
+  # 4. DOMÍNIO: SERVIÇOS E AGENDAMENTOS
   resources :services do
-    # O cliente consegue chegar no formulário de agendamento
     resources :appointments, only: [:new, :create]
-    # 👇 A PORTA ABERTA: Rota para listar as avaliações do serviço
-    resources :reviews, only: [:index]
+    resources :reviews, only: [:index] # Ver avaliações do serviço
   end
 
-  # 👇 AQUI ESTÁ A ATUALIZAÇÃO SÊNIOR
-  # Rota customizada para atualizar status E receber avaliações (reviews)
   resources :appointments, only: [:index, :show, :edit, :update, :destroy] do
     member do
       patch :update_status
     end
-
-    # O Review só existe se estiver amarrado a um agendamento específico
+    # Criar avaliação para um agendamento específico
     resources :reviews, only: [:create]
   end
 
-  # ------------------------------------------------------------------
-  # 👇 PAINEL DE CONTROLE DO SIDEKIQ 👇
-  # Em produção, você deve proteger essa rota com autenticação de admin.
-  # ------------------------------------------------------------------
+  # 5. INFRA E AUTENTICAÇÃO
+  # Proteção do Sidekiq (Dica: Depois podemos restringir isso apenas a Admins)
   mount Sidekiq::Web => '/sidekiq'
 
-  # ------------------------------------------------------------------
-  # Configuração do Devise (Autenticação)
-  # ------------------------------------------------------------------
   devise_for :users
-
-  # Correção do erro de "rebote" (ActionController::RoutingError GET /users)
   devise_scope :user do
     get '/users', to: 'devise/registrations#new'
     get '/users/password', to: 'devise/passwords#new'
   end
-  # ------------------------------------------------------------------
 
-  # 5. Rota para a Caixa de Entrada de testes (Letter Opener Web)
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
   end
 
-  # Health check para o Docker
   get "up" => "rails/health#show", as: :rails_health_check
 end

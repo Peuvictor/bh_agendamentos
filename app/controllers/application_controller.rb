@@ -3,9 +3,18 @@ class ApplicationController < ActionController::Base
 
   protected
 
+  # 👇 O REDIRECIONAMENTO ENTRA AQUI
+  def after_sign_in_path_for(resource)
+    # Se o usuário for admin, enviamos para Agendamentos, senão, segue o fluxo padrão
+    if resource.admin?
+      appointments_path
+    else
+      root_path
+    end
+  end
+
   def configure_permitted_parameters
     # 1. CADASTRO INICIAL:
-    # 👇 A MÁGICA ESTÁ AQUI: Adicionamos o :role nesta lista! 👇
     devise_parameter_sanitizer.permit(:sign_up, keys: [:nome, :telefone, :role])
 
     # 2. EDIÇÃO DE PERFIL:

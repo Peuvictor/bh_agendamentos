@@ -1,0 +1,56 @@
+<div class="max-w-7xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <%= link_to "← Voltar ao Dashboard", admin_dashboard_path, class: "text-sm font-bold text-gray-500 hover:text-blue-600 transition" %>
+      <h1 class="text-3xl font-extrabold text-gray-900 mt-2 text-blue-900">Gestão de Serviços</h1>
+      <p class="text-gray-500 text-sm">Monitore os anúncios ativos na plataforma.</p>
+    </div>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-3xl border border-gray-100 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase italic">Serviço</th>
+          <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Prestador</th>
+          <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Preço</th>
+          <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Controle</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @services.each do |service| %>
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border">
+                   <% if service.photo.attached? %>
+                    <%= image_tag service.photo, class: "h-full w-full object-cover" %>
+                   <% else %>
+                    <span class="flex items-center justify-center h-full text-xs text-gray-400 italic">N/A</span>
+                   <% end %>
+                </div>
+                <div class="ml-4 font-bold text-gray-900"><%= service.nome %></div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+              <%= service.user.nome %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="text-sm font-black text-green-600">
+                <%= number_to_currency(service.preco, unit: "R$") %>
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <%= button_to admin_service_path(service),
+                            method: :delete,
+                            form: { data: { turbo_confirm: "Banir este serviço definitivamente?" } },
+                            class: "text-red-500 hover:text-red-700 font-bold bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition" do %>
+                Deletar Anúncio
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
