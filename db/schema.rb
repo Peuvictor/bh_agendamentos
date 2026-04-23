@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_23_160908) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_23_161928) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -56,6 +56,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_23_160908) do
     t.index ["start_time", "end_time"], name: "index_appointments_on_start_time_and_end_time"
   end
 
+  create_table "reviews", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "rating"
+    t.text "comment"
+    t.uuid "appointment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id"], name: "index_reviews_on_appointment_id"
+  end
+
   create_table "services", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "nome"
     t.text "descricao"
@@ -63,6 +72,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_23_160908) do
     t.uuid "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "duration", default: 30
     t.index ["user_id"], name: "index_services_on_user_id"
   end
 
@@ -87,5 +97,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_23_160908) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "appointments", "services"
   add_foreign_key "appointments", "users", column: "client_id"
+  add_foreign_key "reviews", "appointments"
   add_foreign_key "services", "users"
 end

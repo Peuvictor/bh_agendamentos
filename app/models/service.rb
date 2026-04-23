@@ -9,6 +9,10 @@ class Service < ApplicationRecord
   validates :nome, presence: true, length: { minimum: 3 }
   validates :preco, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
+  # Adicione esta linha para criar a ponte
+has_many :reviews, through: :appointments
+
+
   # 3. VALIDAÇÃO DE TEMPO OFICIAL
   # Agora usamos apenas a coluna 'duration', obrigatória e sempre maior que zero.
   validates :duration, presence: true, numericality: { greater_than: 0 }

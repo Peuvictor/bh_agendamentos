@@ -1,0 +1,50 @@
+<div class="max-w-3xl mx-auto px-4 py-10">
+  <%# CABEÇALHO %>
+  <div class="mb-8">
+    <%= link_to "← Voltar para Vitrine", vitrine_path, class: "text-sm font-bold text-gray-500 hover:text-blue-600 transition mb-4 inline-block" %>
+    <h1 class="text-3xl font-extrabold text-gray-900">Avaliações do Serviço</h1>
+    <p class="text-lg text-gray-600 mt-2"><strong><%= @service.nome %></strong> oferecido por <%= @service.user.nome %></p>
+  </div>
+
+  <%# ESTATÍSTICA GERAL %>
+  <div class="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 flex items-center gap-6 mb-10">
+    <div class="text-center">
+      <span class="text-5xl font-black text-gray-900"><%= number_with_precision(@service.reviews.average(:rating), precision: 1) || "N/A" %></span>
+      <div class="text-yellow-400 text-xl mt-1">⭐⭐⭐⭐⭐</div>
+    </div>
+    <div>
+      <h3 class="text-lg font-bold text-gray-800">Nota Geral</h3>
+      <p class="text-sm text-gray-600">Baseado em <%= pluralize(@service.reviews.count, "avaliação", "avaliações") %> de clientes reais.</p>
+    </div>
+  </div>
+
+  <%# LISTA DE COMENTÁRIOS %>
+  <div class="space-y-6">
+    <% if @reviews.any? %>
+      <% @reviews.each do |review| %>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="font-bold text-gray-900"><%= review.appointment.client.nome.split.first %></span>
+              <span class="text-xs text-gray-400 ml-2"><%= review.created_at.strftime("%d/%m/%Y") %></span>
+            </div>
+            <div class="text-yellow-400 text-sm tracking-widest">
+              <% review.rating.times do %>★<% end %>
+              <% (5 - review.rating).times do %><span class="text-gray-300">★</span><% end %>
+            </div>
+          </div>
+
+          <% if review.comment.present? %>
+            <p class="text-gray-700 italic">"<%= review.comment %>"</p>
+          <% else %>
+            <p class="text-gray-400 text-sm italic">Avaliação sem comentário escrito.</p>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-10">
+        <p class="text-gray-500">Este serviço ainda não possui avaliações. Seja o primeiro a agendar!</p>
+      </div>
+    <% end %>
+  </div>
+</div>

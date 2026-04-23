@@ -1,5 +1,3 @@
-## 📋 BH Agendamentos - Gestão de Tarefas (Atualizado)
-
 ### ✅ Concluído (Arquitetura Sênior & UX)
 * **[x] Banco de Dados Pro:** Migração completa para UUID.
 * **[x] Persistência de Imagens:** Cloudinary + Active Storage.
@@ -10,11 +8,10 @@
 * **[x] Refinamento de Perfil:** WhatsApp, Endereço e Avatar.
 * **[x] Dashboard do Prestador:** Gestão de status e WhatsApp direto.
 * **[x] Notificações Reais:** E-mails transacionais via Sidekiq.
-* **[x] Filtros de Busca:** Sistema de busca na Vitrine por nome ou prestador (Layout Corrigido).
+* **[x] Filtros de Busca:** Sistema de busca na Vitrine por nome ou prestador.
+* **[x] Limpeza Técnica:** Refatoração da coluna duration.
+* **[x] Reviews & Avaliações:** Sistema de 1 a 5 estrelas com página de prova social.
 
-### 🚧 In Progress (Qualidade de Código)
-* **[ ] Refatoração de Banco:** Remover a coluna duplicada `duracao_minutos` vs `duration` na tabela de serviços.
-
-### 🎯 Próximos Passos (Próximo Sprint)
-* **[ ] Reviews & Avaliações:** Sistema de 1 a 5 estrelas para os serviços prestados.
+### 🎯 Próximos Passos
+* **[ ] Painel Admin (Modo Deus):** Controle total de usuários e serviços.
 * **[ ] Geolocalização:** Filtrar serviços por bairro em BH.

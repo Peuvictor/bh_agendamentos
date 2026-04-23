@@ -27,15 +27,21 @@ Rails.application.routes.draw do
   # 4. As Rotas de Domínio (A Mágica do Aninhamento)
   # ------------------------------------------------------------------
   resources :services do
-    # O cliente SÓ consegue chegar no formulário de agendamento se passar por um serviço
+    # O cliente consegue chegar no formulário de agendamento
     resources :appointments, only: [:new, :create]
+    # 👇 A PORTA ABERTA: Rota para listar as avaliações do serviço
+    resources :reviews, only: [:index]
   end
 
-  #  Rota customizada para atualizar o status do agendamento
+  # 👇 AQUI ESTÁ A ATUALIZAÇÃO SÊNIOR
+  # Rota customizada para atualizar status E receber avaliações (reviews)
   resources :appointments, only: [:index, :show, :edit, :update, :destroy] do
     member do
       patch :update_status
     end
+
+    # O Review só existe se estiver amarrado a um agendamento específico
+    resources :reviews, only: [:create]
   end
 
   # ------------------------------------------------------------------

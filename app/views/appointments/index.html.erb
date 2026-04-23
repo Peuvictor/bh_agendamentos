@@ -14,66 +14,105 @@
   </div>
 
   <% if @appointments.any? %>
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+    <div class="grid gap-6 md:grid-cols-2">
       <% @appointments.each do |appointment| %>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-300 transition-colors duration-300">
-          <div class="p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-300 transition-colors duration-300 flex flex-col">
+          <div class="p-6 flex-1 flex flex-col">
+
+            <%# CABEÇALHO DO CARD %>
             <div class="flex justify-between items-start mb-4">
               <div class="flex-1">
                 <h3 class="text-lg font-bold text-gray-900 truncate"><%= appointment.service.nome %></h3>
                 <p class="text-blue-900 font-semibold mt-1">
-                  <%= number_to_currency(appointment.service.preco, unit: "R$", separator: ",", delimiter: ".") %>
+                  <%= number_to_currency(appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
                 </p>
               </div>
 
-              <%# Badge de Status %>
-              <% status_classes = appointment.confirmado? ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200" %>
+              <%# BADGE DE STATUS %>
+              <% status_classes = appointment.confirmado? ? "bg-green-100 text-green-700 border-green-200" : (appointment.cancelado? ? "bg-red-100 text-red-700 border-red-200" : "bg-yellow-100 text-yellow-700 border-yellow-200") %>
               <span class="px-3 py-1 rounded-full text-xs font-bold border <%= status_classes %> uppercase tracking-tighter">
-                <%= Appointment.human_attribute_name("status.#{appointment.status}") %>
+                <%= appointment.status %>
               </span>
             </div>
 
-            <div class="space-y-3 py-4 border-y border-gray-50">
+            <%# DADOS DE DATA E HORA %>
+            <div class="space-y-3 py-4 border-y border-gray-50 mb-4">
               <div class="flex items-center text-sm text-gray-600">
-                <svg class="mr-3 h-5 w-5 text-blue-900/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="font-medium text-gray-900"><%= l(appointment.start_time, format: :long) %></span>
+                <span class="mr-3 text-lg">📅</span>
+                <span class="font-medium text-gray-900"><%= appointment.start_time.strftime("%d/%m/%Y") %></span>
               </div>
-
               <div class="flex items-center text-sm text-gray-600">
-                <svg class="mr-3 h-5 w-5 text-blue-900/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>
-                  <%= l(appointment.start_time, format: "%H:%M") %> — <%= l(appointment.end_time, format: "%H:%M") %>
-                </span>
+                <span class="mr-3 text-lg">⏰</span>
+                <span><%= appointment.start_time.strftime("%H:%M") %> — <%= appointment.end_time.strftime("%H:%M") %></span>
               </div>
             </div>
 
-            <div class="mt-4 flex justify-between items-center">
+            <div class="flex-1"></div> <%# Espaçador para empurrar os botões pro fundo %>
+
+            <%# ========================================== %>
+            <%# 🌟 SISTEMA DE AVALIAÇÃO (REVIEW) 🌟 %>
+            <%# ========================================== %>
+
+            <%# Se está confirmado e já passou do horário %>
+            <% if appointment.confirmado? && appointment.start_time < Time.current %>
+
+              <% if appointment.review.present? %>
+                <%# Já avaliou: Mostra as estrelas %>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Sua Avaliação</p>
+                  <div class="flex items-center gap-1 text-yellow-400 text-lg">
+                    <% appointment.review.rating.times do %>★<% end %>
+                    <% (5 - appointment.review.rating).times do %><span class="text-gray-300">★</span><% end %>
+                  </div>
+                  <% if appointment.review.comment.present? %>
+                    <p class="text-sm text-gray-600 mt-2 italic">"<%= appointment.review.comment %>"</p>
+                  <% end %>
+                </div>
+
+              <% else %>
+                <%# Não avaliou: Mostra o formulário %>
+                <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4">
+                  <p class="text-sm font-bold text-gray-800 mb-2">Como foi o serviço?</p>
+
+                  <%= form_with model: [appointment, Review.new], class: "space-y-3" do |f| %>
+
+                    <%# Seletor Simples de Nota para garantir compatibilidade %>
+                    <div class="flex items-center gap-3">
+                      <%= f.select :rating, options_for_select([['5 Estrelas ⭐⭐⭐⭐⭐', 5], ['4 Estrelas ⭐⭐⭐⭐', 4], ['3 Estrelas ⭐⭐⭐', 3], ['2 Estrelas ⭐⭐', 2], ['1 Estrela ⭐', 1]], 5), {}, class: "block w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white" %>
+                    </div>
+
+                    <%= f.text_area :comment, rows: 2, placeholder: "Deixe um comentário curto (opcional)...", class: "block w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white" %>
+
+                    <%= f.submit "Enviar Avaliação", class: "w-full bg-blue-800 text-yellow-400 text-sm font-bold py-2 rounded-lg hover:bg-black transition cursor-pointer shadow-sm" %>
+                  <% end %>
+                </div>
+              <% end %>
+            <% end %>
+
+            <%# AÇÕES PADRÕES (Cancelar / Detalhes) %>
+            <div class="mt-2 flex justify-between items-center border-t border-gray-50 pt-4">
               <%= link_to "Ver detalhes", appointment, class: "text-sm font-medium text-gray-400 hover:text-blue-900 transition" %>
 
+              <%# Só pode cancelar se for no futuro %>
               <% if appointment.confirmado? && appointment.start_time > Time.current %>
                 <%= button_to appointment_path(appointment),
-                               method: :delete,
-                               form: { data: { turbo_confirm: "Deseja realmente cancelar este agendamento?" } },
-                               class: "text-sm font-bold text-red-500 hover:text-red-700 transition cursor-pointer" do %>
+                              method: :delete,
+                              form: { data: { turbo_confirm: "Deseja realmente cancelar este agendamento, uai?" } },
+                              class: "text-sm font-bold text-red-500 hover:text-red-700 transition cursor-pointer" do %>
                   Cancelar reserva
                 <% end %>
               <% end %>
             </div>
+
           </div>
         </div>
       <% end %>
     </div>
   <% else %>
-    <%# Estado Vazio Corrigido %>
+    <%# ESTADO VAZIO %>
     <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100 shadow-inner">
       <div class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+        <span class="text-3xl">😴</span>
       </div>
       <h3 class="text-lg font-bold text-gray-900">Agenda vazia</h3>
       <p class="mt-2 text-sm text-gray-500 max-w-xs mx-auto">Você ainda não tem nenhum serviço agendado em Belo Horizonte.</p>

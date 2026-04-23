@@ -1,6 +1,7 @@
 class Appointment < ApplicationRecord
   belongs_to :client, class_name: 'User', foreign_key: 'client_id'
   belongs_to :service
+  has_one :review, dependent: :destroy
 
   # Enum de status mantido e blindado
   enum :status, { confirmado: 0, cancelado: 1, pendente: 2 }, default: :pendente
