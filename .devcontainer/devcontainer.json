@@ -1,7 +1,13 @@
 {
-  "name": "BH Agendamentos - Full Stack",
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "name": "BH Agendamentos - Estação de Viagem",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
+    "ghcr.io/devcontainers/features/ruby:1": {
+      "version": "3.3"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17"
+    },
     "ghcr.io/devcontainers/features/postgres:1": {
       "version": "15"
     },
@@ -16,5 +22,5 @@
       ]
     }
   },
-  "remoteUser": "codespace"
+  "remoteUser": "vscode"
 }
