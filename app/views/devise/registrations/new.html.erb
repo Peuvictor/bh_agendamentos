@@ -6,7 +6,8 @@
       <p class="mt-2 text-sm text-gray-500">Cadastre-se na plataforma</p>
     </div>
 
-    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "space-y-6" }) do |f| %>
+    <%# ⚠️ ATENÇÃO: Adicionado multipart: true para o upload de imagens funcionar %>
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { multipart: true, class: "space-y-6" }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
       <%# NOME %>
@@ -25,17 +26,44 @@
         </div>
       </div>
 
-      <%# TIPO DE CONTA (A MÁGICA ACONTECE AQUI) %>
+      <%# TIPO DE CONTA %>
       <div>
         <%= f.label :role, "O que você deseja fazer?", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
+          <%# ⚠️ ATENÇÃO: Adicionado o id "user_role_select" para o JavaScript encontrar este campo %>
           <%= f.select :role,
               [['Quero agendar serviços (Cliente)', 'client'], ['Quero oferecer meus serviços (Prestador)', 'provider']],
               {},
-              class: "block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" %>
+              id: "user_role_select",
+              class: "block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white cursor-pointer" %>
         </div>
       </div>
 
+      <%# 👇 BLOCO DINÂMICO DO PRESTADOR (Oculto por padrão) 👇 %>
+      <div id="provider-extra-fields" class="hidden space-y-4 bg-blue-50 p-5 rounded-xl border border-blue-100">
+        <h3 class="text-xs font-extrabold text-blue-900 border-b border-blue-200 pb-2 uppercase tracking-wide">💼 Complete sua Vitrine</h3>
+
+        <div>
+          <%= f.label :avatar, "Sua Foto ou Logo", class: "block text-sm font-bold text-gray-700 mb-1" %>
+          <%= f.file_field :avatar, direct_upload: true, class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-black transition cursor-pointer" %>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <%= f.label :bairro, "Bairro de Atendimento (BH)", class: "block text-sm font-bold text-gray-700 mb-1" %>
+            <%= f.select :bairro,
+                grouped_options_for_select(User::BAIRROS_POR_REGIAO),
+                { include_blank: "Selecione o bairro..." },
+                class: "block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-900 focus:ring-blue-900 py-2 sm:text-sm bg-white" %>
+          </div>
+
+          <%# 👇 NOVO: CAMPO DE ENDEREÇO 👇 %>
+          <div>
+            <%= f.label :endereco, "Logradouro (Rua, Nº)", class: "block text-sm font-bold text-gray-700 mb-1" %>
+            <%= f.text_field :endereco, placeholder: "Ex: Rua Contorno, 1000", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white" %>
+          </div>
+        </div>
+      </div>
       <%# E-MAIL %>
       <div>
         <%= f.label :email, "E-mail", class: "block text-sm font-bold text-gray-700" %>
@@ -70,3 +98,35 @@
     </div>
   </div>
 </div>
+
+<%# 👇 SCRIPT BLINDADO PARA O RAILS 7 / TURBO 👇 %>
+<script>
+  // 1. Criamos a lógica como uma função global
+  window.toggleProviderFields = function() {
+    const roleSelect = document.getElementById("user_role_select");
+    const providerFields = document.getElementById("provider-extra-fields");
+
+    if (roleSelect && providerFields) {
+      if (roleSelect.value === "provider") {
+        providerFields.classList.remove("hidden");
+      } else {
+        providerFields.classList.add("hidden");
+      }
+    }
+  };
+
+  // 2. Event Delegation: Escutamos cliques no documento inteiro, mas só agimos se for no Select
+  document.addEventListener("change", function(event) {
+    if (event.target && event.target.id === "user_role_select") {
+      window.toggleProviderFields();
+    }
+  });
+
+  // 3. Cobrimos todas as rotas de carregamento da página possíveis
+  document.addEventListener("turbo:load", window.toggleProviderFields);
+  document.addEventListener("turbo:render", window.toggleProviderFields);
+  window.addEventListener("DOMContentLoaded", window.toggleProviderFields);
+
+  // 4. Execução forçada de fallback assim que o HTML for lido
+  window.toggleProviderFields();
+</script>
