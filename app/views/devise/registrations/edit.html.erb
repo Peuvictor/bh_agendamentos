@@ -50,10 +50,30 @@
             <div class="mt-1"><%= f.text_area :bio, rows: 3, placeholder: "Conte um pouco sobre sua experiência...", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
           </div>
 
-          <div>
-            <%= f.label :endereco, "Endereço do Atendimento", class: "block text-sm font-bold text-gray-700" %>
-            <div class="mt-1"><%= f.text_field :endereco, placeholder: "Ex: Rua Savassi, 100", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %></div>
+          <%# 👇 NOVA SEÇÃO DE LOCALIZAÇÃO (BAIRRO E ENDEREÇO) 👇 %>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <%# Select do Bairro %>
+            <div>
+              <%= f.label :bairro, "Região de Atendimento", class: "block text-sm font-bold text-gray-700" %>
+              <div class="mt-1">
+                <%= f.select :bairro,
+                    grouped_options_for_select(User::BAIRROS_POR_REGIAO, f.object.bairro),
+                    { include_blank: "Selecione o bairro..." },
+                    class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" %>
+              </div>
+            </div>
+
+            <%# Texto livre para Endereço %>
+            <div>
+              <%= f.label :endereco, "Logradouro (Rua, Nº)", class: "block text-sm font-bold text-gray-700" %>
+              <div class="mt-1">
+                <%= f.text_field :endereco, placeholder: "Ex: Rua Leopoldina, 100", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" %>
+              </div>
+            </div>
           </div>
+          <p class="text-xs text-blue-700 font-medium italic mt-1">Clientes usarão o bairro para encontrar você mais rápido.</p>
+
         </div>
       <% end %>
 

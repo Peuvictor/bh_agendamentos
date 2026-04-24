@@ -1,14 +1,20 @@
 class HomeController < ApplicationController
   def index
-    # Se alguém digitou algo na barra de busca (parâmetro :query)
+    # Eager loading para evitar N+1
+    @services = Service.includes(user: :avatar_attachment).all
+
+    # 1. Filtro por Texto (Nome do Serviço ou Prestador)
     if params[:query].present?
-      # Fazemos um JOIN com a tabela de usuários para buscar tanto pelo nome do serviço quanto pelo nome do prestador (ex: "Corte" ou "Fabrício")
-      @services = Service.joins(:user)
-                         .where("services.nome ILIKE :q OR users.nome ILIKE :q", q: "%#{params[:query]}%")
-                         .order(created_at: :desc)
-    else
-      # Se não tem busca, carrega tudo normal
-      @services = Service.all.order(created_at: :desc)
+      @services = @services.joins(:user).where("services.nome ILIKE :q OR users.nome ILIKE :q", q: "%#{params[:query]}%")
     end
+
+    # 2. 👇 NOVO: Filtro de Geolocalização (Bairro) 👇
+    if params[:bairro].present?
+      # Como o bairro está na tabela 'users', usamos o joins para acessar essa coluna
+      @services = @services.joins(:user).where(users: { bairro: params[:bairro] })
+    end
+
+    # Ordenação padrão (mais recentes primeiro)
+    @services = @services.order(created_at: :desc)
   end
 end
