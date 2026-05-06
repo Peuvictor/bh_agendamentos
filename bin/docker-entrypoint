@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
-if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
-  ./bin/rails db:prepare
-fi
+# Garante que o banco de dados seja criado/atualizado em todos os deploys
+# independente do comando que o Render usar para subir a máquina
+bundle exec rails db:prepare
 
+# Inicia o processo principal
 exec "${@}"
