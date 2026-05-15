@@ -79,6 +79,4 @@ test:
 #
 production:
   <<: *default
-  database: bh_agendamentos_production
-  username: bh_agendamentos
-  password: <%= ENV["BH_AGENDAMENTOS_DATABASE_PASSWORD"] %>
+  url: <%= ENV['DATABASE_URL'] %>
