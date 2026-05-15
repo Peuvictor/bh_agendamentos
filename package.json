@@ -9,5 +9,9 @@
     "@tailwindcss/cli": "^4.2.2",
     "esbuild": "^0.28.0",
     "tailwindcss": "^4.2.2"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "chartkick": "^5.0.1"
   }
 }
