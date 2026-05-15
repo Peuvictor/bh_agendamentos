@@ -90,3 +90,6 @@ gem "rails-i18n", "~> 7.0"
 gem 'devise-i18n'
 
 gem "cloudinary"
+
+gem "chartkick", "~> 5.2"
+gem "groupdate", "~> 6.7"

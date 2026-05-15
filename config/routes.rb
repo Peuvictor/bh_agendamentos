@@ -1,6 +1,7 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  get 'dashboard/index'
   # 1. REDIRECIONAMENTO DE HOME
   authenticated :user do
     root "appointments#index", as: :authenticated_root
@@ -25,6 +26,7 @@ Rails.application.routes.draw do
     resources :services, only: [:index, :destroy]
   end
 
+  get 'dashboard', to: 'dashboard#index', as: 'provider_dashboard'
   # 4. DOMÍNIO: SERVIÇOS E AGENDAMENTOS
   resources :services do
     resources :appointments, only: [:new, :create]
