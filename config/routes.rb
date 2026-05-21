@@ -51,6 +51,8 @@ Rails.application.routes.draw do
     get '/users/password', to: 'devise/passwords#new'
   end
 
+  resources :payments, only: [:create]
+
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
   end
