@@ -1,53 +1,94 @@
-<div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-  <div class="bg-green-500 p-6 text-center">
-    <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-3 shadow-sm">
-      <span class="text-3xl">✅</span>
+<% if @appointment.payment&.aprovado? || @appointment.status == 'confirmado' %>
+  <!-- ========================================== -->
+  <!-- ESTADO 1: PAGO E CONFIRMADO (Seu layout)   -->
+  <!-- ========================================== -->
+  <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+    <div class="bg-green-500 p-6 text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-3 shadow-sm">
+        <span class="text-3xl">✅</span>
+      </div>
+      <h2 class="text-white text-xl font-bold italic">Agendamento Confirmado!</h2>
     </div>
-    <h2 class="text-white text-xl font-bold italic">Agendamento Confirmado!</h2>
+
+    <div class="p-8">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-extrabold text-gray-900 mb-1"><%= @appointment.service.nome %></h1>
+        <p class="text-gray-500 text-sm italic">Belo Horizonte, MG</p>
+      </div>
+
+      <div class="space-y-4 border-t border-b border-dashed border-gray-200 py-6 mb-8">
+        <div class="flex justify-between">
+          <span class="text-gray-500 font-medium">Data:</span>
+          <span class="text-gray-900 font-bold"><%= @appointment.start_time.strftime("%d/%m/%Y") %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 font-medium">Início:</span>
+          <span class="text-gray-900 font-bold"><%= @appointment.start_time.strftime("%H:%M") %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 font-medium">Fim (previsto):</span>
+          <span class="text-gray-900 font-bold"><%= @appointment.end_time&.strftime("%H:%M") %></span>
+        </div>
+        <div class="flex justify-between pt-2">
+          <span class="text-gray-500 font-medium">Valor:</span>
+          <span class="text-green-600 font-extrabold text-lg">
+            <%= number_to_currency(@appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
+          </span>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <%
+          google_url = "https://www.google.com/calendar/render?action=TEMPLATE" +
+                       "&text=#{u(@appointment.service.nome)} - Agenda BH" +
+                       "&dates=#{@appointment.start_time.strftime('%Y%m%dT%H%M%SZ')}/#{@appointment.end_time&.strftime('%Y%m%dT%H%M%SZ')}" +
+                       "&details=Agendamento realizado pelo app BH Agendamentos." +
+                       "&location=Belo Horizonte, MG"
+        %>
+        <%= link_to google_url, target: "_blank", class: "w-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition" do %>
+          <span>🗓️ Adicionar ao Google Agenda</span>
+        <% end %>
+
+        <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg" %>
+      </div>
+    </div>
   </div>
 
-  <div class="p-8">
-    <div class="text-center mb-8">
-      <h1 class="text-2xl font-extrabold text-gray-900 mb-1"><%= @appointment.service.nome %></h1>
-      <p class="text-gray-500 text-sm italic">Belo Horizonte, MG</p>
+<% else %>
+  <!-- ========================================== -->
+  <!-- ESTADO 2: PENDENTE DE PAGAMENTO            -->
+  <!-- ========================================== -->
+  <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+    <div class="bg-slate-800 p-6 text-center">
+      <h2 class="text-white text-xl font-bold">Concluir Agendamento</h2>
+      <p class="text-slate-300 text-sm mt-1">Efetue o pagamento para garantir seu horário</p>
     </div>
 
-    <div class="space-y-4 border-t border-b border-dashed border-gray-200 py-6 mb-8">
-      <div class="flex justify-between">
-        <span class="text-gray-500 font-medium">Data:</span>
-        <span class="text-gray-900 font-bold"><%= @appointment.start_time.strftime("%d/%m/%Y") %></span>
+    <div class="p-8">
+      <div class="mb-6 pb-6 border-b border-gray-200">
+        <h3 class="text-lg font-bold text-gray-900"><%= @appointment.service.nome %></h3>
+        <div class="flex justify-between mt-2 text-sm">
+          <span class="text-gray-500">Data e Hora:</span>
+          <span class="text-gray-900 font-medium"><%= @appointment.start_time.strftime("%d/%m/%Y às %H:%M") %></span>
+        </div>
+        <div class="flex justify-between mt-2 text-sm">
+          <span class="text-gray-500">Valor a pagar:</span>
+          <span class="text-green-600 font-bold"><%= number_to_currency(@appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+        </div>
       </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500 font-medium">Início:</span>
-        <span class="text-gray-900 font-bold"><%= @appointment.start_time.strftime("%H:%M") %></span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-gray-500 font-medium">Fim (previsto):</span>
-        <span class="text-gray-900 font-bold"><%= @appointment.end_time&.strftime("%H:%M") %></span>
-      </div>
-      <div class="flex justify-between pt-2">
-        <span class="text-gray-500 font-medium">Valor:</span>
-        <span class="text-green-600 font-extrabold text-lg">
-          <%= number_to_currency(@appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
-        </span>
-      </div>
-    </div>
 
-    <div class="space-y-3">
-      <%
-        # Gerando link básico para o Google Agenda
-        google_url = "https://www.google.com/calendar/render?action=TEMPLATE" +
-                     "&text=#{u(@appointment.service.nome)} - Agenda BH" +
-                     "&dates=#{@appointment.start_time.strftime('%Y%m%dT%H%M%SZ')}/#{@appointment.end_time&.strftime('%Y%m%dT%H%M%SZ')}" +
-                     "&details=Agendamento realizado pelo app BH Agendamentos." +
-                     "&location=Belo Horizonte, MG"
-      %>
+      <!-- INJEÇÃO DO STIMULUS CONTROLLER -->
+      <!-- Passamos o ID e o Preço para o JavaScript de forma segura -->
+      <div data-controller="payment"
+           data-payment-appointment-id-value="<%= @appointment.id %>"
+           data-payment-amount-value="<%= @appointment.service.preco %>">
 
-      <%= link_to google_url, target: "_blank", class: "w-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition" do %>
-        <span>🗓️ Adicionar ao Google Agenda</span>
-      <% end %>
+        <!-- O Brick do Mercado Pago será injetado nesta div -->
+        <div id="paymentBrick_container" data-payment-target="container" class="min-h-[300px] flex items-center justify-center">
+           <span class="text-slate-400 text-sm animate-pulse">Carregando ambiente seguro...</span>
+        </div>
+      </div>
 
-      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg" %>
     </div>
   </div>
-</div>
+<% end %>

@@ -3,13 +3,16 @@ import { loadMercadoPago } from "@mercadopago/sdk-js"
 
 export default class extends Controller {
   static targets = ["container"]
+  // 1. BLINDAGEM: Variáveis dinâmicas que receberemos da view (HTML)
+  static values = {
+    appointmentId: String,
+    amount: Number
+  }
 
   async connect() {
     await loadMercadoPago()
 
-    // Recupera a chave pública que colocamos no meta tag
     const publicKey = document.querySelector("meta[name='mp-public-key']").getAttribute("content")
-
     const mp = new window.MercadoPago(publicKey, { locale: 'pt-BR' })
     const bricksBuilder = mp.bricks()
 
@@ -19,19 +22,16 @@ export default class extends Controller {
   async renderBrick(bricksBuilder) {
     const settings = {
       initialization: {
-        amount: 50.00, // Valor do sinal fictício por enquanto
-        preferenceId: null, // Não obrigatório para Bricks transparente
+        // 2. Agora o valor visual vem do banco de dados, e não é mais chumbado no JS
+        amount: this.amountValue,
+        preferenceId: null,
       },
       customization: {
-        visual: {
-          style: {
-            theme: "default", // Combina bem com qualquer design clean
-          },
-        },
+        visual: { style: { theme: "default" } },
         paymentMethods: {
           creditCard: "all",
           debitCard: "all",
-          pix: "all", // O foco do nosso SaaS em BH
+          pix: "all",
         },
       },
       callbacks: {
@@ -40,26 +40,28 @@ export default class extends Controller {
         },
         onSubmit: ({ selectedPaymentMethod, formData }) => {
           return new Promise((resolve, reject) => {
-            // Captura o token de segurança gerado pelo Rails
             const csrfToken = document.querySelector("meta[name='csrf-token']").content
 
             fetch("/payments", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "X-CSRF-Token": csrfToken // Fecha a brecha de segurança
+                "X-CSRF-Token": csrfToken
               },
-              body: JSON.stringify({ payment: formData })
+              // 3. ENVIO SEGURO: Mandamos o ID do agendamento junto com os dados do cartão
+              body: JSON.stringify({
+                appointment_id: this.appointmentIdValue,
+                payment: formData
+              })
             })
             .then((response) => response.json())
             .then((data) => {
               if (data.status === 'approved' || data.status === 'pending') {
                 resolve()
-
                 const container = document.getElementById("paymentBrick_container")
 
-                // Lógica dinâmica: Se for Pix, desenha o QR Code. Se for cartão, apenas agradece.
                 if (selectedPaymentMethod === 'pix') {
+                  // O PIX precisa dos dados detalhados para montar o QR Code
                   const pixData = data.detail.point_of_interaction.transaction_data
                   const pixCopiaECola = pixData.qr_code
                   const pixQrCodeBase64 = pixData.qr_code_base64
@@ -82,16 +84,13 @@ export default class extends Controller {
                     </div>
                   `
                 }
-
               } else {
                 reject()
-                console.error("Pagamento recusado:", data)
-                alert("Erro ao processar o pagamento.")
+                alert(`Erro: ${data.error || 'Pagamento recusado'}`)
               }
             })
             .catch((error) => {
               reject()
-              console.error("Falha no servidor:", error)
               alert("Erro de comunicação com o servidor.")
             })
           })
@@ -99,10 +98,6 @@ export default class extends Controller {
       },
     }
 
-    window.paymentBrickController = await bricksBuilder.create(
-      "payment",
-      "paymentBrick_container",
-      settings
-    )
+    window.paymentBrickController = await bricksBuilder.create("payment", "paymentBrick_container", settings)
   }
 }
