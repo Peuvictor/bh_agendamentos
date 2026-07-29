@@ -1,43 +1,35 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
-  get 'dashboard/index'
   # 1. REDIRECIONAMENTO DE HOME
   authenticated :user do
     root "appointments#index", as: :authenticated_root
   end
   root "home#index"
 
-  # 2. ROTAS PÚBLICAS E PERFIL
+  # 2. ROTAS PÚBLICAS, PERFIL E DASHBOARD
   get '/vitrine', to: 'home#index', as: 'vitrine'
-  get 'dashboard', to: 'appointments#dashboard', as: 'dashboard'
-  get 'perfil', to: 'profiles#show', as: 'perfil'
+  get '/perfil', to: 'profiles#show', as: 'perfil'
+  get '/dashboard', to: 'dashboard#index', as: 'dashboard'
 
   # 3. 🕴️ MODO DEUS (NAMESPACE ADMIN)
   namespace :admin do
-    # 1. Atalho principal: /admin já cai no Dashboard
     root to: 'dashboard#index'
     get 'dashboard', to: 'dashboard#index', as: 'dashboard'
-
-    # 2. Gestão de Usuários
     resources :users, only: [:index, :destroy]
-
-    # 3. Gestão de Serviços (Substituindo os 'gets' genéricos)
     resources :services, only: [:index, :destroy]
   end
 
-  get 'dashboard', to: 'dashboard#index', as: 'provider_dashboard'
   # 4. DOMÍNIO: SERVIÇOS E AGENDAMENTOS
   resources :services do
     resources :appointments, only: [:new, :create]
-    resources :reviews, only: [:index] # Ver avaliações do serviço
+    resources :reviews, only: [:index]
   end
 
   resources :appointments, only: [:index, :show, :edit, :update, :destroy] do
     member do
       patch :update_status
     end
-    # Criar avaliação para um agendamento específico
     resources :reviews, only: [:create]
   end
 
@@ -52,6 +44,7 @@ Rails.application.routes.draw do
     get '/users/password', to: 'devise/passwords#new'
   end
 
+  # 6. PAGAMENTOS
   resources :payments, only: [:create]
 
   if Rails.env.development?
