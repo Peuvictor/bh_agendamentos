@@ -42,8 +42,9 @@ Rails.application.routes.draw do
   end
 
   # 5. INFRA E AUTENTICAÇÃO
-  # Proteção do Sidekiq (Dica: Depois podemos restringir isso apenas a Admins)
-  mount Sidekiq::Web => '/sidekiq'
+  authenticate :user, ->(user) { user.admin? } do
+    mount Sidekiq::Web => '/sidekiq'
+  end
 
   devise_for :users
   devise_scope :user do
