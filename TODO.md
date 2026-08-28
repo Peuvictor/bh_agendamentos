@@ -1,19 +1,38 @@
-### ✅ Entregues (Arquitetura Sênior & UX)
-* **[x] Banco de Dados Pro:** Migração completa para **UUID** blindando a segurança dos IDs.
-* **[x] Persistência em Nuvem:** Integração **Cloudinary** + Active Storage.
-* **[x] Processamento Assíncrono:** **Sidekiq** + **Redis** executando jobs em produção.
-* **[x] Motor de Agendamento:** Lógica de horários dinâmica e automática.
-* **[x] Validação de Conflitos:** Trava no banco contra sobreposição de horários.
-* **[x] Onboarding Inteligente:** Fluxo de cadastro segmentado (Cliente vs Prestador).
-* **[x] Vitrine de Perfil:** Exibição de Avatar, Endereço e botão de **WhatsApp** direto.
-* **[x] Dashboard do Prestador:** Interface para gestão de status dos atendimentos.
-* **[x] Notificações Reais:** E-mails transacionais disparados em *background*.
-* **[x] Filtros Otimizados:** Busca cruzada por nome do serviço e **Geolocalização (Bairros de BH)**.
-* **[x] Reviews & Avaliações:** Sistema de notas (1 a 5 estrelas) com página de prova social.
-* **[x] Painel Admin (Modo Deus):** Controle total de usuários, serviços e moderação da plataforma.
-* **[x] DevOps & Manutenção:** Refatoração de colunas (`duration`) e uso de *Data Migrations* via Docker.
+# Roadmap do BH Agendamentos
 
-### 🎯 Próximos Passos (Backlog)
-* **[ ] Gateway de Pagamento:** Integração com API (Mercado Pago/Stripe) para cobrança de taxa de sinal na reserva.
-* **[ ] Analytics para Prestadores:** Gráficos e métricas de faturamento e volume de clientes.
-* **[ ] Blindagem de Código:** Implementação de testes automatizados de modelo e integração com **RSpec**.
+Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficial e RuboCop para análise estática; não há migração planejada para RSpec.
+
+## Entregue
+
+- [x] Autenticação e perfis de cliente, prestador e administrador com Devise.
+- [x] Serviços, busca por texto e filtros por bairros de Belo Horizonte.
+- [x] Agendamentos com duração, bloqueio de horários passados e prevenção de conflitos.
+- [x] Cancelamento lógico preservando o histórico e liberando o horário.
+- [x] Dashboard do prestador, avaliações e painel administrativo.
+- [x] Active Storage com Cloudinary para avatares e imagens de serviços.
+- [x] Sidekiq e Redis para processamento assíncrono e e-mails.
+- [x] Checkout com Mercado Pago Payment Brick e mensagens amigáveis de configuração.
+- [x] Pagamentos com preço obtido no servidor, ciclo `pending` → `approved` e confirmação condicionada ao pagamento.
+- [x] Webhook do Mercado Pago com validação de assinatura, consulta à API e processamento idempotente de reenvios.
+- [x] Restrições únicas para pagamentos por agendamento e identificador do Mercado Pago.
+- [x] Minitest compatível com Rails 7.1: 49 testes e 136 asserções aprovados.
+- [x] Teste de sistema do fluxo agendamento → checkout com suporte a Selenium e Chrome portátil.
+- [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
+- [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
+- [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
+
+## Próximas tarefas prioritárias
+
+- [ ] Expirar reservas pendentes e cobranças PIX não pagas por meio de job no Sidekiq.
+- [ ] Blindar a criação de cobranças contra concorrência no PostgreSQL.
+- [ ] Reconciliar os estados `rejected`, `cancelled` e `refunded` recebidos do Mercado Pago.
+- [ ] Registrar eventos e falhas do webhook para observabilidade em produção.
+- [ ] Executar e documentar uma cobrança completa no sandbox real do Mercado Pago.
+- [ ] Revisar e consolidar as métricas de faturamento e volume de clientes do dashboard.
+- [ ] Adicionar GitHub Actions para RuboCop, Minitest, Zeitwerk e auditoria de dependências.
+
+## Manutenção contínua
+
+- [ ] Reduzir gradualmente as exceções registradas em `.rubocop_todo.yml`.
+- [ ] Manter `npm audit` sem vulnerabilidades e dependências atualizadas.
+- [ ] Ampliar testes de sistema para os estados finais do pagamento.
