@@ -1,4 +1,18 @@
-<% if @appointment.payment&.aprovado? || @appointment.status == 'confirmado' %>
+<% if @appointment.cancelado? %>
+  <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-red-100">
+    <div class="bg-red-600 p-6 text-center">
+      <div class="text-4xl mb-3">❌</div>
+      <h2 class="text-white text-xl font-bold">Agendamento cancelado</h2>
+    </div>
+
+    <div class="p-8 text-center">
+      <p class="text-gray-700"><%= @appointment.service.nome %></p>
+      <p class="text-gray-500 mt-2"><%= @appointment.start_time.strftime("%d/%m/%Y às %H:%M") %></p>
+      <p class="text-sm text-gray-500 mt-6">Este horário foi liberado e não aceita novos pagamentos.</p>
+      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "mt-6 w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition" %>
+    </div>
+  </div>
+<% elsif @appointment.payment&.aprovado? || @appointment.confirmado? %>
   <!-- ========================================== -->
   <!-- ESTADO 1: PAGO E CONFIRMADO (Seu layout)   -->
   <!-- ========================================== -->

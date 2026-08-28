@@ -33,21 +33,19 @@ class ProcessPaymentService
     }
 
     # Injeta a chave de segurança no cabeçalho da requisição
-    custom_headers = {
-      'x-idempotency-key': idempotency_key
-    }
+    request_options = Mercadopago::RequestOptions.new(
+      custom_headers: { 'x-idempotency-key': idempotency_key }
+    )
 
-    result = sdk.payment.create(payment_data, custom_headers)
+    result = sdk.payment.create(payment_data, request_options: request_options)
     mp_response = result[:response]
 
     # O Mercado Pago retorna 'approved' para Cartão e 'pending' para PIX
     if %w[approved pending].include?(mp_response['status'])
+      local_status = mp_response['status'] == 'approved' ? :aprovado : :pendente
 
       # 3. BLOCO DE TRANSAÇÃO: Ou salva tudo (Payment + Appointment) ou não salva nada
       ActiveRecord::Base.transaction do
-        # Mapeia o status do MP para o nosso Enum do banco
-        local_status = mp_response['status'] == 'approved' ? :aprovado : :pendente
-
         Payment.create!(
           appointment: @appointment,
           amount: amount,
@@ -59,6 +57,8 @@ class ProcessPaymentService
         # Só confirma o agendamento imediatamente se o cartão passar direto
         @appointment.update!(status: 'confirmado') if local_status == :aprovado
       end
+
+      AppointmentMailer.confirmation_email(@appointment).deliver_later if local_status == :aprovado
 
       # 4. Guarda a resposta para o Controller devolver o QR Code do PIX ao frontend
       @payload = mp_response

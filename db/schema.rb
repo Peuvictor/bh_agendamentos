@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_29_193556) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_28_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -48,7 +48,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_29_193556) do
     t.uuid "service_id", null: false
     t.datetime "start_time"
     t.datetime "end_time"
-    t.integer "status", default: 0
+    t.integer "status", default: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["client_id"], name: "index_appointments_on_client_id"

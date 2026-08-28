@@ -105,7 +105,7 @@
               <%= link_to "Ver detalhes", appointment, class: "text-sm font-medium text-gray-400 hover:text-blue-900 transition" %>
 
               <%# Só pode cancelar se for no futuro %>
-              <% if appointment.confirmado? && appointment.start_time > Time.current %>
+              <% if !appointment.cancelado? && appointment.start_time > Time.current %>
                 <%= button_to appointment_path(appointment),
                               method: :delete,
                               form: { data: { turbo_confirm: "Deseja realmente cancelar este agendamento, uai?" } },

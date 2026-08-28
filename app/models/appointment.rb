@@ -32,6 +32,7 @@ class Appointment < ApplicationRecord
     servicos_do_prestador_ids = Service.where(user_id: prestador_id).pluck(:id)
 
     overlapping = Appointment.where(service_id: servicos_do_prestador_ids)
+                             .where.not(status: :cancelado)
                              .where("start_time < ? AND end_time > ?", end_time, start_time)
 
     overlapping = overlapping.where.not(id: id) if persisted?

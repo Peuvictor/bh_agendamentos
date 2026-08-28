@@ -7,7 +7,9 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 - Cadastro e autenticação com Devise, incluindo perfis de cliente, prestador e administrador, com proteção contra criação pública de contas administrativas.
 - Vitrine pública de serviços com busca por texto e filtro por bairros de Belo Horizonte.
 - Cadastro e gerenciamento de serviços por prestadores.
-- Agendamento com cálculo de duração, validação de horários passados e prevenção de conflitos de agenda.
+- Agendamento inicialmente pendente, com cálculo de duração, validação de horários passados e prevenção de conflitos de agenda.
+- Confirmação condicionada à aprovação do pagamento, sem permitir alteração manual de status pelo cliente.
+- Cancelamento lógico, preservando o histórico do agendamento e do pagamento enquanto libera o horário na agenda.
 - Área de agendamentos para clientes e prestadores.
 - Dashboard do prestador com métricas de agenda e faturamento.
 - Avaliações de serviços após o atendimento.
@@ -17,7 +19,19 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 
 ## Pagamentos
 
-A integração com o Mercado Pago está em evolução. O projeto já possui checkout, endpoint de pagamento e estrutura de persistência com estados e validações. Antes do uso em produção, ainda é necessário concluir a confirmação assíncrona por webhook, fortalecer a idempotência no banco e ampliar os testes do fluxo externo.
+A integração com o Mercado Pago utiliza o Payment Brick no navegador e a SDK Ruby oficial no backend. O valor cobrado é obtido diretamente do serviço salvo no banco, e o endpoint valida a autenticação, a propriedade do agendamento, o estado da reserva e a existência de pagamentos anteriores antes de chamar o gateway.
+
+O ciclo implementado atualmente é:
+
+1. o cliente reserva um horário, criando um agendamento `pendente`;
+2. o cliente é direcionado para a tela de pagamento;
+3. pagamentos `approved` confirmam o agendamento e disparam o e-mail de confirmação;
+4. pagamentos `pending`, como PIX ainda não compensado, mantêm o agendamento pendente;
+5. cancelamentos preservam o registro e liberam o horário para uma nova reserva.
+
+A resposta do backend mantém o status real devolvido pelo Mercado Pago. Tentativas de pagar agendamentos cancelados, passados, pertencentes a outro cliente ou com pagamento já registrado são rejeitadas.
+
+A integração ainda está em evolução. Antes do uso em produção, é necessário implementar o webhook para atualizar pagamentos assíncronos, tratar expiração de reservas e PIX, fortalecer a idempotência contra chamadas concorrentes e validar o fluxo completo no ambiente de testes do Mercado Pago.
 
 ## Tecnologias
 
@@ -29,7 +43,7 @@ A integração com o Mercado Pago está em evolução. O projeto já possui chec
 - Tailwind CSS
 - Docker e Docker Compose
 - Cloudinary / Active Storage
-- Mercado Pago
+- Mercado Pago Payment Brick, SDK JavaScript e SDK Ruby oficial
 
 ## Pré-requisitos
 
@@ -96,8 +110,8 @@ REDIS_URL=redis://redis:6379/1
 Integrações externas podem exigir variáveis adicionais:
 
 - `CLOUDINARY_URL` para armazenamento de imagens;
-- `MERCADO_PAGO_ACCESS_TOKEN` para o backend de pagamentos;
-- chave pública do Mercado Pago para o checkout no navegador;
+- `MERCADO_PAGO_ACCESS_TOKEN` para a SDK Ruby no backend;
+- chave pública do Mercado Pago para inicializar o Payment Brick no navegador;
 - `DATABASE_URL`, `REDIS_URL` e configurações de e-mail no ambiente de produção.
 
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
@@ -110,10 +124,10 @@ O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os teste
 docker compose exec web bin/rails test
 ```
 
-A suíte cobre os principais fluxos de cadastro seguro, pagamentos, serviços, agendamentos, dashboard e administração. Estado validado atualmente:
+A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
 
 ```text
-30 testes, 58 asserções, 0 falhas e 0 erros
+40 testes, 97 asserções, 0 falhas e 0 erros
 ```
 
 Também é possível verificar o carregamento completo da aplicação com:
@@ -124,8 +138,8 @@ docker compose exec web bin/rails zeitwerk:check
 
 ## Próximas evoluções
 
-- Finalizar o fluxo de pagamentos do Mercado Pago, incluindo webhooks e idempotência persistente.
-- Ampliar a cobertura de testes do gateway de pagamento, mailers e fluxos de sistema no navegador.
+- Finalizar o fluxo assíncrono do Mercado Pago com webhooks, expiração de reservas e idempotência persistente.
+- Ampliar a cobertura do gateway com testes de sistema no navegador e validação no sandbox do Mercado Pago.
 - Consolidar métricas e relatórios para prestadores.
 - Adicionar CI para validar testes, carregamento da aplicação e qualidade do código a cada alteração.
 

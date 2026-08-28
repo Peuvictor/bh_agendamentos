@@ -6,9 +6,14 @@ class PaymentsController < ApplicationController
     # 2. Segurança de posse: Garante que o agendamento pertence ao cliente logado
     @appointment = Appointment.where(client_id: current_user.id).find(params[:appointment_id])
 
+    unless @appointment.pendente? && @appointment.start_time > Time.current
+      return render json: { status: 'rejected', error: 'Este agendamento não está disponível para pagamento.' }, status: :unprocessable_content
+    end
+
     # 3. Trava contra pagamento duplicado
-    if @appointment.payment&.aprovado?
-      return render json: { status: 'rejected', error: 'Este agendamento já foi pago.' }, status: :unprocessable_entity
+    if @appointment.payment.present?
+      message = @appointment.payment.aprovado? ? 'Este agendamento já foi pago.' : 'Já existe um pagamento em processamento para este agendamento.'
+      return render json: { status: 'rejected', error: message }, status: :unprocessable_content
     end
 
     # 4. Chama o Service enviando APENAS os dados de tokenização
@@ -22,9 +27,10 @@ class PaymentsController < ApplicationController
 
     if service.call
       # Manda a carga completa (payload) para o JS montar o PIX, se for o caso
-      render json: { status: 'approved', detail: service.payload }, status: :created
+      payload = service.payload
+      render json: { status: payload['status'], detail: payload }, status: :created
     else
-      render json: { status: 'rejected', error: service.error }, status: :unprocessable_entity
+      render json: { status: 'rejected', error: service.error }, status: :unprocessable_content
     end
   rescue ActiveRecord::RecordNotFound
     # 5. Captura erro caso o usuário tente forçar um ID que não é dele

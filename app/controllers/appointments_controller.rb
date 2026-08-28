@@ -26,7 +26,7 @@ class AppointmentsController < ApplicationController
     @appointment = @service.appointments.build
   end
 
- def create
+  def create
     # Cria o agendamento em branco atrelado ao serviço atual
     @appointment = @service.appointments.build
 
@@ -44,37 +44,30 @@ class AppointmentsController < ApplicationController
     end
 
     if @appointment.save
-      AppointmentMailer.confirmation_email(@appointment).deliver_later
-      redirect_to appointments_path, notice: "Agendamento realizado com sucesso no serviço #{@service.nome}!"
+      redirect_to appointment_path(@appointment), notice: "Horário reservado. Conclua o pagamento para confirmar o agendamento."
     else
       render :new, status: :unprocessable_entity
     end
   end
+
   def edit
+    redirect_to appointment_path(@appointment), alert: "Este agendamento não pode ser editado. Cancele e reserve um novo horário."
   end
 
   def update
-    if @appointment.update(appointment_params)
-      redirect_to appointments_path, notice: "Agendamento atualizado com sucesso!", status: :see_other
-    else
-      render :edit, status: :unprocessable_entity
-    end
+    redirect_to appointment_path(@appointment), alert: "O status do agendamento não pode ser alterado por esta rota."
   end
 
   def destroy
-    # A sua lógica de guilhotina e backup para o Mailer está perfeita
-    if @appointment.service.user_id == current_user.id || @appointment.client_id == current_user.id
-      client_name = @appointment.client.nome
-      client_email = @appointment.client.email
-      service_name = @appointment.service.nome
-      start_time = @appointment.start_time
-
-      @appointment.destroy
-
-      AppointmentMailer.cancellation_email(client_name, client_email, service_name, start_time).deliver_later
-      redirect_back(fallback_location: root_path, notice: "Agendamento cancelado com sucesso. O horário já está livre!")
+    if @appointment.cancelado?
+      redirect_back fallback_location: appointments_path, alert: "Este agendamento já está cancelado."
+    elsif @appointment.start_time <= Time.current
+      redirect_back fallback_location: appointments_path, alert: "Não é possível cancelar um agendamento que já começou."
+    elsif @appointment.update(status: :cancelado)
+      AppointmentMailer.cancellation_email(@appointment).deliver_later
+      redirect_back fallback_location: appointments_path, notice: "Agendamento cancelado com sucesso. O horário já está livre!"
     else
-      redirect_to root_path, alert: "Você não tem permissão para fazer isso."
+      redirect_back fallback_location: appointments_path, alert: "Não foi possível cancelar o agendamento."
     end
   end
 
@@ -86,17 +79,27 @@ class AppointmentsController < ApplicationController
                                   .order(start_time: :asc)
   end
 
- def update_status
+  def update_status
     @appointment = Appointment.find(params[:id])
 
     # Trava de Segurança: Só o prestador dono do serviço pode alterar
     if @appointment.service.user == current_user
-      if @appointment.update(status: params[:status])
+      requested_status = params[:status].to_s
+
+      unless Appointment.statuses.key?(requested_status)
+        return redirect_to dashboard_path, alert: "Status de agendamento inválido."
+      end
+
+      if requested_status == "confirmado" && !@appointment.payment&.aprovado?
+        return redirect_to dashboard_path, alert: "O agendamento só pode ser confirmado após o pagamento aprovado."
+      end
+
+      if @appointment.update(status: requested_status)
 
         # 👇 GATILHO DO SIDEKIQ 👇
-        if @appointment.confirmado?
+        if @appointment.saved_change_to_status? && @appointment.confirmado?
           AppointmentMailer.confirmation_email(@appointment).deliver_later
-        elsif @appointment.cancelado?
+        elsif @appointment.saved_change_to_status? && @appointment.cancelado?
           AppointmentMailer.cancellation_email(@appointment).deliver_later
         end
 
@@ -139,15 +142,13 @@ class AppointmentsController < ApplicationController
     # Se estivermos no método index, show ou dashboard, não precisamos calcular slots de um serviço específico
     return unless @service
 
-    futuros = @service.appointments.where("start_time >= ?", Time.zone.now.beginning_of_day)
+    futuros = @service.appointments
+                       .where.not(status: :cancelado)
+                       .where("start_time >= ?", Time.zone.now.beginning_of_day)
 
     @busy_slots = futuros.map do |app|
       app.start_time.in_time_zone.strftime("%Y-%m-%d %H:%M")
     end
   end
 
-  def appointment_params
-    # O service_id não vem mais daqui, ele vem da URL aninhada (@service.appointments.build)
-    params.require(:appointment).permit(:status)
-  end
 end
