@@ -12,4 +12,12 @@ class Payment < ApplicationRecord
   validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :mp_transaction_id, presence: true, uniqueness: true
   validates :idempotency_key, presence: true, uniqueness: true
+
+  before_save :clear_expiration_for_terminal_status
+
+  private
+
+  def clear_expiration_for_terminal_status
+    self.expires_at = nil unless pendente?
+  end
 end

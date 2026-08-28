@@ -15,7 +15,9 @@ Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficia
 - [x] Pagamentos com preço obtido no servidor, ciclo `pending` → `approved` e confirmação condicionada ao pagamento.
 - [x] Webhook do Mercado Pago com validação de assinatura, consulta à API e processamento idempotente de reenvios.
 - [x] Restrições únicas para pagamentos por agendamento e identificador do Mercado Pago.
-- [x] Minitest compatível com Rails 7.1: 49 testes e 136 asserções aprovados.
+- [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
+- [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
+- [x] Minitest compatível com Rails 7.1: 71 testes e 264 asserções aprovados.
 - [x] Teste de sistema do fluxo agendamento → checkout com suporte a Selenium e Chrome portátil.
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
@@ -23,9 +25,7 @@ Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficia
 
 ## Próximas tarefas prioritárias
 
-- [ ] Expirar reservas pendentes e cobranças PIX não pagas por meio de job no Sidekiq.
-- [ ] Blindar a criação de cobranças contra concorrência no PostgreSQL.
-- [ ] Reconciliar os estados `rejected`, `cancelled` e `refunded` recebidos do Mercado Pago.
+- [ ] Reconciliar o estado `refunded` recebido do Mercado Pago.
 - [ ] Registrar eventos e falhas do webhook para observabilidade em produção.
 - [ ] Executar e documentar uma cobrança completa no sandbox real do Mercado Pago.
 - [ ] Revisar e consolidar as métricas de faturamento e volume de clientes do dashboard.

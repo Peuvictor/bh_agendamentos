@@ -23,4 +23,15 @@ class AppointmentMailer < ApplicationMailer
       subject: "❌ Agendamento Cancelado: #{@service.nome}"
     )
   end
+
+  def expiration_email(appointment)
+    @appointment = appointment
+    @client = appointment.client
+    @service = appointment.service
+
+    mail(
+      to: @client.email,
+      subject: "Prazo de pagamento expirado: #{@service.nome}"
+    )
+  end
 end

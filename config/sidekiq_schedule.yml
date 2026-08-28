@@ -1,0 +1,4 @@
+expire_pending_appointments:
+  cron: "* * * * *"
+  class: "ExpireAppointmentsSweepJob"
+  queue: "maintenance"

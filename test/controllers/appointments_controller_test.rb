@@ -38,6 +38,7 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to appointment_url(appointment)
     assert_equal @client, appointment.client
     assert appointment.pendente?
+    assert_in_delta 30.minutes.from_now, appointment.expires_at, 5.seconds
   end
 
   test "shows an appointment belonging to the signed in client" do

@@ -9,4 +9,13 @@ class AppointmentMailerTest < ActionMailer::TestCase
     assert_includes email.subject, appointment.service.nome
     assert_includes email.body.encoded, "cancelado com sucesso"
   end
+
+  test "explains that an expired appointment released the slot" do
+    appointment = appointments(:one)
+    email = AppointmentMailer.expiration_email(appointment)
+
+    assert_equal [appointment.client.email], email.to
+    assert_includes email.subject, "Prazo de pagamento expirado"
+    assert_includes email.body.encoded, "horário foi liberado"
+  end
 end

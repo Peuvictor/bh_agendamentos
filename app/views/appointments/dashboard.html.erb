@@ -67,7 +67,7 @@
                 <% elsif appointment.cancelado? %>
                   <span class="text-red-500 font-bold flex items-center">
                     <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                    Cancelado
+                    <%= appointment_status_label(appointment).capitalize %>
                   </span>
                 <% else %>
                   <span class="text-yellow-600 font-bold flex items-center">
