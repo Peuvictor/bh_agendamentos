@@ -86,6 +86,7 @@ gem "devise", "~> 5.0"
 gem "redis", "~> 5.4"
 
 gem "sidekiq", "~> 7.2"
+gem "sidekiq-cron", "~> 2.4"
 
 gem "connection_pool", "= 2.4.1"
 

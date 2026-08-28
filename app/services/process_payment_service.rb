@@ -1,76 +1,116 @@
 class ProcessPaymentService
-  # Expõe o erro (caso falhe) e o payload (para o PIX no frontend)
+  class PaymentUnavailableError < StandardError; end
+
+  ACCEPTED_GATEWAY_STATUSES = %w[approved pending in_process authorized].freeze
+
   attr_reader :error, :payload
 
-  def initialize(appointment:, token:, payment_method_id:, issuer_id:, installments:)
+  # The payment adapter remains injectable without changing the controller-facing keyword API.
+  def initialize(appointment:, token:, payment_method_id:, issuer_id:, installments:, # rubocop:disable Metrics/ParameterLists
+                 gateway: nil) # rubocop:enable Metrics/ParameterLists
     @appointment = appointment
     @token = token
     @payment_method_id = payment_method_id
     @issuer_id = issuer_id
-    @installments = installments || 1 # Garante 1 parcela se for PIX
+    @installments = installments || 1
+    @gateway = gateway
   end
 
   def call
-    # 1. A FONTE DA VERDADE: Pega o preço direto do banco de dados
-    amount = @appointment.service.preco
+    confirmed = false
 
-    require 'mercadopago'
-    sdk = Mercadopago::SDK.new(ENV['MERCADO_PAGO_ACCESS_TOKEN'])
+    Appointment.transaction do
+      @appointment.lock!
+      validate_appointment!
 
-    # 2. CHAVE DE IDEMPOTÊNCIA: Previne dupla cobrança caso a rede oscile
-    idempotency_key = SecureRandom.uuid
+      idempotency_key = SecureRandom.uuid
+      expiration = Time.current + Rails.configuration.x.payment_expiration_minutes.minutes
+      gateway_response = gateway.create_payment(
+        payment_data(expiration),
+        idempotency_key: idempotency_key
+      )
 
-    payment_data = {
-      transaction_amount: amount.to_f,
+      unless ACCEPTED_GATEWAY_STATUSES.include?(gateway_response['status'])
+        @error = gateway_response['status_detail'].presence || 'Pagamento recusado pela operadora.'
+        raise ActiveRecord::Rollback
+      end
+
+      payment = persist_payment!(gateway_response, idempotency_key, expiration)
+      confirmed = payment.aprovado?
+      @payload = gateway_response
+    end
+
+    return false unless @payload
+
+    AppointmentMailer.confirmation_email(@appointment).deliver_later if confirmed
+    true
+  rescue PaymentUnavailableError => e
+    @error = e.message
+    false
+  rescue StandardError => e
+    Rails.logger.warn("Mercado Pago payment creation failed error=#{e.class}")
+    @error = 'Não foi possível processar o pagamento agora. Tente novamente.'
+    false
+  end
+
+  private
+
+  def validate_appointment!
+    unavailable = !@appointment.pendente? || @appointment.start_time <= Time.current ||
+                  @appointment.expires_at.blank? || @appointment.expires_at <= Time.current
+
+    raise PaymentUnavailableError, 'Este agendamento não está disponível para pagamento.' if unavailable
+    return unless Payment.exists?(appointment_id: @appointment.id)
+
+    raise PaymentUnavailableError, 'Já existe um pagamento para este agendamento.'
+  end
+
+  def payment_data(expiration)
+    data = {
+      transaction_amount: @appointment.service.preco.to_f,
       token: @token,
       description: "Agendamento BH: #{@appointment.service.nome}",
       installments: @installments.to_i,
       payment_method_id: @payment_method_id,
       issuer_id: @issuer_id,
       external_reference: @appointment.id.to_s,
-      payer: {
-        email: @appointment.client.email
-      }
+      payer: { email: @appointment.client.email }
     }
+    data[:date_of_expiration] = expiration.iso8601(3) if pix?
+    data
+  end
 
-    # Injeta a chave de segurança no cabeçalho da requisição
-    request_options = Mercadopago::RequestOptions.new(
-      custom_headers: { 'x-idempotency-key': idempotency_key }
+  def persist_payment!(gateway_response, idempotency_key, expiration)
+    approved = gateway_response['status'] == 'approved'
+    payment_expiration = if approved
+                           nil
+                         else
+                           (pix? ? expiration : @appointment.expires_at)
+                         end
+
+    payment = Payment.create!(
+      appointment: @appointment,
+      amount: @appointment.service.preco,
+      status: approved ? :aprovado : :pendente,
+      mp_transaction_id: gateway_response.fetch('id').to_s,
+      idempotency_key: idempotency_key,
+      expires_at: payment_expiration
     )
 
-    result = sdk.payment.create(payment_data, request_options: request_options)
-    mp_response = result[:response]
-
-    # O Mercado Pago retorna 'approved' para Cartão e 'pending' para PIX
-    if %w[approved pending].include?(mp_response['status'])
-      local_status = mp_response['status'] == 'approved' ? :aprovado : :pendente
-
-      # 3. BLOCO DE TRANSAÇÃO: Ou salva tudo (Payment + Appointment) ou não salva nada
-      ActiveRecord::Base.transaction do
-        Payment.create!(
-          appointment: @appointment,
-          amount: amount,
-          status: local_status,
-          mp_transaction_id: mp_response['id'].to_s,
-          idempotency_key: idempotency_key
-        )
-
-        # Só confirma o agendamento imediatamente se o cartão passar direto
-        @appointment.update!(status: 'confirmado') if local_status == :aprovado
-      end
-
-      AppointmentMailer.confirmation_email(@appointment).deliver_later if local_status == :aprovado
-
-      # 4. Guarda a resposta para o Controller devolver o QR Code do PIX ao frontend
-      @payload = mp_response
-      return true
-    else
-      @error = mp_response['status_detail'] || 'Pagamento recusado pela operadora.'
-      return false
+    if approved
+      @appointment.update!(status: :confirmado)
+    elsif pix?
+      @appointment.update!(expires_at: expiration)
     end
-  rescue StandardError => e
-    # Captura quedas de API ou erros de banco e não deixa a aplicação quebrar
-    @error = "Falha interna: #{e.message}"
-    return false
+
+    payment
+  end
+
+  def pix?
+    @payment_method_id == 'pix'
+  end
+
+  def gateway
+    @gateway ||= MercadoPagoPaymentGateway.new
   end
 end

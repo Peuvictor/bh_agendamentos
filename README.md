@@ -15,6 +15,7 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 - Avaliações de serviços após o atendimento.
 - Upload de avatar e fotos de serviços com Active Storage e Cloudinary.
 - Notificações por e-mail processadas em segundo plano com Sidekiq e Redis.
+- Expiração automática e segura de reservas e cobranças PIX abandonadas.
 - Painel administrativo para moderação de usuários e serviços.
 
 ## Pagamentos
@@ -28,13 +29,23 @@ O ciclo implementado atualmente é:
 3. pagamentos `approved` confirmam o agendamento e disparam o e-mail de confirmação;
 4. pagamentos `pending`, como PIX ainda não compensado, mantêm o agendamento pendente até a notificação assíncrona;
 5. o webhook valida a assinatura, consulta o pagamento na API e confirma a reserva quando o PIX muda para `approved`;
-6. cancelamentos preservam o registro e liberam o horário para uma nova reserva.
+6. uma reserva sem cobrança expira após 30 minutos; a emissão de um PIX renova integralmente esse prazo e envia o mesmo instante ao Mercado Pago em `date_of_expiration`;
+7. ao vencer, o sistema consulta o estado remoto e só libera o horário depois de confirmar aprovação, rejeição ou cancelamento da cobrança;
+8. cancelamentos e expirações preservam o registro e liberam o horário para uma nova reserva.
 
 A resposta do backend mantém o status real devolvido pelo Mercado Pago. Tentativas de pagar agendamentos cancelados, passados, pertencentes a outro cliente ou com pagamento já registrado são rejeitadas.
 
 O webhook está disponível em `POST /webhooks/mercado_pago`. Ele valida os headers `x-signature` e `x-request-id` com a chave secreta, exige um timestamp recente, consulta o pagamento na API oficial e processa reenvios sem duplicar a confirmação ou o e-mail. O banco também garante um único pagamento por agendamento e por identificador do Mercado Pago.
 
-A integração ainda está em evolução. Antes do uso em produção, é necessário tratar expiração de reservas e PIX, fortalecer a idempotência da criação de cobranças contra chamadas concorrentes e validar o fluxo completo no ambiente de testes do Mercado Pago.
+Cobranças são criadas sob trava do agendamento, impedindo duplicidade e corrida com a expiração. A reconciliação mantém o horário reservado em caso de timeout, resposta desconhecida ou divergência de identificador, valor ou referência externa. Transições repetidas não duplicam e-mails.
+
+### Expiração e operação do Sidekiq
+
+O `sidekiq-cron` agenda `ExpireAppointmentsSweepJob` na fila `maintenance` a cada minuto. O varredor percorre as reservas pendentes vencidas em lotes de 100 e enfileira um job unitário por UUID. Cada job trava primeiro o agendamento e depois o pagamento, consulta o Mercado Pago quando existe cobrança e registra somente IDs, resultado, estado remoto e duração.
+
+Estados remotos `pending`, `in_process` e `authorized` são cancelados no gateway antes da expiração local. Uma aprovação confirma a reserva; `cancelled` e `rejected` concluem a expiração. Erros temporários ou dados divergentes levantam erro para retry e não liberam o horário. A primeira expiração envia um e-mail específico ao cliente.
+
+O arquivo `config/sidekiq.yml` configura o processo para consumir as filas `default` e `maintenance`. Em produção, mantenha esse arquivo no comando padrão `bundle exec sidekiq`; se a plataforma substituir a lista de filas pela linha de comando, inclua `-q default -q maintenance`.
 
 ## Tecnologias
 
@@ -113,6 +124,7 @@ REDIS_URL=redis://redis:6379/1
 MERCADO_PAGO_PUBLIC_KEY=
 MERCADO_PAGO_ACCESS_TOKEN=
 MERCADO_PAGO_WEBHOOK_SECRET=
+PAYMENT_EXPIRATION_MINUTES=30
 ```
 
 Integrações externas podem exigir variáveis adicionais:
@@ -121,6 +133,7 @@ Integrações externas podem exigir variáveis adicionais:
 - `MERCADO_PAGO_PUBLIC_KEY` para inicializar o Payment Brick no navegador;
 - `MERCADO_PAGO_ACCESS_TOKEN` para a SDK Ruby no backend;
 - `MERCADO_PAGO_WEBHOOK_SECRET` para validar a assinatura das notificações;
+- `PAYMENT_EXPIRATION_MINUTES` para o prazo de reservas e PIX, em minutos; o padrão e o mínimo aceito são `30`;
 - `DATABASE_URL`, `REDIS_URL` e configurações de e-mail no ambiente de produção.
 
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
@@ -156,7 +169,7 @@ docker compose exec web bin/rails test
 A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
 
 ```text
-49 testes, 136 asserções, 0 falhas e 0 erros
+71 testes, 264 asserções, 0 falhas e 0 erros
 ```
 
 O cenário de sistema do agendamento até a tela de checkout também está validado com `1 teste e 5 asserções`.
@@ -185,7 +198,6 @@ Estado validado atualmente: `0 vulnerabilities`.
 
 ## Próximas evoluções
 
-- Tratar expiração de reservas e PIX e reforçar a idempotência na criação de cobranças concorrentes.
 - Ampliar a cobertura do gateway com testes de sistema no navegador e validação no sandbox do Mercado Pago.
 - Consolidar métricas e relatórios para prestadores.
 - Adicionar CI para validar testes, carregamento da aplicação e qualidade do código a cada alteração.

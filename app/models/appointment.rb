@@ -13,8 +13,18 @@ class Appointment < ApplicationRecord
 
   # Callback: calcula o fim antes de validar e salvar
   before_validation :calculate_end_time
+  before_save :clear_expiration_for_terminal_status
+  before_create :set_initial_expiration, if: :pendente?
 
   private
+
+  def set_initial_expiration
+    self.expires_at ||= Time.current + Rails.configuration.x.payment_expiration_minutes.minutes
+  end
+
+  def clear_expiration_for_terminal_status
+    self.expires_at = nil unless pendente?
+  end
 
   def calculate_end_time
     return unless start_time && service
