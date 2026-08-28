@@ -12,7 +12,7 @@ class ProcessPaymentService
 
   def call
     # 1. A FONTE DA VERDADE: Pega o preço direto do banco de dados
-    amount = @appointment.service.price
+    amount = @appointment.service.preco
 
     require 'mercadopago'
     sdk = Mercadopago::SDK.new(ENV['MERCADO_PAGO_ACCESS_TOKEN'])
@@ -23,7 +23,7 @@ class ProcessPaymentService
     payment_data = {
       transaction_amount: amount.to_f,
       token: @token,
-      description: "Agendamento BH: #{@appointment.service.name}",
+      description: "Agendamento BH: #{@appointment.service.nome}",
       installments: @installments.to_i,
       payment_method_id: @payment_method_id,
       issuer_id: @issuer_id,

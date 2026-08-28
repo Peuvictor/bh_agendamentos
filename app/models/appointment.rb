@@ -2,6 +2,7 @@ class Appointment < ApplicationRecord
   belongs_to :client, class_name: 'User', foreign_key: 'client_id'
   belongs_to :service
   has_one :review, dependent: :destroy
+  has_one :payment, dependent: :restrict_with_error
 
   # Enum de status mantido e blindado
   enum :status, { confirmado: 0, cancelado: 1, pendente: 2 }, default: :pendente
@@ -42,8 +43,9 @@ class Appointment < ApplicationRecord
   end
 
   def horario_deve_ser_no_futuro
-    # Se a data/hora existir e for menor que o relógio exato de agora
-    if start_time.present? && start_time < Time.current
+    # O horário precisa ser futuro ao criar ou reagendar. Alterações de status
+    # continuam permitidas depois que o atendimento já aconteceu.
+    if start_time.present? && will_save_change_to_start_time? && start_time < Time.current
       errors.add(:start_time, "não pode ser no passado, uai! Escolha um horário válido.")
     end
   end

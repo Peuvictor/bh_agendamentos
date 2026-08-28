@@ -4,12 +4,12 @@ one:
   appointment: one
   amount: 9.99
   status: 1
-  mp_transaction_id: MyString
-  idempotency_key: MyString
+  mp_transaction_id: mp-transaction-one
+  idempotency_key: idempotency-key-one
 
 two:
   appointment: two
   amount: 9.99
   status: 1
-  mp_transaction_id: MyString
-  idempotency_key: MyString
+  mp_transaction_id: mp-transaction-two
+  idempotency_key: idempotency-key-two

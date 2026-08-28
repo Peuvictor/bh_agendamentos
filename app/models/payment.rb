@@ -1,15 +1,15 @@
-class CreatePayments < ActiveRecord::Migration[7.1]
-  def change
-    create_table :payments, id: :uuid do |t|
-      t.references :appointment, null: false, foreign_key: true, type: :uuid
-      t.decimal :amount, precision: 10, scale: 2, null: false
-      t.integer :status, default: 0, null: false
-      t.string :mp_transaction_id
-      t.string :idempotency_key
+class Payment < ApplicationRecord
+  belongs_to :appointment
 
-      t.timestamps
-    end
+  enum :status, {
+    pendente: 0,
+    aprovado: 1,
+    rejeitado: 2,
+    cancelado: 3
+  }, default: :pendente
 
-    add_index :payments, :idempotency_key, unique: true
-  end
+  validates :appointment_id, uniqueness: true
+  validates :amount, presence: true, numericality: { greater_than: 0 }
+  validates :mp_transaction_id, presence: true, uniqueness: true
+  validates :idempotency_key, presence: true, uniqueness: true
 end

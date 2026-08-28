@@ -4,7 +4,7 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 
 ## Funcionalidades
 
-- Cadastro e autenticação com Devise, incluindo perfis de cliente, prestador e administrador.
+- Cadastro e autenticação com Devise, incluindo perfis de cliente, prestador e administrador, com proteção contra criação pública de contas administrativas.
 - Vitrine pública de serviços com busca por texto e filtro por bairros de Belo Horizonte.
 - Cadastro e gerenciamento de serviços por prestadores.
 - Agendamento com cálculo de duração, validação de horários passados e prevenção de conflitos de agenda.
@@ -17,7 +17,7 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 
 ## Pagamentos
 
-A integração com o Mercado Pago está em evolução. O checkout e o endpoint de pagamento já fazem parte do código, mas o fluxo ainda está sendo consolidado antes do uso em produção — incluindo persistência, confirmação assíncrona e cobertura de testes.
+A integração com o Mercado Pago está em evolução. O projeto já possui checkout, endpoint de pagamento e estrutura de persistência com estados e validações. Antes do uso em produção, ainda é necessário concluir a confirmação assíncrona por webhook, fortalecer a idempotência no banco e ampliar os testes do fluxo externo.
 
 ## Tecnologias
 
@@ -104,18 +104,28 @@ Nunca versione arquivos `.env`, tokens ou chaves de produção.
 
 ## Qualidade e testes
 
-O projeto utiliza Minitest. Os testes podem ser executados dentro do container:
+O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os testes podem ser executados dentro do container:
 
 ```bash
 docker compose exec web bin/rails test
 ```
 
-O conjunto de testes está sendo atualizado junto das evoluções recentes de autenticação, agenda e pagamentos.
+A suíte cobre os principais fluxos de cadastro seguro, pagamentos, serviços, agendamentos, dashboard e administração. Estado validado atualmente:
+
+```text
+30 testes, 58 asserções, 0 falhas e 0 erros
+```
+
+Também é possível verificar o carregamento completo da aplicação com:
+
+```bash
+docker compose exec web bin/rails zeitwerk:check
+```
 
 ## Próximas evoluções
 
 - Finalizar o fluxo de pagamentos do Mercado Pago, incluindo webhooks e idempotência persistente.
-- Ampliar a cobertura de testes de modelos, integrações e fluxos de autorização.
+- Ampliar a cobertura de testes do gateway de pagamento, mailers e fluxos de sistema no navegador.
 - Consolidar métricas e relatórios para prestadores.
 - Adicionar CI para validar testes, carregamento da aplicação e qualidade do código a cada alteração.
 

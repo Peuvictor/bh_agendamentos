@@ -69,6 +69,9 @@ group :development do
 end
 
 group :test do
+  # Rails 7.1 ainda usa a interface de execução da série 5 do Minitest.
+  gem "minitest", "~> 5.0"
+
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"

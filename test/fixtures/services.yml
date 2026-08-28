@@ -3,13 +3,13 @@
 one:
   nome: MyString
   descricao: MyText
-  duracao_minutos: 1
+  duration: 30
   preco: 9.99
   user: one
 
 two:
   nome: MyString
   descricao: MyText
-  duracao_minutos: 1
+  duration: 30
   preco: 9.99
   user: two
