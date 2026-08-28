@@ -108,6 +108,7 @@ POSTGRES_DB=bh_agendamentos_development
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 REDIS_URL=redis://redis:6379/1
+MERCADO_PAGO_PUBLIC_KEY=
 MERCADO_PAGO_ACCESS_TOKEN=
 MERCADO_PAGO_WEBHOOK_SECRET=
 ```
@@ -115,14 +116,28 @@ MERCADO_PAGO_WEBHOOK_SECRET=
 Integrações externas podem exigir variáveis adicionais:
 
 - `CLOUDINARY_URL` para armazenamento de imagens;
+- `MERCADO_PAGO_PUBLIC_KEY` para inicializar o Payment Brick no navegador;
 - `MERCADO_PAGO_ACCESS_TOKEN` para a SDK Ruby no backend;
 - `MERCADO_PAGO_WEBHOOK_SECRET` para validar a assinatura das notificações;
-- chave pública do Mercado Pago para inicializar o Payment Brick no navegador;
 - `DATABASE_URL`, `REDIS_URL` e configurações de e-mail no ambiente de produção.
 
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
 
 No painel do Mercado Pago, cadastre a URL HTTPS pública `https://seu-dominio/webhooks/mercado_pago` para notificações de pagamento e copie a assinatura secreta gerada para `MERCADO_PAGO_WEBHOOK_SECRET`.
+
+### Validação no sandbox do Mercado Pago
+
+Use a Public Key e o Access Token de teste pertencentes à mesma aplicação do Mercado Pago. Inicie o projeto, crie um agendamento como cliente e confirme que o Payment Brick aparece na tela de pagamento. Realize pagamentos somente com os dados de teste fornecidos pelo Mercado Pago e acompanhe a mudança de `pending` para `approved` tanto no agendamento quanto no painel de Webhooks.
+
+Se `MERCADO_PAGO_PUBLIC_KEY` estiver ausente ou a SDK externa não puder ser carregada, a tela exibirá uma mensagem amigável sem expor tokens ou detalhes internos.
+
+O cenário automatizado de agendamento até o checkout roda sem navegador por padrão. Em um ambiente com Chrome instalado, utilize Selenium headless para também aguardar a renderização do Brick:
+
+```bash
+SYSTEM_TEST_DRIVER=selenium bin/rails test test/system/appointments_test.rb
+```
+
+O ambiente local precisa ter Chrome ou Chromium disponível para esse modo. As credenciais de teste ficam apenas no arquivo `.env` local; elas não são versionadas. Sem essas credenciais, a suíte ainda valida estruturalmente a chegada ao checkout usando `rack_test`, mas não realiza uma cobrança sandbox.
 
 ## Qualidade e testes
 
@@ -135,8 +150,10 @@ docker compose exec web bin/rails test
 A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
 
 ```text
-48 testes, 131 asserções, 0 falhas e 0 erros
+49 testes, 136 asserções, 0 falhas e 0 erros
 ```
+
+O cenário de sistema do agendamento até a tela de checkout também está validado com `1 teste e 5 asserções`.
 
 Também é possível verificar o carregamento completo da aplicação com:
 

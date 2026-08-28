@@ -47,6 +47,26 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match "paymentBrick_container", response.body
   end
 
+  test "renders the configured Mercado Pago checkout for a pending appointment" do
+    appointment = Appointment.create!(
+      client: @client,
+      service: @service,
+      start_time: 6.days.from_now.change(hour: 14, min: 0)
+    )
+    previous_public_key = ENV["MERCADO_PAGO_PUBLIC_KEY"]
+    ENV["MERCADO_PAGO_PUBLIC_KEY"] = "TEST-public-key"
+
+    get appointment_url(appointment)
+
+    assert_response :success
+    assert_select "meta[name='mp-public-key'][content='TEST-public-key']"
+    assert_select "[data-controller='payment']"
+    assert_select "[data-payment-target='feedback']"
+    assert_select "#paymentBrick_container"
+  ensure
+    ENV["MERCADO_PAGO_PUBLIC_KEY"] = previous_public_key
+  end
+
   test "does not let a client confirm an appointment through the update route" do
     patch appointment_url(@appointment), params: {
       appointment: { status: "confirmado" }

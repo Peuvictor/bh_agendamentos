@@ -97,6 +97,10 @@
            data-payment-appointment-id-value="<%= @appointment.id %>"
            data-payment-amount-value="<%= @appointment.service.preco %>">
 
+        <div data-payment-target="feedback"
+             class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700"
+             role="alert"></div>
+
         <!-- O Brick do Mercado Pago será injetado nesta div -->
         <div id="paymentBrick_container" data-payment-target="container" class="min-h-[300px] flex items-center justify-center">
            <span class="text-slate-400 text-sm animate-pulse">Carregando ambiente seguro...</span>

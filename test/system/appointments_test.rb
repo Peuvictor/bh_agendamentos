@@ -2,48 +2,35 @@ require "application_system_test_case"
 
 class AppointmentsTest < ApplicationSystemTestCase
   setup do
-    @appointment = appointments(:one)
+    @client = users(:two)
+    @service = services(:one)
+    @previous_public_key = ENV["MERCADO_PAGO_PUBLIC_KEY"]
+    ENV["MERCADO_PAGO_PUBLIC_KEY"] ||= "TEST-system-public-key"
   end
 
-  test "visiting the index" do
-    visit appointments_url
-    assert_selector "h1", text: "Appointments"
+  teardown do
+    ENV["MERCADO_PAGO_PUBLIC_KEY"] = @previous_public_key
   end
 
-  test "should create appointment" do
-    visit appointments_url
-    click_on "New appointment"
+  test "client creates an appointment and reaches the configured checkout" do
+    visit new_user_session_path
+    fill_in "E-mail", with: @client.email
+    fill_in "Senha", with: "password123"
+    click_button "Entrar"
 
-    fill_in "Client", with: @appointment.client_id
-    fill_in "End time", with: @appointment.end_time
-    fill_in "Service", with: @appointment.service_id
-    fill_in "Start time", with: @appointment.start_time
-    fill_in "Status", with: @appointment.status
-    click_on "Create Appointment"
+    visit new_service_appointment_path(@service)
+    fill_in "Dia do Agendamento", with: 10.days.from_now.to_date.iso8601
+    select "11:30", from: "Horário Disponível"
+    click_button "Confirmar Agendamento"
 
-    assert_text "Appointment was successfully created"
-    click_on "Back"
-  end
+    assert_text "Horário reservado. Conclua o pagamento para confirmar o agendamento."
+    assert_text "Concluir Agendamento"
+    assert_selector "meta[name='mp-public-key'][content='#{ENV.fetch("MERCADO_PAGO_PUBLIC_KEY")}']", visible: :all
+    assert_selector "[data-controller='payment']"
+    assert_selector "#paymentBrick_container"
 
-  test "should update Appointment" do
-    visit appointment_url(@appointment)
-    click_on "Edit this appointment", match: :first
-
-    fill_in "Client", with: @appointment.client_id
-    fill_in "End time", with: @appointment.end_time
-    fill_in "Service", with: @appointment.service_id
-    fill_in "Start time", with: @appointment.start_time
-    fill_in "Status", with: @appointment.status
-    click_on "Update Appointment"
-
-    assert_text "Appointment was successfully updated"
-    click_on "Back"
-  end
-
-  test "should destroy Appointment" do
-    visit appointment_url(@appointment)
-    click_on "Destroy this appointment", match: :first
-
-    assert_text "Appointment was successfully destroyed"
+    if Capybara.current_driver != :rack_test
+      assert_no_selector "#paymentBrick_container .animate-pulse", wait: 15
+    end
   end
 end
