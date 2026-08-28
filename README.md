@@ -137,6 +137,8 @@ O cenário automatizado de agendamento até o checkout roda sem navegador por pa
 SYSTEM_TEST_DRIVER=selenium bin/rails test test/system/appointments_test.rb
 ```
 
+Para usar um navegador portátil sem instalação administrativa, informe também `CHROME_BINARY` e `CHROMEDRIVER_PATH` apontando para os executáveis compatíveis.
+
 O ambiente local precisa ter Chrome ou Chromium disponível para esse modo. As credenciais de teste ficam apenas no arquivo `.env` local; elas não são versionadas. Sem essas credenciais, a suíte ainda valida estruturalmente a chegada ao checkout usando `rack_test`, mas não realiza uma cobrança sandbox.
 
 ## Qualidade e testes
