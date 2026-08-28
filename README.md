@@ -45,6 +45,7 @@ A integração ainda está em evolução. Antes do uso em produção, é necess�
 - Hotwire (Turbo e Stimulus)
 - Tailwind CSS
 - Docker e Docker Compose
+- Minitest e RuboCop
 - Cloudinary / Active Storage
 - Mercado Pago Payment Brick, SDK JavaScript e SDK Ruby oficial
 
@@ -105,6 +106,7 @@ As variáveis básicas de desenvolvimento estão em `.env.example`:
 
 ```dotenv
 POSTGRES_DB=bh_agendamentos_development
+POSTGRES_TEST_DB=bh_agendamentos_test
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 REDIS_URL=redis://redis:6379/1
@@ -123,6 +125,8 @@ Integrações externas podem exigir variáveis adicionais:
 
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
 
+No Docker, `POSTGRES_DB` e `POSTGRES_TEST_DB` devem apontar para bancos diferentes. A suíte Rails prepara e limpa somente o banco de teste.
+
 No painel do Mercado Pago, cadastre a URL HTTPS pública `https://seu-dominio/webhooks/mercado_pago` para notificações de pagamento e copie a assinatura secreta gerada para `MERCADO_PAGO_WEBHOOK_SECRET`.
 
 ### Validação no sandbox do Mercado Pago
@@ -134,7 +138,7 @@ Se `MERCADO_PAGO_PUBLIC_KEY` estiver ausente ou a SDK externa não puder ser car
 O cenário automatizado de agendamento até o checkout roda sem navegador por padrão. Em um ambiente com Chrome instalado, utilize Selenium headless para também aguardar a renderização do Brick:
 
 ```bash
-SYSTEM_TEST_DRIVER=selenium bin/rails test test/system/appointments_test.rb
+docker compose exec web sh -lc 'SYSTEM_TEST_DRIVER=selenium bin/rails test test/system/appointments_test.rb'
 ```
 
 Para usar um navegador portátil sem instalação administrativa, informe também `CHROME_BINARY` e `CHROMEDRIVER_PATH` apontando para os executáveis compatíveis.
@@ -156,6 +160,14 @@ A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos,
 ```
 
 O cenário de sistema do agendamento até a tela de checkout também está validado com `1 teste e 5 asserções`.
+
+O código Ruby, Rails e Minitest é analisado pelo RuboCop:
+
+```bash
+docker compose exec web bundle exec rubocop
+```
+
+A configuração mantém uma linha de base em `.rubocop_todo.yml` para o código legado. Novos arquivos e trechos fora dessa linha de base já precisam atender às regras de Ruby, Rails e Minitest.
 
 Também é possível verificar o carregamento completo da aplicação com:
 

@@ -51,6 +51,11 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
   gem 'faker'
+
+  # Static analysis for Ruby, Rails and the existing Minitest suite.
+  gem "rubocop", "~> 1.90", require: false
+  gem "rubocop-minitest", "~> 0.40", require: false
+  gem "rubocop-rails", "~> 2.37", require: false
 end
 
 group :development do
