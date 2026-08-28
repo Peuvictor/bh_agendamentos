@@ -27,6 +27,7 @@ class ProcessPaymentService
       installments: @installments.to_i,
       payment_method_id: @payment_method_id,
       issuer_id: @issuer_id,
+      external_reference: @appointment.id.to_s,
       payer: {
         email: @appointment.client.email
       }

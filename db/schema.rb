@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_28_150000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_28_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -64,8 +64,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_150000) do
     t.string "idempotency_key"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["appointment_id"], name: "index_payments_on_appointment_id"
+    t.index ["appointment_id"], name: "index_payments_on_appointment_id", unique: true
     t.index ["idempotency_key"], name: "index_payments_on_idempotency_key", unique: true
+    t.index ["mp_transaction_id"], name: "index_payments_on_mp_transaction_id", unique: true
   end
 
   create_table "reviews", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

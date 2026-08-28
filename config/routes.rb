@@ -47,6 +47,10 @@ Rails.application.routes.draw do
   # 6. PAGAMENTOS
   resources :payments, only: [:create]
 
+  namespace :webhooks do
+    post :mercado_pago, to: "mercado_pago#create"
+  end
+
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
   end

@@ -26,12 +26,15 @@ O ciclo implementado atualmente é:
 1. o cliente reserva um horário, criando um agendamento `pendente`;
 2. o cliente é direcionado para a tela de pagamento;
 3. pagamentos `approved` confirmam o agendamento e disparam o e-mail de confirmação;
-4. pagamentos `pending`, como PIX ainda não compensado, mantêm o agendamento pendente;
-5. cancelamentos preservam o registro e liberam o horário para uma nova reserva.
+4. pagamentos `pending`, como PIX ainda não compensado, mantêm o agendamento pendente até a notificação assíncrona;
+5. o webhook valida a assinatura, consulta o pagamento na API e confirma a reserva quando o PIX muda para `approved`;
+6. cancelamentos preservam o registro e liberam o horário para uma nova reserva.
 
 A resposta do backend mantém o status real devolvido pelo Mercado Pago. Tentativas de pagar agendamentos cancelados, passados, pertencentes a outro cliente ou com pagamento já registrado são rejeitadas.
 
-A integração ainda está em evolução. Antes do uso em produção, é necessário implementar o webhook para atualizar pagamentos assíncronos, tratar expiração de reservas e PIX, fortalecer a idempotência contra chamadas concorrentes e validar o fluxo completo no ambiente de testes do Mercado Pago.
+O webhook está disponível em `POST /webhooks/mercado_pago`. Ele valida os headers `x-signature` e `x-request-id` com a chave secreta, exige um timestamp recente, consulta o pagamento na API oficial e processa reenvios sem duplicar a confirmação ou o e-mail. O banco também garante um único pagamento por agendamento e por identificador do Mercado Pago.
+
+A integração ainda está em evolução. Antes do uso em produção, é necessário tratar expiração de reservas e PIX, fortalecer a idempotência da criação de cobranças contra chamadas concorrentes e validar o fluxo completo no ambiente de testes do Mercado Pago.
 
 ## Tecnologias
 
@@ -105,16 +108,21 @@ POSTGRES_DB=bh_agendamentos_development
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 REDIS_URL=redis://redis:6379/1
+MERCADO_PAGO_ACCESS_TOKEN=
+MERCADO_PAGO_WEBHOOK_SECRET=
 ```
 
 Integrações externas podem exigir variáveis adicionais:
 
 - `CLOUDINARY_URL` para armazenamento de imagens;
 - `MERCADO_PAGO_ACCESS_TOKEN` para a SDK Ruby no backend;
+- `MERCADO_PAGO_WEBHOOK_SECRET` para validar a assinatura das notificações;
 - chave pública do Mercado Pago para inicializar o Payment Brick no navegador;
 - `DATABASE_URL`, `REDIS_URL` e configurações de e-mail no ambiente de produção.
 
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
+
+No painel do Mercado Pago, cadastre a URL HTTPS pública `https://seu-dominio/webhooks/mercado_pago` para notificações de pagamento e copie a assinatura secreta gerada para `MERCADO_PAGO_WEBHOOK_SECRET`.
 
 ## Qualidade e testes
 
@@ -127,7 +135,7 @@ docker compose exec web bin/rails test
 A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
 
 ```text
-40 testes, 97 asserções, 0 falhas e 0 erros
+48 testes, 131 asserções, 0 falhas e 0 erros
 ```
 
 Também é possível verificar o carregamento completo da aplicação com:
@@ -136,9 +144,17 @@ Também é possível verificar o carregamento completo da aplicação com:
 docker compose exec web bin/rails zeitwerk:check
 ```
 
+Para auditar as dependências JavaScript:
+
+```bash
+docker compose exec web npm audit
+```
+
+Estado validado atualmente: `0 vulnerabilities`.
+
 ## Próximas evoluções
 
-- Finalizar o fluxo assíncrono do Mercado Pago com webhooks, expiração de reservas e idempotência persistente.
+- Tratar expiração de reservas e PIX e reforçar a idempotência na criação de cobranças concorrentes.
 - Ampliar a cobertura do gateway com testes de sistema no navegador e validação no sandbox do Mercado Pago.
 - Consolidar métricas e relatórios para prestadores.
 - Adicionar CI para validar testes, carregamento da aplicação e qualidade do código a cada alteração.
