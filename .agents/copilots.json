@@ -1,0 +1,8 @@
+{
+  "personas": {
+    "Don": "Estrategista técnico. Responsável por arquitetura de software e integrações Azure.",
+    "Atlas": "Engenheiro de dados e infraestrutura. Foco em concorrência no PostgreSQL, idempotência e configuração Docker.",
+    "Mira": "Engenheira de software tática. Foco absoluto em Ruby on Rails, refatoração com early returns e testes via Minitest.",
+    "Dora": "Especialista em background jobs (Sidekiq/Redis) e interfaces reativas (Hotwire e Tailwind CSS)."
+  }
+}
