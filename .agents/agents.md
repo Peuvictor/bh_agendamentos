@@ -1,21 +1,23 @@
-# 💈 BH Agendamentos - Antigravity & Codex Guidelines
+# 💈 BH Agendamentos - Diretrizes de Desenvolvimento (AGENTS.md)
 
-## 1. Identidade e Domínio do Sistema
-* **Natureza:** SaaS de agendamento para serviços locais (barbearias, pet shops, estúdios) em Belo Horizonte.
-* **Restrição Absoluta:** Este sistema **NÃO é um agregador de eventos**. O Codex está expressamente proibido de sugerir arquiteturas, tabelas, models ou fluxos voltados para venda de ingressos ou shows.
+## 1. Escopo e Domínio Restrito
+* **Sistema:** SaaS de agendamento de serviços locais em Belo Horizonte (ex: barbearias, pet shops, estúdios).
+* **Bloqueio de Domínio:** O projeto **NÃO é um agregador de eventos**. O Codex e os sub-agentes estão proibidos de sugerir código ou tabelas referentes a ingressos, shows ou assentos.
 
-## 2. Topologia de Copilotos (Antigravity)
-* **Don (Orquestração e Arquitetura):** Invoque para desenhar a segurança dos fluxos do Mercado Pago, validação de assinaturas (`x-signature`) e estruturação de regras de negócio complexas.
-* **Atlas (Dados e Infraestrutura):** Responsável pelo ambiente **Docker**, travas de concorrência no **PostgreSQL** e garantia de **idempotência** (evitar duplicação de pagamentos e reservas).
-* **Mira (Engenharia Tática):** Responsável pelo código **Ruby 3.3 / Rails 7.1**. Deve aplicar *early returns*, manter *Skinny Controllers*, delegar lógica pesada e escrever testes robustos no **Minitest 5**.
-* **Dora (Assincronia e UI):** Focada em **Sidekiq/Redis** para processar webhooks/expiração de PIX em background e na interface utilizando **Hotwire (Turbo/Stimulus) + Tailwind CSS**. Proibido introduzir frameworks JS pesados.
+## 2. Topologia de Copilotos e Roadmap
+* **Don (Estratégia e Integração):** Acione para arquitetar a **reconciliação de status do Mercado Pago** (rejected, cancelled, refunded) e definir a estrutura de **logs de webhook e observabilidade** em produção.
+* **Atlas (Infraestrutura e Dados):** Acione para blindar o PostgreSQL com travas de **idempotência concorrente** (evitando cobranças simultâneas) e para configurar o **CI no GitHub Actions**.
+* **Mira (Engenharia Back-end):** Acione para corrigir as **métricas do dashboard** em `dashboard_controller.rb`, refatorar os **testes de sistema** em `appointments_test.rb` eliminando rastros de scaffolds antigos, e manter os controllers magros aplicando *early returns*.
+* **Dora (Assincronia e Front-end):** Acione para estruturar o job de **expiração de PIX e reservas pendentes** no Sidekiq/Redis e para manutenções na interface com **Hotwire (Turbo/Stimulus) + Tailwind CSS**.
 
-## 3. Regras de Execução Segura (Codex no WSL)
-* **Execução via Container:** Como o projeto roda em WSL/Docker, o Codex deve sugerir comandos de terminal exclusivamente utilizando o prefixo `docker compose exec web` ou `bin/rails`.
-* **Proteção de Hardware:** É proibido habilitar a gravação de logs de feedback ou telemetria verbosa do modelo em SQLite local para evitar desgaste no SSD.
-* **Modo Seguro de Banco:** Sub-agentes não têm permissão para executar comandos como `db:drop` ou `db:reset` sem confirmação humana explícita.
+## 3. Padrões de Código e Execução
+* **Ambiente Local:** Utilize exclusivamente o prefixo `docker compose exec web` para comandos de terminal.
+* **Pagamentos:** O webhook (`POST /webhooks/mercado_pago`) é a fonte da verdade. É obrigatório manter a validação de `x-signature` e `x-request-id` intacta.
+* **Segurança de Hardware:** É proibido habilitar logs excessivos do Codex em SQLite para prevenir desgaste de SSD no ambiente WSL.
 
-## 4. Diretrizes Específicas: Mercado Pago (`payments_controller.rb`)
-* O endpoint do webhook é a única fonte de verdade autorizada a consolidar um status de pagamento.
-* O cálculo de duração e a validação de horários passados devem ser checados rigorosamente antes de instanciar o SDK.
-* Reenvios de notificações pelo gateway devem ser absorvidos silenciosamente sem duplicar o envio de e-mails de confirmação.
+## 4. Critérios de Aceitação (Checklist de Qualidade)
+* O código só é considerado pronto após passar por:
+  1. `bin/rails test` (com 100% de aprovação e sem regressões nas 136 asserções atuais).
+  2. `SYSTEM_TEST_DRIVER=selenium` para qualquer alteração no Payment Brick.
+  3. `bin/rails zeitwerk:check`.
+  4. `npm audit` (mantendo 0 vulnerabilidades).

@@ -41,3 +41,24 @@
 /node_modules
 
 .env
+# Inteligência Artificial e Copilotos
+/.codex/
+/.agents/*
+!/.agents/agents.md
+!/.agents/copilots.json
+
+
+# Histórico de Debugger e Cobertura de Testes
+.byebug_history
+/coverage/
+
+# Docker Local Override (Protege configurações exclusivas da sua máquina)
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Arquivos de Sistema e IDEs (VS Code, macOS, Windows)
+.DS_Store
+Thumbs.db
+/.vscode/
+/.idea/
+*.swp
