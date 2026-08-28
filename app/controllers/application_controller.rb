@@ -15,7 +15,9 @@ class ApplicationController < ActionController::Base
   def configure_permitted_parameters
     # 1. CADASTRO INICIAL:
     # Adicionamos :bairro para que o usuário possa escolher onde mora/trabalha já no registro
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:nome, :telefone, :role, :bairro])
+    # O papel do usuário é tratado pelo controller de cadastro. Não permita
+    # :role diretamente aqui, pois isso possibilitaria o envio de role=admin.
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:nome, :telefone, :bairro])
 
     # 2. EDIÇÃO DE PERFIL:
     # Adicionamos :bairro aqui para permitir que o prestador atualize sua região de atendimento

@@ -38,9 +38,9 @@ Rails.application.routes.draw do
     mount Sidekiq::Web => '/sidekiq'
   end
 
-  devise_for :users
+  devise_for :users, controllers: { registrations: 'users/registrations' }
   devise_scope :user do
-    get '/users', to: 'devise/registrations#new'
+    get '/users', to: 'users/registrations#new'
     get '/users/password', to: 'devise/passwords#new'
   end
 
