@@ -1,4 +1,4 @@
-class ProcessPaymentService
+class ProcessPaymentService # rubocop:disable Metrics/ClassLength
   class PaymentUnavailableError < StandardError; end
 
   ACCEPTED_GATEWAY_STATUSES = %w[approved pending in_process authorized].freeze
@@ -7,12 +7,13 @@ class ProcessPaymentService
 
   # The payment adapter remains injectable without changing the controller-facing keyword API.
   def initialize(appointment:, token:, payment_method_id:, issuer_id:, installments:, # rubocop:disable Metrics/ParameterLists
-                 gateway: nil) # rubocop:enable Metrics/ParameterLists
+                 payer: nil, gateway: nil) # rubocop:enable Metrics/ParameterLists
     @appointment = appointment
     @token = token
     @payment_method_id = payment_method_id
     @issuer_id = issuer_id
     @installments = installments || 1
+    @payer = payer || {}
     @gateway = gateway
   end
 
@@ -48,7 +49,7 @@ class ProcessPaymentService
     @error = e.message
     false
   rescue StandardError => e
-    Rails.logger.warn("Mercado Pago payment creation failed error=#{e.class}")
+    log_payment_creation_failure(e)
     @error = 'Não foi possível processar o pagamento agora. Tente novamente.'
     false
   end
@@ -74,7 +75,7 @@ class ProcessPaymentService
       payment_method_id: @payment_method_id,
       issuer_id: @issuer_id,
       external_reference: @appointment.id.to_s,
-      payer: { email: @appointment.client.email }
+      payer: payer_data
     }
     data[:date_of_expiration] = expiration.iso8601(3) if pix?
     data
@@ -108,6 +109,22 @@ class ProcessPaymentService
 
   def pix?
     @payment_method_id == 'pix'
+  end
+
+  def payer_data
+    payer = { email: @appointment.client.email }
+    identification = @payer['identification'] || @payer[:identification]
+    payer[:identification] = identification if identification.present?
+    payer
+  end
+
+  def log_payment_creation_failure(error)
+    details = if error.is_a?(MercadoPagoPaymentGateway::InvalidResponseError)
+                " status=#{error.status || 'unknown'} code=#{error.error_code || 'unknown'}"
+              else
+                ''
+              end
+    Rails.logger.warn("Mercado Pago payment creation failed error=#{error.class}#{details}")
   end
 
   def gateway

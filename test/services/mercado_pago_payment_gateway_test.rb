@@ -13,6 +13,7 @@ class MercadoPagoPaymentGatewayTest < ActiveSupport::TestCase
     end
 
     assert_includes error.message, 'HTTP 503'
+    assert_equal 503, error.status
     payment_api.verify
   end
 

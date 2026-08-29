@@ -3,7 +3,15 @@
 require 'mercadopago'
 
 class MercadoPagoPaymentGateway
-  class InvalidResponseError < StandardError; end
+  class InvalidResponseError < StandardError
+    attr_reader :status, :error_code
+
+    def initialize(operation:, status:, response:)
+      @status = status
+      @error_code = response['error'] || response[:error]
+      super("Mercado Pago #{operation} returned HTTP #{status || 'unknown'}")
+    end
+  end
 
   def initialize(sdk: nil)
     @sdk = sdk || Mercadopago::SDK.new(ENV.fetch('MERCADO_PAGO_ACCESS_TOKEN', nil))
@@ -35,7 +43,7 @@ class MercadoPagoPaymentGateway
     body = result[:response] || result['response']
 
     unless (status.nil? || status.to_i.between?(200, 299)) && body.is_a?(Hash)
-      raise InvalidResponseError, "Mercado Pago #{operation} returned HTTP #{status || 'unknown'}"
+      raise InvalidResponseError.new(operation: operation, status: status, response: body || {})
     end
 
     body
