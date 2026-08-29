@@ -154,7 +154,9 @@ No painel do Mercado Pago, cadastre a URL HTTPS pública `https://seu-dominio/we
 
 ### Validação no sandbox do Mercado Pago
 
-Use a Public Key e o Access Token de teste pertencentes à mesma aplicação do Mercado Pago. Inicie o projeto, crie um agendamento como cliente e confirme que o Payment Brick aparece na tela de pagamento. Realize pagamentos somente com os dados de teste fornecidos pelo Mercado Pago e acompanhe a mudança de `pending` para `approved` tanto no agendamento quanto no painel de Webhooks.
+Use a Public Key e o Access Token de teste pertencentes à mesma aplicação do Mercado Pago. O roteiro completo para configurar um staging HTTPS, validar cartão aprovado, webhook assinado e PIX pendente até a expiração está em [Validação do Mercado Pago em staging](docs/mercado_pago_sandbox.md).
+
+No sandbox do Checkout Bricks, use cartão de teste para comprovar o fluxo aprovado. O PIX comprova emissão do QR Code, estado `pending`, prazo remoto, cancelamento por expiração e liberação segura do horário; não use um pagamento bancário real para tentar aprová-lo.
 
 Se `MERCADO_PAGO_PUBLIC_KEY` estiver ausente ou a SDK externa não puder ser carregada, a tela exibirá uma mensagem amigável sem expor tokens ou detalhes internos.
 
@@ -211,7 +213,7 @@ alterações enviadas para a branch `main`.
 
 ## Próximas evoluções
 
-- Ampliar a cobertura do gateway com testes de sistema no navegador e validação no sandbox do Mercado Pago.
+- Executar o runbook no staging e registrar a validação real do sandbox do Mercado Pago.
 - Integrar os eventos estruturados do webhook a alertas e painéis operacionais do ambiente de produção.
 
 ## Autor

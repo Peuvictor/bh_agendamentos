@@ -27,7 +27,7 @@ Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficia
 ## Próximas tarefas prioritárias
 
 - [x] Registrar eventos e falhas do webhook para observabilidade em produção, com retenção configurável.
-- [ ] Executar e documentar uma cobrança completa no sandbox real do Mercado Pago.
+- [ ] Executar o [runbook de staging](docs/mercado_pago_sandbox.md) e registrar uma cobrança completa no sandbox real do Mercado Pago.
 - [x] Revisar e consolidar as métricas de faturamento e volume de clientes do dashboard.
 - [x] GitHub Actions para RuboCop, Minitest, Zeitwerk e auditoria de dependências.
 
