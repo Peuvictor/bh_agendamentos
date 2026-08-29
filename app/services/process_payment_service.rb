@@ -33,6 +33,10 @@ class ProcessPaymentService # rubocop:disable Metrics/ClassLength
 
       unless ACCEPTED_GATEWAY_STATUSES.include?(gateway_response['status'])
         @error = gateway_response['status_detail'].presence || 'Pagamento recusado pela operadora.'
+        Rails.logger.info(
+          "Mercado Pago payment rejected status=#{gateway_response['status'] || 'unknown'} " \
+          "status_detail=#{@error}"
+        )
         raise ActiveRecord::Rollback
       end
 
