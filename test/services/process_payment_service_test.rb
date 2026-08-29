@@ -70,6 +70,25 @@ class ProcessPaymentServiceTest < ActiveSupport::TestCase
     assert_equal expected_expiration.iso8601(3), gateway.payment_data[:date_of_expiration]
   end
 
+  test "sends the PIX payer identification supplied by the Payment Brick" do
+    appointment = build_appointment
+    gateway = RecordingGateway.new
+    identification = { "type" => "CPF", "number" => "19119119100" }
+    service = ProcessPaymentService.new(
+      appointment: appointment,
+      token: "test-token",
+      payment_method_id: "pix",
+      issuer_id: nil,
+      installments: 1,
+      payer: { "identification" => identification },
+      gateway: gateway
+    )
+
+    assert service.call
+    assert_equal appointment.client.email, gateway.payment_data[:payer][:email]
+    assert_equal identification, gateway.payment_data[:payer][:identification]
+  end
+
   private
 
   def build_appointment

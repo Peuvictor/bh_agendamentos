@@ -41,6 +41,8 @@ export default class extends Controller {
   }
 
   async renderBrick(bricksBuilder) {
+    this.containerTarget.replaceChildren()
+
     const settings = {
       initialization: {
         amount: this.amountValue,

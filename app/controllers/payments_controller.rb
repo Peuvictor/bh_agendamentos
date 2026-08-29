@@ -15,7 +15,8 @@ class PaymentsController < ApplicationController
       token: payment_params[:token],
       payment_method_id: payment_params[:payment_method_id],
       issuer_id: payment_params[:issuer_id],
-      installments: payment_params[:installments]
+      installments: payment_params[:installments],
+      payer: payment_params[:payer]&.to_h
     )
 
     if service.call
