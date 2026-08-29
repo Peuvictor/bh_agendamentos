@@ -5,7 +5,6 @@ class AppointmentsTest < ApplicationSystemTestCase
     @client = users(:two)
     @service = services(:one)
     @previous_public_key = ENV["MERCADO_PAGO_PUBLIC_KEY"]
-    @sandbox_key_configured = ENV["MERCADO_PAGO_PUBLIC_KEY"].present?
     ENV["MERCADO_PAGO_PUBLIC_KEY"] ||= "TEST-system-public-key"
   end
 
@@ -34,7 +33,7 @@ class AppointmentsTest < ApplicationSystemTestCase
     assert_selector "[data-controller='payment']"
     assert_selector "#paymentBrick_container"
 
-    if Capybara.current_driver != :rack_test && @sandbox_key_configured
+    if Capybara.current_driver != :rack_test
       assert_no_selector "#paymentBrick_container .animate-pulse", wait: 15
     end
   end
