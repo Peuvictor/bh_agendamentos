@@ -93,6 +93,7 @@
                   <% badge_color = case appointment.status
                                    when 'confirmado' then 'bg-green-100 text-green-800'
                                    when 'cancelado' then 'bg-red-100 text-red-800'
+                                   when 'reembolsado' then 'bg-purple-100 text-purple-800'
                                    else 'bg-yellow-100 text-yellow-800'
                                    end %>
                   <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full <%= badge_color %> uppercase">

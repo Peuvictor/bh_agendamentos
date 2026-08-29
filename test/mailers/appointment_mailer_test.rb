@@ -18,4 +18,13 @@ class AppointmentMailerTest < ActionMailer::TestCase
     assert_includes email.subject, "Prazo de pagamento expirado"
     assert_includes email.body.encoded, "horário foi liberado"
   end
+
+  test "explains that a refunded appointment is inactive and its slot was released" do
+    appointment = appointments(:one)
+    email = AppointmentMailer.refund_email(appointment)
+
+    assert_equal [appointment.client.email], email.to
+    assert_includes email.subject, "Pagamento reembolsado"
+    assert_match(/reserva não está mais ativa.*horário foi liberado/m, email.body.encoded)
+  end
 end

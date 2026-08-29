@@ -6,15 +6,8 @@ class PaymentsController < ApplicationController
     # 2. Segurança de posse: Garante que o agendamento pertence ao cliente logado
     @appointment = Appointment.where(client_id: current_user.id).find(params[:appointment_id])
 
-    unless @appointment.pendente? && @appointment.start_time > Time.current
-      return render json: { status: 'rejected', error: 'Este agendamento não está disponível para pagamento.' }, status: :unprocessable_content
-    end
-
-    # 3. Trava contra pagamento duplicado
-    if @appointment.payment.present?
-      message = @appointment.payment.aprovado? ? 'Este agendamento já foi pago.' : 'Já existe um pagamento em processamento para este agendamento.'
-      return render json: { status: 'rejected', error: message }, status: :unprocessable_content
-    end
+    guard_error = payment_guard_error
+    return render_payment_error(guard_error) if guard_error
 
     # 4. Chama o Service enviando APENAS os dados de tokenização
     service = ProcessPaymentService.new(
@@ -38,6 +31,26 @@ class PaymentsController < ApplicationController
   end
 
   private
+
+  def payment_guard_error
+    return 'O pagamento deste agendamento foi reembolsado. Faça uma nova reserva para pagar novamente.' if refunded?
+    return 'Este agendamento não está disponível para pagamento.' unless payable?
+    return if @appointment.payment.blank?
+
+    @appointment.payment.aprovado? ? 'Este agendamento já foi pago.' : 'Já existe um pagamento em processamento para este agendamento.'
+  end
+
+  def refunded?
+    @appointment.reembolsado? || @appointment.payment&.reembolsado?
+  end
+
+  def payable?
+    @appointment.pendente? && @appointment.start_time > Time.current
+  end
+
+  def render_payment_error(message)
+    render json: { status: 'rejected', error: message }, status: :unprocessable_content
+  end
 
   # 6. BLINDAGEM: :transaction_amount e :description foram EXPULSOS dos parâmetros permitidos.
   def payment_params

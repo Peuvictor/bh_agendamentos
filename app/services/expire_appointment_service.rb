@@ -62,7 +62,7 @@ class ExpireAppointmentService
     validate!(cancellation, payment)
     @remote_status = cancellation['status']
 
-    unless %w[approved cancelled rejected].include?(@remote_status)
+    unless %w[approved cancelled refunded rejected].include?(@remote_status)
       raise CancellationNotConfirmedError, 'Mercado Pago cancellation was not confirmed'
     end
 
@@ -76,7 +76,7 @@ class ExpireAppointmentService
     validate!(gateway_payment, payment)
     @remote_status = gateway_payment['status']
 
-    raise cancellation_error unless %w[approved cancelled rejected].include?(@remote_status)
+    raise cancellation_error unless %w[approved cancelled refunded rejected].include?(@remote_status)
 
     apply_locked(payment, gateway_payment)
   end
@@ -100,7 +100,8 @@ class ExpireAppointmentService
     PaymentStateTransitionService::Outcome.new(
       result: :expired_without_payment,
       appointment_confirmed: false,
-      appointment_expired: first_expiration
+      appointment_expired: first_expiration,
+      appointment_refunded: false
     )
   end
 

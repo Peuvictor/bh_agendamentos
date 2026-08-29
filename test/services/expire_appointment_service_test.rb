@@ -188,9 +188,42 @@ class ExpireAppointmentServiceTest < ActiveSupport::TestCase
     assert_predicate payment.appointment.reload, :pendente?
   end
 
+  test 'reconciles a refunded payment and releases the expired slot' do
+    payment = create_expired_payment(transaction_id: 'mp-refunded')
+    gateway = FakeGateway.new(fetch_responses: gateway_payment(payment, 'refunded'))
+    service = ExpireAppointmentService.new(appointment_id: payment.appointment_id, gateway: gateway)
+
+    assert_enqueued_emails 1 do
+      assert service.call
+    end
+
+    assert_equal :refunded, service.result
+    assert_predicate payment.reload, :reembolsado?
+    assert_predicate payment.appointment.reload, :reembolsado?
+    assert_equal 0, gateway.cancel_calls
+  end
+
+  test 'reconciles a refund after a cancellation conflict' do
+    payment = create_expired_payment(transaction_id: 'mp-raced-refund')
+    gateway = FakeGateway.new(
+      fetch_responses: [gateway_payment(payment, 'pending'), gateway_payment(payment, 'refunded')],
+      cancel_error: MercadoPagoPaymentGateway::InvalidResponseError.new('HTTP 400')
+    )
+    service = ExpireAppointmentService.new(appointment_id: payment.appointment_id, gateway: gateway)
+
+    assert_enqueued_emails 1 do
+      assert service.call
+    end
+
+    assert_equal :refunded, service.result
+    assert_predicate payment.reload, :reembolsado?
+    assert_predicate payment.appointment.reload, :reembolsado?
+    assert_equal 2, gateway.fetch_calls
+  end
+
   test 'keeps the slot reserved for an unknown remote state' do
     payment = create_expired_payment(transaction_id: 'mp-unknown')
-    gateway = FakeGateway.new(fetch_responses: gateway_payment(payment, 'refunded'))
+    gateway = FakeGateway.new(fetch_responses: gateway_payment(payment, 'charged_back'))
     service = ExpireAppointmentService.new(appointment_id: payment.appointment_id, gateway: gateway)
 
     assert_raises(PaymentStateTransitionService::UnknownRemoteStatusError) { service.call }

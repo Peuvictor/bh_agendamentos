@@ -1,5 +1,6 @@
 require "test_helper"
 
+# rubocop:disable-next Metrics/ClassLength
 class AppointmentsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @client = users(:two)
@@ -117,5 +118,39 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
 
     assert appointment.reload.pendente?
     assert_redirected_to dashboard_url
+  end
+
+  test "does not let the provider assign the refunded state manually" do
+    appointment = Appointment.create!(
+      client: @client,
+      service: @service,
+      start_time: 5.days.from_now.change(hour: 14, min: 0)
+    )
+    sign_out @client
+    sign_in @service.user
+
+    assert_no_enqueued_emails do
+      patch update_status_appointment_url(appointment, status: :reembolsado)
+    end
+
+    assert_predicate appointment.reload, :pendente?
+    assert_redirected_to dashboard_url
+  end
+
+  test "does not downgrade a refunded appointment through cancellation" do
+    appointment = Appointment.create!(
+      client: @client,
+      service: @service,
+      start_time: 5.days.from_now.change(hour: 15, min: 0),
+      status: :reembolsado,
+      refunded_at: Time.current
+    )
+
+    assert_no_enqueued_emails do
+      delete appointment_url(appointment)
+    end
+
+    assert_predicate appointment.reload, :reembolsado?
+    assert_redirected_to appointments_url
   end
 end

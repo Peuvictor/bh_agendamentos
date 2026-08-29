@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_28_170000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_28_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -53,6 +53,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_170000) do
     t.datetime "updated_at", null: false
     t.datetime "expires_at"
     t.datetime "expired_at"
+    t.datetime "refunded_at"
     t.index ["client_id"], name: "index_appointments_on_client_id"
     t.index ["service_id"], name: "index_appointments_on_service_id"
     t.index ["start_time", "end_time"], name: "index_appointments_on_start_time_and_end_time"
@@ -69,6 +70,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_170000) do
     t.datetime "updated_at", null: false
     t.datetime "expires_at"
     t.datetime "expired_at"
+    t.datetime "refunded_at"
     t.index ["appointment_id"], name: "index_payments_on_appointment_id", unique: true
     t.index ["idempotency_key"], name: "index_payments_on_idempotency_key", unique: true
     t.index ["mp_transaction_id"], name: "index_payments_on_mp_transaction_id", unique: true

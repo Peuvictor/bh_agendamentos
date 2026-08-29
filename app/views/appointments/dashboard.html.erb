@@ -22,11 +22,11 @@
         <tbody class="bg-white divide-y divide-gray-200">
           <% @my_appointments.each do |appointment| %>
             <%# Muda a cor da linha se estiver cancelado para dar destaque visual %>
-            <tr class="hover:bg-gray-50 transition-colors <%= 'opacity-60 bg-gray-50' if appointment.cancelado? %>">
+            <tr class="hover:bg-gray-50 transition-colors <%= 'opacity-60 bg-gray-50' if appointment.cancelado? || appointment.reembolsado? %>">
 
               <%# DATA E HORA %>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-bold <%= appointment.cancelado? ? 'line-through text-gray-400' : 'text-gray-900' %>">
+                <div class="text-sm font-bold <%= (appointment.cancelado? || appointment.reembolsado?) ? 'line-through text-gray-400' : 'text-gray-900' %>">
                   <%= appointment.start_time.strftime("%d/%m/%Y") %>
                 </div>
                 <div class="text-sm text-gray-500 flex items-center mt-1">
@@ -64,6 +64,11 @@
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
                     Confirmado
                   </span>
+                <% elsif appointment.reembolsado? %>
+                  <span class="text-purple-600 font-bold flex items-center">
+                    <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                    Reembolsado
+                  </span>
                 <% elsif appointment.cancelado? %>
                   <span class="text-red-500 font-bold flex items-center">
                     <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
@@ -88,7 +93,7 @@
                   <% end %>
 
                   <%# Mostra botão de cancelar se NÃO estiver cancelado %>
-                  <% unless appointment.cancelado? %>
+                  <% unless appointment.cancelado? || appointment.reembolsado? %>
                     <%= button_to "Cancelar", update_status_appointment_path(appointment, status: :cancelado),
                         method: :patch,
                         data: { turbo_confirm: "⚠️ Tem certeza que deseja cancelar este agendamento, uai?" },

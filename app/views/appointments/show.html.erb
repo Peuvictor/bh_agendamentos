@@ -1,4 +1,20 @@
-<% if @appointment.cancelado? %>
+<% if @appointment.reembolsado? %>
+  <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-purple-100">
+    <div class="bg-purple-700 p-6 text-center">
+      <div class="text-4xl mb-3">↩️</div>
+      <h2 class="text-white text-xl font-bold">Pagamento reembolsado</h2>
+    </div>
+
+    <div class="p-8 text-center">
+      <p class="text-gray-700"><%= @appointment.service.nome %></p>
+      <p class="text-gray-500 mt-2"><%= @appointment.start_time.strftime("%d/%m/%Y às %H:%M") %></p>
+      <p class="text-sm text-gray-500 mt-6">
+        A reserva não está mais ativa e o horário foi liberado. Para realizar o serviço, faça uma nova reserva.
+      </p>
+      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "mt-6 w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition" %>
+    </div>
+  </div>
+<% elsif @appointment.cancelado? %>
   <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-red-100">
     <div class="bg-red-600 p-6 text-center">
       <div class="text-4xl mb-3">❌</div>
