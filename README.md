@@ -11,7 +11,7 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 - Confirmação condicionada à aprovação do pagamento, sem permitir alteração manual de status pelo cliente.
 - Cancelamento lógico, preservando o histórico do agendamento e do pagamento enquanto libera o horário na agenda.
 - Área de agendamentos para clientes e prestadores.
-- Dashboard do prestador com métricas de agenda e faturamento.
+- Dashboard do prestador com receita recebida e prevista, ticket médio, clientes pagantes e indicadores da agenda.
 - Avaliações de serviços após o atendimento.
 - Upload de avatar e fotos de serviços com Active Storage e Cloudinary.
 - Notificações por e-mail processadas em segundo plano com Sidekiq e Redis.
@@ -38,6 +38,8 @@ O ciclo implementado atualmente é:
 A resposta do backend mantém o status real devolvido pelo Mercado Pago. Tentativas de pagar agendamentos cancelados, passados, pertencentes a outro cliente ou com pagamento já registrado são rejeitadas.
 
 O webhook está disponível em `POST /webhooks/mercado_pago`. Ele valida os headers `x-signature` e `x-request-id` com a chave secreta, exige um timestamp recente, consulta o pagamento na API oficial e processa reenvios sem duplicar a confirmação ou o e-mail. O banco também garante um único pagamento por agendamento e por identificador do Mercado Pago.
+
+Cada recebimento autenticado do webhook gera um registro de auditoria com o tipo e identificador do evento, IDs de correlação, resultado do processamento, estado remoto, código HTTP, duração e uma classificação de falha quando aplicável. Requisições com assinatura inválida ou configuração ausente não são persistidas; elas produzem apenas um evento JSON estruturado nos logs. O conteúdo da requisição, assinaturas, mensagens de exceção e segredos não são registrados. O job `PurgeWebhookDeliveriesJob` remove diariamente, pela fila `maintenance`, os registros além do prazo configurado por `WEBHOOK_EVENT_RETENTION_DAYS` (90 dias por padrão; mínimo de 7).
 
 Cobranças são criadas sob trava do agendamento, impedindo duplicidade e corrida com a expiração. A reconciliação mantém o horário reservado em caso de timeout, resposta desconhecida ou divergência de identificador, valor ou referência externa. Transições repetidas não duplicam e-mails.
 
@@ -131,6 +133,7 @@ MERCADO_PAGO_PUBLIC_KEY=
 MERCADO_PAGO_ACCESS_TOKEN=
 MERCADO_PAGO_WEBHOOK_SECRET=
 PAYMENT_EXPIRATION_MINUTES=30
+WEBHOOK_EVENT_RETENTION_DAYS=90
 ```
 
 Integrações externas podem exigir variáveis adicionais:
@@ -140,6 +143,7 @@ Integrações externas podem exigir variáveis adicionais:
 - `MERCADO_PAGO_ACCESS_TOKEN` para a SDK Ruby no backend;
 - `MERCADO_PAGO_WEBHOOK_SECRET` para validar a assinatura das notificações;
 - `PAYMENT_EXPIRATION_MINUTES` para o prazo de reservas e PIX, em minutos; o padrão e o mínimo aceito são `30`;
+- `WEBHOOK_EVENT_RETENTION_DAYS` para a retenção da auditoria de webhooks autenticados; o padrão é `90` dias e o mínimo aceito é `7`;
 - `DATABASE_URL`, `REDIS_URL` e configurações de e-mail no ambiente de produção.
 
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
@@ -175,7 +179,7 @@ docker compose exec web bin/rails test
 A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
 
 ```text
-87 testes, 347 asserções, 0 falhas e 0 erros
+109 testes, 435 asserções, 0 falhas e 0 erros
 ```
 
 O cenário de sistema do agendamento até a tela de checkout também está validado com `1 teste e 5 asserções`.
@@ -202,11 +206,13 @@ docker compose exec web npm audit
 
 Estado validado atualmente: `0 vulnerabilities`.
 
+O GitHub Actions executa essas quatro verificações em cada pull request e em
+alterações enviadas para a branch `main`.
+
 ## Próximas evoluções
 
 - Ampliar a cobertura do gateway com testes de sistema no navegador e validação no sandbox do Mercado Pago.
-- Consolidar métricas e relatórios para prestadores.
-- Adicionar CI para validar testes, carregamento da aplicação e qualidade do código a cada alteração.
+- Integrar os eventos estruturados do webhook a alertas e painéis operacionais do ambiente de produção.
 
 ## Autor
 

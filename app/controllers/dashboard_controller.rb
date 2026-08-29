@@ -3,38 +3,21 @@ class DashboardController < ApplicationController
   before_action :ensure_provider!
 
   def index
-    # Busca apenas os agendamentos onde o usuário atual é o dono do serviço
-    @meus_agendamentos = Appointment.joins(:service).where(services: { user_id: current_user.id })
+    metrics = ProviderDashboardMetrics.new(provider: current_user)
 
-    # --- MÉTRICAS FINANCEIRAS ---
-
-    # Dinheiro no bolso (Agendamentos finalizados)
-    # *Atenção: verifique se o seu status de finalizado no banco é "concluido" (ou "completed", etc)*
-    @faturamento_realizado = @meus_agendamentos.where(status: 'concluido').sum('services.preco')
-
-    # Dinheiro na mesa (Agendamentos futuros, excluindo cancelados e já concluídos)
-    agendamentos_validos = @meus_agendamentos.where.not(status: %i[cancelado reembolsado])
-    @faturamento_previsto = agendamentos_validos.where.not(status: 'concluido').sum('services.preco')
-
-    # Ticket Médio (Média de valor dos serviços vendidos válidos)
-    total_agendamentos = agendamentos_validos.count
-    @ticket_medio = total_agendamentos.positive? ? (@faturamento_realizado + @faturamento_previsto) / total_agendamentos : 0
-
-    # --- GRÁFICOS (Chartkick + Groupdate) ---
-
-    @faturamento_diario = agendamentos_validos
-                            .group_by_day('appointments.start_time')
-                            .sum('services.preco')
-
-    @agendamentos_por_status = @meus_agendamentos.group(:status).count
+    @faturamento_realizado = metrics.revenue_received
+    @faturamento_previsto = metrics.revenue_expected
+    @ticket_medio = metrics.average_ticket
+    @clientes_pagantes = metrics.paying_clients_count
+    @faturamento_diario = metrics.daily_revenue
+    @agendamentos_por_status = metrics.appointments_by_status
   end
 
   private
 
-  # Trava: Se o cliente tentar acessar a URL /dashboard, ele é chutado de volta
   def ensure_provider!
-    unless current_user.provider? || current_user.admin?
-      redirect_to root_path, alert: "Acesso restrito para prestadores."
-    end
+    return if current_user.provider? || current_user.admin?
+
+    redirect_to root_path, alert: "Acesso restrito para prestadores."
   end
 end
