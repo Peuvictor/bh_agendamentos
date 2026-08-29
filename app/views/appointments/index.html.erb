@@ -29,7 +29,15 @@
               </div>
 
               <%# BADGE DE STATUS %>
-              <% status_classes = appointment.confirmado? ? "bg-green-100 text-green-700 border-green-200" : (appointment.cancelado? ? "bg-red-100 text-red-700 border-red-200" : "bg-yellow-100 text-yellow-700 border-yellow-200") %>
+              <% status_classes = if appointment.confirmado?
+                                    "bg-green-100 text-green-700 border-green-200"
+                                  elsif appointment.reembolsado?
+                                    "bg-purple-100 text-purple-700 border-purple-200"
+                                  elsif appointment.cancelado?
+                                    "bg-red-100 text-red-700 border-red-200"
+                                  else
+                                    "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                  end %>
               <span class="px-3 py-1 rounded-full text-xs font-bold border <%= status_classes %> uppercase tracking-tighter">
                 <%= appointment_status_label(appointment) %>
               </span>
@@ -105,7 +113,7 @@
               <%= link_to "Ver detalhes", appointment, class: "text-sm font-medium text-gray-400 hover:text-blue-900 transition" %>
 
               <%# Só pode cancelar se for no futuro %>
-              <% if !appointment.cancelado? && appointment.start_time > Time.current %>
+              <% if !appointment.cancelado? && !appointment.reembolsado? && appointment.start_time > Time.current %>
                 <%= button_to appointment_path(appointment),
                               method: :delete,
                               form: { data: { turbo_confirm: "Deseja realmente cancelar este agendamento, uai?" } },

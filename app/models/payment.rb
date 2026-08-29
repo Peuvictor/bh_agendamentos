@@ -5,7 +5,8 @@ class Payment < ApplicationRecord
     pendente: 0,
     aprovado: 1,
     rejeitado: 2,
-    cancelado: 3
+    cancelado: 3,
+    reembolsado: 4
   }, default: :pendente
 
   validates :appointment_id, uniqueness: true

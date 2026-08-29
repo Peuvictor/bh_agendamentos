@@ -13,15 +13,16 @@ class DashboardController < ApplicationController
     @faturamento_realizado = @meus_agendamentos.where(status: 'concluido').sum('services.preco')
 
     # Dinheiro na mesa (Agendamentos futuros, excluindo cancelados e já concluídos)
-    @faturamento_previsto = @meus_agendamentos.where.not(status: ['cancelado', 'concluido']).sum('services.preco')
+    agendamentos_validos = @meus_agendamentos.where.not(status: %i[cancelado reembolsado])
+    @faturamento_previsto = agendamentos_validos.where.not(status: 'concluido').sum('services.preco')
 
     # Ticket Médio (Média de valor dos serviços vendidos válidos)
-    total_agendamentos = @meus_agendamentos.where.not(status: 'cancelado').count
+    total_agendamentos = agendamentos_validos.count
     @ticket_medio = total_agendamentos.positive? ? (@faturamento_realizado + @faturamento_previsto) / total_agendamentos : 0
 
     # --- GRÁFICOS (Chartkick + Groupdate) ---
 
-    @faturamento_diario = @meus_agendamentos
+    @faturamento_diario = agendamentos_validos
                             .group_by_day('appointments.start_time')
                             .sum('services.preco')
 

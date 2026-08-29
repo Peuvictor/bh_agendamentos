@@ -60,6 +60,23 @@ class PaymentsControllerTest < ActionDispatch::IntegrationTest
     assert_includes JSON.parse(response.body)["error"], "em processamento"
   end
 
+  test "explains that a refunded appointment requires a new reservation" do
+    @appointment.update!(status: :reembolsado, refunded_at: Time.current)
+    Payment.create!(
+      appointment: @appointment,
+      amount: @appointment.service.preco,
+      status: :reembolsado,
+      mp_transaction_id: "mp-refunded",
+      idempotency_key: "refunded-idempotency-key",
+      refunded_at: Time.current
+    )
+
+    post payments_url, params: payment_params
+
+    assert_response :unprocessable_content
+    assert_includes JSON.parse(response.body)["error"], "Faça uma nova reserva"
+  end
+
   private
 
   def payment_params

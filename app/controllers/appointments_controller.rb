@@ -59,7 +59,9 @@ class AppointmentsController < ApplicationController
   end
 
   def destroy
-    if @appointment.cancelado?
+    if @appointment.reembolsado?
+      redirect_back fallback_location: appointments_path, alert: "Este agendamento foi reembolsado e não pode ser alterado."
+    elsif @appointment.cancelado?
       redirect_back fallback_location: appointments_path, alert: "Este agendamento já está cancelado."
     elsif @appointment.start_time <= Time.current
       redirect_back fallback_location: appointments_path, alert: "Não é possível cancelar um agendamento que já começou."
@@ -86,7 +88,7 @@ class AppointmentsController < ApplicationController
     if @appointment.service.user == current_user
       requested_status = params[:status].to_s
 
-      unless Appointment.statuses.key?(requested_status)
+      unless %w[confirmado cancelado].include?(requested_status)
         return redirect_to dashboard_path, alert: "Status de agendamento inválido."
       end
 
@@ -143,7 +145,7 @@ class AppointmentsController < ApplicationController
     return unless @service
 
     futuros = @service.appointments
-                       .where.not(status: :cancelado)
+                       .where.not(status: %i[cancelado reembolsado])
                        .where("start_time >= ?", Time.zone.now.beginning_of_day)
 
     @busy_slots = futuros.map do |app|

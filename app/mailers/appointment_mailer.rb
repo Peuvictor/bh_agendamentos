@@ -34,4 +34,15 @@ class AppointmentMailer < ApplicationMailer
       subject: "Prazo de pagamento expirado: #{@service.nome}"
     )
   end
+
+  def refund_email(appointment)
+    @appointment = appointment
+    @client = appointment.client
+    @service = appointment.service
+
+    mail(
+      to: @client.email,
+      subject: "Pagamento reembolsado: #{@service.nome}"
+    )
+  end
 end

@@ -15,6 +15,10 @@ class PaymentTest < ActiveSupport::TestCase
     assert payment.aprovado?
   end
 
+  test "appends refunded without changing existing payment statuses" do
+    assert_equal 4, Payment.statuses.fetch("reembolsado")
+  end
+
   test "requires a positive amount" do
     payment = payments(:one)
     payment.amount = 0

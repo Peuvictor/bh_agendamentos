@@ -1,0 +1,12 @@
+<h1>Pagamento reembolsado</h1>
+
+<p>Olá, <%= @client.nome %>.</p>
+
+<p>
+  O pagamento do serviço <strong><%= @service.nome %></strong>, agendado para
+  <strong><%= l(@appointment.start_time, format: :long) %></strong>, foi reembolsado.
+</p>
+
+<p>A reserva não está mais ativa e o horário foi liberado para novos agendamentos.</p>
+
+<p>Se quiser realizar o serviço, faça uma nova reserva pela plataforma.</p>

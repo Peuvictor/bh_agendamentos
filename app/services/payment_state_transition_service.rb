@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+# rubocop:disable-next Metrics/ClassLength
 class PaymentStateTransitionService
   class UnknownRemoteStatusError < StandardError; end
   class StateConflictError < StandardError; end
 
-  Outcome = Data.define(:result, :appointment_confirmed, :appointment_expired)
+  Outcome = Data.define(:result, :appointment_confirmed, :appointment_expired, :appointment_refunded)
   PENDING_STATUSES = %w[pending in_process authorized].freeze
   UNSUCCESSFUL_STATUSES = { 'cancelled' => :cancelado, 'rejected' => :rejeitado }.freeze
 
@@ -32,6 +33,8 @@ class PaymentStateTransitionService
 
   def apply_locked!(now: Time.current)
     status = @gateway_payment['status']
+    return already_refunded_outcome(now: now) if refunded_locally?
+    return refund_locked!(now: now) if status == 'refunded'
     return approve_locked! if status == 'approved'
     return pending_outcome if PENDING_STATUSES.include?(status)
 
@@ -44,6 +47,7 @@ class PaymentStateTransitionService
   def self.deliver_notifications(outcome, appointment)
     AppointmentMailer.confirmation_email(appointment).deliver_later if outcome.appointment_confirmed
     AppointmentMailer.expiration_email(appointment).deliver_later if outcome.appointment_expired
+    AppointmentMailer.refund_email(appointment).deliver_later if outcome.appointment_refunded
   end
 
   private
@@ -58,7 +62,8 @@ class PaymentStateTransitionService
     Outcome.new(
       result: approval_result(confirmed, already_processed),
       appointment_confirmed: confirmed,
-      appointment_expired: false
+      appointment_expired: false,
+      appointment_refunded: false
     )
   end
 
@@ -72,12 +77,18 @@ class PaymentStateTransitionService
     Outcome.new(
       result: payment_status == :rejeitado ? :rejected : :cancelled,
       appointment_confirmed: false,
-      appointment_expired: first_expiration
+      appointment_expired: first_expiration,
+      appointment_refunded: false
     )
   end
 
   def pending_outcome
-    Outcome.new(result: :pending, appointment_confirmed: false, appointment_expired: false)
+    Outcome.new(
+      result: :pending,
+      appointment_confirmed: false,
+      appointment_expired: false,
+      appointment_refunded: false
+    )
   end
 
   def approval_result(confirmed, already_processed)
@@ -89,7 +100,50 @@ class PaymentStateTransitionService
 
   def already_finished_outcome(payment_status)
     @payment.update!(status: payment_status) unless @payment.public_send("#{payment_status}?")
-    Outcome.new(result: :already_finished, appointment_confirmed: false, appointment_expired: false)
+    Outcome.new(
+      result: :already_finished,
+      appointment_confirmed: false,
+      appointment_expired: false,
+      appointment_refunded: false
+    )
+  end
+
+  def refund_locked!(now:)
+    first_refund = @payment.refunded_at.nil? && @appointment.refunded_at.nil?
+
+    @payment.update!(status: :reembolsado, refunded_at: @payment.refunded_at || now)
+    @appointment.update!(status: :reembolsado, refunded_at: @appointment.refunded_at || now)
+
+    Outcome.new(
+      result: first_refund ? :refunded : :already_refunded,
+      appointment_confirmed: false,
+      appointment_expired: false,
+      appointment_refunded: first_refund
+    )
+  end
+
+  def refunded_locally?
+    @payment.reembolsado? || @appointment.reembolsado?
+  end
+
+  def already_refunded_outcome(now:)
+    ensure_refund_invariants!(now)
+
+    Outcome.new(
+      result: :already_refunded,
+      appointment_confirmed: false,
+      appointment_expired: false,
+      appointment_refunded: false
+    )
+  end
+
+  def ensure_refund_invariants!(now)
+    refunded_at = @payment.refunded_at || @appointment.refunded_at || now
+    payment_refunded = @payment.reembolsado? && @payment.refunded_at?
+    appointment_refunded = @appointment.reembolsado? && @appointment.refunded_at?
+
+    @payment.update!(status: :reembolsado, refunded_at: refunded_at) unless payment_refunded
+    @appointment.update!(status: :reembolsado, refunded_at: refunded_at) unless appointment_refunded
   end
 
   def expire_records!(payment_status, now)

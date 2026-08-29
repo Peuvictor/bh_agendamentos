@@ -5,7 +5,7 @@ class Appointment < ApplicationRecord
   has_one :payment, dependent: :restrict_with_error
 
   # Enum de status mantido e blindado
-  enum :status, { confirmado: 0, cancelado: 1, pendente: 2 }, default: :pendente
+  enum :status, { confirmado: 0, cancelado: 1, pendente: 2, reembolsado: 4 }, default: :pendente
 
   validates :start_time, presence: true
   validate :no_overlapping_appointments
@@ -42,7 +42,7 @@ class Appointment < ApplicationRecord
     servicos_do_prestador_ids = Service.where(user_id: prestador_id).pluck(:id)
 
     overlapping = Appointment.where(service_id: servicos_do_prestador_ids)
-                             .where.not(status: :cancelado)
+                             .where.not(status: %i[cancelado reembolsado])
                              .where("start_time < ? AND end_time > ?", end_time, start_time)
 
     overlapping = overlapping.where.not(id: id) if persisted?
