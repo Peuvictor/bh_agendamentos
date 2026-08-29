@@ -18,7 +18,7 @@ Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficia
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 87 testes e 347 asserções aprovados.
+- [x] Minitest compatível com Rails 7.1: 109 testes e 435 asserções aprovados.
 - [x] Teste de sistema do fluxo agendamento → checkout com suporte a Selenium e Chrome portátil.
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
@@ -26,10 +26,10 @@ Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficia
 
 ## Próximas tarefas prioritárias
 
-- [ ] Registrar eventos e falhas do webhook para observabilidade em produção.
+- [x] Registrar eventos e falhas do webhook para observabilidade em produção, com retenção configurável.
 - [ ] Executar e documentar uma cobrança completa no sandbox real do Mercado Pago.
-- [ ] Revisar e consolidar as métricas de faturamento e volume de clientes do dashboard.
-- [ ] Adicionar GitHub Actions para RuboCop, Minitest, Zeitwerk e auditoria de dependências.
+- [x] Revisar e consolidar as métricas de faturamento e volume de clientes do dashboard.
+- [x] GitHub Actions para RuboCop, Minitest, Zeitwerk e auditoria de dependências.
 
 ## Manutenção contínua
 

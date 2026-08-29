@@ -18,4 +18,13 @@ class SidekiqScheduleTest < ActiveSupport::TestCase
     assert_includes config.fetch(:queues), 'default'
     assert_includes config.fetch(:queues), 'maintenance'
   end
+
+  test 'purges webhook deliveries daily in the maintenance queue' do
+    schedule = YAML.safe_load_file(Rails.root.join('config/sidekiq_schedule.yml'))
+    retention_job = schedule.fetch('purge_webhook_deliveries')
+
+    assert_equal '17 3 * * *', retention_job.fetch('cron')
+    assert_equal 'PurgeWebhookDeliveriesJob', retention_job.fetch('class')
+    assert_equal 'maintenance', retention_job.fetch('queue')
+  end
 end

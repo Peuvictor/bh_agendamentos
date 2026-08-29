@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_28_200000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_28_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -115,6 +115,30 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_200000) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "webhook_deliveries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "provider", limit: 50, default: "mercado_pago", null: false
+    t.string "gateway_request_id", limit: 255
+    t.string "rails_request_id", limit: 255
+    t.string "event_type", limit: 100
+    t.string "event_action", limit: 100
+    t.string "resource_id", limit: 255
+    t.uuid "payment_id"
+    t.integer "status", default: 0, null: false
+    t.string "service_result", limit: 100
+    t.string "remote_status", limit: 100
+    t.string "failure_code", limit: 100
+    t.string "error_class", limit: 255
+    t.integer "response_status"
+    t.integer "duration_ms"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["gateway_request_id"], name: "index_webhook_deliveries_on_gateway_request_id"
+    t.index ["payment_id"], name: "index_webhook_deliveries_on_payment_id"
+    t.index ["resource_id"], name: "index_webhook_deliveries_on_resource_id"
+    t.index ["status", "created_at"], name: "index_webhook_deliveries_on_status_and_created_at"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "appointments", "services"
@@ -122,4 +146,5 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_200000) do
   add_foreign_key "payments", "appointments"
   add_foreign_key "reviews", "appointments"
   add_foreign_key "services", "users"
+  add_foreign_key "webhook_deliveries", "payments", on_delete: :nullify
 end
