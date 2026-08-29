@@ -51,7 +51,7 @@ export default class extends Controller {
         paymentMethods: {
           creditCard: "all",
           debitCard: "all",
-          pix: "all",
+          bankTransfer: "pix",
         },
       },
       callbacks: {
