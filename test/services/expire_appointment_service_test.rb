@@ -144,7 +144,11 @@ class ExpireAppointmentServiceTest < ActiveSupport::TestCase
     payment = create_expired_payment(transaction_id: 'mp-raced-approval')
     gateway = FakeGateway.new(
       fetch_responses: [gateway_payment(payment, 'pending'), gateway_payment(payment, 'approved')],
-      cancel_error: MercadoPagoPaymentGateway::InvalidResponseError.new('HTTP 400')
+      cancel_error: MercadoPagoPaymentGateway::InvalidResponseError.new(
+        operation: 'cancel',
+        status: 400,
+        response: { 'error' => 'bad_request' }
+      )
     )
     service = ExpireAppointmentService.new(appointment_id: payment.appointment_id, gateway: gateway)
 
@@ -207,7 +211,11 @@ class ExpireAppointmentServiceTest < ActiveSupport::TestCase
     payment = create_expired_payment(transaction_id: 'mp-raced-refund')
     gateway = FakeGateway.new(
       fetch_responses: [gateway_payment(payment, 'pending'), gateway_payment(payment, 'refunded')],
-      cancel_error: MercadoPagoPaymentGateway::InvalidResponseError.new('HTTP 400')
+      cancel_error: MercadoPagoPaymentGateway::InvalidResponseError.new(
+        operation: 'cancel',
+        status: 400,
+        response: { 'error' => 'bad_request' }
+      )
     )
     service = ExpireAppointmentService.new(appointment_id: payment.appointment_id, gateway: gateway)
 
