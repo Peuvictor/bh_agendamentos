@@ -127,7 +127,11 @@ class Webhooks::MercadoPagoControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "audits a processing exception without changing its retry response" do
-    error = MercadoPagoPaymentGateway::InvalidResponseError.new("sensitive gateway payload")
+    error = MercadoPagoPaymentGateway::InvalidResponseError.new(
+      operation: "fetch",
+      status: 503,
+      response: { "error" => "service_unavailable" }
+    )
     service = service_double(error: error)
 
     SyncMercadoPagoPaymentService.stub(:new, ->(**) { service }) do
