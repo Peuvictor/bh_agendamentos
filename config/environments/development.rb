@@ -14,6 +14,9 @@ Rails.application.configure do
   # Show full error reports.
   config.consider_all_requests_local = true
 
+  # Allow temporary HTTPS tunnels used to receive signed webhooks locally.
+  config.hosts << /[a-z0-9-]+\.trycloudflare\.com/
+
   # Enable server timing
   config.server_timing = true
 

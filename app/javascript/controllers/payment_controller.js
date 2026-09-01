@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { loadMercadoPago } from "@mercadopago/sdk-js"
+
+const BRICK_INITIALIZATION_TIMEOUT_MS = 20_000
 
 export default class extends Controller {
   static targets = ["container", "feedback"]
@@ -19,23 +20,25 @@ export default class extends Controller {
     }
 
     try {
-      await loadMercadoPago()
-      if (!this.connected) return
-
       if (typeof window.MercadoPago !== "function") {
-        throw new Error("MercadoPago.js não está disponível")
+        throw new Error("O script MercadoPago.js não foi carregado pelo navegador")
       }
 
       const mercadoPago = new window.MercadoPago(publicKey, { locale: "pt-BR" })
+      this.startInitializationTimeout()
       await this.renderBrick(mercadoPago.bricks())
     } catch (error) {
+      this.clearInitializationTimeout()
       console.error("Falha ao inicializar o Mercado Pago", error)
-      this.showInitializationError("Não foi possível carregar o checkout. Atualize a página ou tente novamente mais tarde.")
+      this.showInitializationError(
+        "Não foi possível carregar o ambiente seguro do Mercado Pago. Verifique bloqueadores do navegador e tente novamente."
+      )
     }
   }
 
   disconnect() {
     this.connected = false
+    this.clearInitializationTimeout()
     this.brickController?.unmount()
     this.brickController = null
   }
@@ -45,8 +48,7 @@ export default class extends Controller {
 
     const settings = {
       initialization: {
-        amount: this.amountValue,
-        preferenceId: null
+        amount: this.amountValue
       },
       customization: {
         visual: { style: { theme: "default" } },
@@ -58,17 +60,38 @@ export default class extends Controller {
       },
       callbacks: {
         onReady: () => {
+          this.clearInitializationTimeout()
           this.clearFeedback()
         },
         onError: (error) => {
+          this.clearInitializationTimeout()
           console.error("Erro no Payment Brick", error)
-          this.showFeedback("O checkout encontrou um erro. Revise os dados ou tente novamente.")
+          const cause = error?.cause || error?.message
+          const detail = cause ? ` (${cause})` : ""
+          this.showFeedback(`O checkout encontrou um erro ao carregar${detail}.`)
         },
         onSubmit: ({ selectedPaymentMethod, formData }) => this.submitPayment(selectedPaymentMethod, formData)
       }
     }
 
     this.brickController = await bricksBuilder.create("payment", this.containerTarget.id, settings)
+  }
+
+  startInitializationTimeout() {
+    this.clearInitializationTimeout()
+    this.initializationTimeout = window.setTimeout(() => {
+      console.error("Payment Brick não ficou pronto dentro do prazo esperado")
+      this.showInitializationError(
+        "O ambiente seguro do Mercado Pago não respondeu. Tente uma janela anônima sem bloqueadores ou outro navegador."
+      )
+    }, BRICK_INITIALIZATION_TIMEOUT_MS)
+  }
+
+  clearInitializationTimeout() {
+    if (!this.initializationTimeout) return
+
+    window.clearTimeout(this.initializationTimeout)
+    this.initializationTimeout = null
   }
 
   async submitPayment(selectedPaymentMethod, formData) {
