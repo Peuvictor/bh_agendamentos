@@ -1,6 +1,15 @@
 require "test_helper"
 
 class AppointmentMailerTest < ActionMailer::TestCase
+  test "uses the configured sender" do
+    previous_sender = ENV.fetch("MAILER_FROM", nil)
+    ENV["MAILER_FROM"] = "sandbox@example.com"
+
+    assert_equal ["sandbox@example.com"], AppointmentMailer.confirmation_email(appointments(:one)).from
+  ensure
+    ENV["MAILER_FROM"] = previous_sender
+  end
+
   test "builds a cancellation email from a persisted appointment" do
     appointment = appointments(:one)
     email = AppointmentMailer.cancellation_email(appointment)

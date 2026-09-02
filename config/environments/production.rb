@@ -1,4 +1,5 @@
 require "active_support/core_ext/integer/time"
+require Rails.root.join("lib/mailer_configuration")
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -72,6 +73,13 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "bh_agendamentos_production"
 
   config.action_mailer.perform_caching = false
+  config.action_mailer.default_url_options = MailerConfiguration.default_url_options(ENV)
+  config.action_mailer.raise_delivery_errors = true
+
+  if (smtp_settings = MailerConfiguration.smtp_settings(ENV))
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = smtp_settings
+  end
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
