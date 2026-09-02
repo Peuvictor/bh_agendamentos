@@ -25,6 +25,10 @@ class MailerConfigurationTest < ActiveSupport::TestCase
     assert_nil MailerConfiguration.smtp_settings({})
   end
 
+  test 'uses the application sender for Devise emails' do
+    assert_equal ApplicationMailer.default[:from].call, Devise.mailer_sender
+  end
+
   test 'builds smtp settings from environment values' do
     settings = MailerConfiguration.smtp_settings(
       'APP_HOST' => 'staging.example.com',
