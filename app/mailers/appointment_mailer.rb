@@ -1,6 +1,4 @@
 class AppointmentMailer < ApplicationMailer
-  default from: 'nao-responda@agendabh.com.br'
-
   def confirmation_email(appointment)
     @appointment = appointment
     @client = appointment.client

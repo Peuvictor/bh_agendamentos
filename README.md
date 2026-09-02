@@ -146,6 +146,13 @@ Integrações externas podem exigir variáveis adicionais:
 - `WEBHOOK_EVENT_RETENTION_DAYS` para a retenção da auditoria de webhooks autenticados; o padrão é `90` dias e o mínimo aceito é `7`;
 - `DATABASE_URL`, `REDIS_URL` e configurações de e-mail no ambiente de produção.
 
+Para envio de e-mails em staging e produção, configure `SMTP_ADDRESS`,
+`SMTP_PORT`, `SMTP_DOMAIN`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAILER_FROM`,
+`SMTP_AUTHENTICATION` e `SMTP_ENABLE_STARTTLS_AUTO` conforme o provedor. Use
+`APP_HOST` para o domínio público dos links enviados; no Render, a aplicação
+usa automaticamente `RENDER_EXTERNAL_HOSTNAME` quando `APP_HOST` não estiver
+definido. O processo web e o Sidekiq precisam receber as mesmas variáveis SMTP.
+
 Nunca versione arquivos `.env`, tokens ou chaves de produção.
 
 No Docker, `POSTGRES_DB` e `POSTGRES_TEST_DB` devem apontar para bancos diferentes. A suíte Rails prepara e limpa somente o banco de teste.
