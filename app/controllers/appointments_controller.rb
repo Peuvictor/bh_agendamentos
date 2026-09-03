@@ -10,12 +10,9 @@ class AppointmentsController < ApplicationController
   before_action :set_busy_slots, only: %i[new create edit update]
 
   def index
-    # Roteamento inteligente: O que eu vejo depende de quem eu sou.
-    if current_user.provider?
-      @appointments = current_user.received_appointments.order(start_time: :asc)
-    else
-      @appointments = current_user.appointments.order(start_time: :asc)
-    end
+    # Esta tela representa as reservas feitas pela conta. Prestadores consultam
+    # os agendamentos recebidos separadamente no dashboard.
+    @appointments = current_user.appointments.order(start_time: :asc)
   end
 
   def show
