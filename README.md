@@ -2,24 +2,65 @@
 
 Marketplace de agendamentos para profissionais independentes e negócios locais de Belo Horizonte. Clientes podem encontrar serviços, escolher um horário e acompanhar suas reservas; prestadores gerenciam serviços, agenda e indicadores.
 
+## Demonstração online
+
+A aplicação está hospedada no **Render** e pode ser acessada em:
+
+### [Acessar o BH Agendamentos](https://bh-agendamentos.onrender.com/)
+
+Este é um ambiente de demonstração para portfólio. A integração financeira utiliza o sandbox do Mercado Pago; não devem ser usados cartões, contas ou pagamentos reais.
+
 ## Funcionalidades
 
-- Cadastro e autenticação com Devise, incluindo perfis de cliente, prestador e administrador, com proteção contra criação pública de contas administrativas.
+### Clientes
+
+- Cadastro, login, edição de perfil e recuperação de senha com Devise.
+- Perfis separados para clientes, prestadores e administradores.
 - Vitrine pública de serviços com busca por texto e filtro por bairros de Belo Horizonte.
-- Cadastro e gerenciamento de serviços por prestadores.
-- Agenda semanal configurável pelo prestador, com turnos dinâmicos, dias fechados e horários calculados conforme a duração de cada serviço.
-- Bloqueios de feriados e imprevistos por dia inteiro ou faixa de horário, para todos os serviços ou somente um serviço específico.
-- Agendamento inicialmente pendente, com cálculo de duração, validação de expediente, bloqueios e horários passados, além da prevenção de conflitos entre todos os serviços do prestador.
-- Confirmação condicionada à aprovação do pagamento, sem permitir alteração manual de status pelo cliente.
-- Cancelamento lógico, preservando o histórico do agendamento e do pagamento enquanto libera o horário na agenda.
-- Área de agendamentos para clientes e prestadores.
-- Dashboard do prestador com receita recebida e prevista, ticket médio, clientes pagantes e indicadores da agenda.
-- Avaliações de serviços após o atendimento.
-- Upload de avatar e fotos de serviços com Active Storage e Cloudinary.
-- Notificações por e-mail processadas em segundo plano com Sidekiq e Redis.
-- Expiração automática e segura de reservas e cobranças PIX abandonadas.
-- Reconciliação idempotente de reembolsos totais informados pelo Mercado Pago.
+- Visualização do prestador, descrição, duração, preço e imagem do serviço.
+- Consulta dinâmica dos horários realmente disponíveis para cada data.
+- Reserva com duração calculada automaticamente e estado inicial `pendente`.
+- Pagamento por cartão ou PIX no Checkout Bricks do Mercado Pago.
+- Acompanhamento do estado e dos detalhes dos próprios agendamentos.
+- Cancelamento lógico de reservas futuras, preservando o histórico e liberando o horário.
+- Avaliação do serviço após o atendimento.
+- Notificações por e-mail para confirmação, cancelamento, expiração e reembolso.
+
+### Prestadores
+
+- Cadastro, edição e remoção dos próprios serviços, com nome, descrição, duração, preço e foto.
+- Avisos imediatos no formulário quando dados obrigatórios do serviço estão ausentes.
+- Agenda semanal configurável com quantos turnos forem necessários em cada dia.
+- Dias sem expediente definidos ao deixar os turnos vazios.
+- Bloqueio de feriados e imprevistos por dia inteiro ou por faixa de horário.
+- Bloqueios aplicáveis a todos os serviços ou somente a um serviço específico.
+- Cálculo dos horários disponíveis considerando duração do serviço, expediente, bloqueios e reservas de todos os serviços do prestador.
+- Dashboard com agendamentos recebidos, receita recebida e prevista, ticket médio, clientes pagantes e indicadores por status.
+- Confirmação de agendamentos condicionada à existência de pagamento aprovado.
+
+### Pagamentos e automações
+
+- Mercado Pago Payment Brick no navegador e SDK oficial no backend.
+- Preço da cobrança obtido no servidor, sem confiar no valor enviado pelo navegador.
+- Cartão com confirmação imediata e PIX com atualização assíncrona.
+- Webhook com validação de assinatura, consulta à API oficial e processamento idempotente.
+- Proteção contra pagamentos duplicados, reenvios de webhook e condições de corrida.
+- Expiração automática de reservas e cobranças PIX abandonadas.
+- Reconciliação dos estados `pending`, `approved`, `cancelled`, `rejected` e `refunded`.
+- Reembolso total tratado como estado terminal, liberando o horário sem perder o histórico.
+- Auditoria estruturada dos webhooks e limpeza automática conforme o prazo de retenção.
+- Jobs e e-mails em segundo plano com Sidekiq e Redis.
+- Envio SMTP configurável em staging e produção.
+
+### Administração, armazenamento e segurança
+
 - Painel administrativo para moderação de usuários e serviços.
+- Proteção contra criação pública de contas administrativas.
+- Autorização por perfil e validação de propriedade dos registros.
+- Prevenção de horários passados, fora do expediente, bloqueados, desalinhados ou conflitantes.
+- UUIDs, chaves estrangeiras, índices únicos e restrições no PostgreSQL para integridade dos dados.
+- Upload de avatar e fotos de serviços com Active Storage e Cloudinary.
+- Interface responsiva com Tailwind CSS, Turbo e Stimulus.
 
 ## Pagamentos
 
@@ -69,6 +110,8 @@ O arquivo `config/sidekiq.yml` configura o processo para consumir as filas `defa
 - Minitest e RuboCop
 - Cloudinary / Active Storage
 - Mercado Pago Payment Brick, SDK JavaScript e SDK Ruby oficial
+- Render para hospedagem da demonstração online
+- Brevo SMTP para envio de e-mails no ambiente hospedado
 
 ## Pré-requisitos
 
@@ -222,7 +265,7 @@ alterações enviadas para a branch `main`.
 
 ## Próximas evoluções
 
-- Executar o runbook no staging e registrar a validação real do sandbox do Mercado Pago.
+- Ampliar os testes de sistema executados com navegador para a administração da agenda.
 - Integrar os eventos estruturados do webhook a alertas e painéis operacionais do ambiente de produção.
 
 ## Autor
