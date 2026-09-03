@@ -15,6 +15,35 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "lists appointments booked by a provider instead of appointments received by them" do
+    provider = users(:one)
+    other_provider = create_other_provider
+    booked_service = other_provider.services.create!(
+      nome: "Serviço reservado pelo prestador",
+      descricao: "Usado para distinguir reservas feitas e recebidas",
+      duration: 30,
+      preco: 50
+    )
+    booked_appointment = Appointment.create!(
+      client: provider,
+      service: booked_service,
+      start_time: 7.days.from_now.change(hour: 10, min: 0)
+    )
+    received_appointment = Appointment.create!(
+      client: @client,
+      service: @service,
+      start_time: 7.days.from_now.change(hour: 11, min: 0)
+    )
+    sign_out @client
+    sign_in provider
+
+    get appointments_url
+
+    assert_response :success
+    assert_select "a[href='#{appointment_path(booked_appointment)}']", text: "Ver detalhes"
+    assert_select "a[href='#{appointment_path(received_appointment)}']", count: 0
+  end
+
   test "renders the nested appointment form" do
     get new_service_appointment_url(@service)
 
@@ -152,5 +181,17 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_predicate appointment.reload, :reembolsado?
     assert_redirected_to appointments_url
+  end
+
+  private
+
+  def create_other_provider
+    User.create!(
+      nome: "Outro prestador",
+      email: "outro-prestador@example.com",
+      password: "password123",
+      role: :provider,
+      bairro: "Savassi"
+    )
   end
 end
