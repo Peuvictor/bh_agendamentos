@@ -22,8 +22,14 @@ Rails.application.routes.draw do
 
   # 4. DOMÍNIO: SERVIÇOS E AGENDAMENTOS
   resources :services do
+    get :available_slots, on: :member, to: "appointments#available_slots"
     resources :appointments, only: [:new, :create]
     resources :reviews, only: [:index]
+  end
+
+  namespace :provider do
+    resource :availability, only: %i[show update], controller: "availability"
+    resources :availability_blocks, only: %i[create destroy]
   end
 
   resources :appointments, only: [:index, :show, :edit, :update, :destroy] do

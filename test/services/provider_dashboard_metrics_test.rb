@@ -6,7 +6,7 @@ class ProviderDashboardMetricsTest < ActiveSupport::TestCase
   setup do
     @provider = users(:one)
     @client = users(:two)
-    @now = Time.current.change(usec: 0)
+    @now = Time.current.change(hour: 10, min: 0, sec: 0, usec: 0)
     @metrics = ProviderDashboardMetrics.new(provider: @provider, now: @now)
   end
 
@@ -23,8 +23,8 @@ class ProviderDashboardMetricsTest < ActiveSupport::TestCase
   end
 
   test 'counts each paying client only once' do
-    first_appointment = create_confirmed_appointment(start_time: 5.days.from_now)
-    second_appointment = create_confirmed_appointment(start_time: 6.days.from_now)
+    first_appointment = create_confirmed_appointment(start_time: @now + 5.days)
+    second_appointment = create_confirmed_appointment(start_time: @now + 6.days)
     create_payment(appointment: first_appointment, amount: 40)
     create_payment(appointment: second_appointment, amount: 60)
 

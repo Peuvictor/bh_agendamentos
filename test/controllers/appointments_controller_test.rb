@@ -50,6 +50,40 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "returns only available slots for a selected date" do
+    date = 3.days.from_now.to_date
+    @service.user.availability_blocks.create!(
+      service: @service,
+      starts_at: Time.zone.local(date.year, date.month, date.day, 9),
+      ends_at: Time.zone.local(date.year, date.month, date.day, 10)
+    )
+
+    get available_slots_service_url(@service, date: date.iso8601), as: :json
+
+    assert_response :success
+    slots = response.parsed_body.fetch("slots")
+
+    assert_includes slots, "08:00"
+    assert_not_includes slots, "09:00"
+    assert_includes slots, "10:00"
+  end
+
+  test "rejects an appointment outside the providers working periods" do
+    date = 4.days.from_now.to_date
+    @service.user.availability_periods.where(weekday: date.wday).delete_all
+
+    assert_no_difference("Appointment.count") do
+      post service_appointments_url(@service), params: {
+        appointment: {},
+        appointment_date: date.iso8601,
+        appointment_hour: "10:00"
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "li", text: /não está disponível na agenda do prestador/
+  end
+
   test "creates an appointment for the signed in client" do
     appointment_date = 2.days.from_now.to_date
 

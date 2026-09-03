@@ -1,0 +1,9 @@
+pt-BR:
+  provider:
+    access_denied: "Acesso restrito para prestadores."
+    availability:
+      updated: "Horários semanais atualizados com sucesso."
+    availability_blocks:
+      created: "Bloqueio adicionado à agenda."
+      destroyed: "Bloqueio removido da agenda."
+      invalid_period: "Informe uma data e um período válidos."

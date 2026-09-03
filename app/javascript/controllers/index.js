@@ -10,5 +10,8 @@ application.register("hello", HelloController)
 import PaymentController from "./payment_controller"
 application.register("payment", PaymentController)
 
+import SchedulePeriodsController from "./schedule_periods_controller"
+application.register("schedule-periods", SchedulePeriodsController)
+
 import StarRatingController from "./star_rating_controller"
 application.register("star-rating", StarRatingController)

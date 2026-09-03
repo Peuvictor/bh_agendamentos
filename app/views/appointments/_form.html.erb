@@ -32,8 +32,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <%= label_tag :appointment_date, "Dia do Agendamento", class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= date_field_tag :appointment_date, params[:appointment_date] || Date.today,
-            min: Date.today,
+        <%= date_field_tag :appointment_date, @selected_date,
+            min: Date.current,
             id: "appointment_date",
             class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
       </div>
@@ -41,7 +41,7 @@
       <div>
         <%= label_tag :appointment_hour, "Horário Disponível", class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= select_tag :appointment_hour, options_for_select(@available_slots, params[:appointment_hour]),
-            prompt: "Selecione a data primeiro...",
+            prompt: @available_slots.any? ? "Selecione um horário" : "Nenhum horário disponível",
             id: "appointment_hour",
             class: "w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
       </div>
@@ -57,79 +57,41 @@
   <% end %>
 </div>
 
-<div id="dados-agendamentos" data-ocupados="<%= @busy_slots.to_json %>" class="hidden"></div>
+<div id="dados-agendamentos" data-url="<%= available_slots_service_path(@service) %>" class="hidden"></div>
 
 <script>
-  function iniciarScriptsDeAgendamento() {
+  (() => {
     const dateInput = document.getElementById("appointment_date");
     const timeSelect = document.getElementById("appointment_hour");
     const dadosDiv = document.getElementById("dados-agendamentos");
 
     if (!dateInput || !timeSelect || !dadosDiv) return;
 
-    // A refatoração do Controller nos entrega um Array simples agora
-    const horariosOcupadosDoServico = JSON.parse(dadosDiv.dataset.ocupados || "[]");
+    async function atualizarHorarios() {
+      if (!dateInput.value) return;
 
-    function atualizarHorarios() {
-      if (!dateInput.value) {
-        Array.from(timeSelect.options).forEach(option => {
-           if (option.value !== "") {
-             option.disabled = false;
-             option.classList.remove("text-gray-400", "bg-gray-100", "text-red-600", "font-bold");
-             option.text = option.value.substring(0, 5);
-           }
-        });
-        return;
+      timeSelect.disabled = true;
+      timeSelect.replaceChildren(new Option("Carregando horários...", ""));
+
+      try {
+        const url = new URL(dadosDiv.dataset.url, window.location.origin);
+        url.searchParams.set("date", dateInput.value);
+        const response = await fetch(url, { headers: { "Accept": "application/json" } });
+        if (!response.ok) throw new Error("Não foi possível consultar a agenda");
+
+        const data = await response.json();
+        const prompt = data.slots.length ? "Selecione um horário" : "Nenhum horário disponível";
+        timeSelect.replaceChildren(new Option(prompt, ""));
+        data.slots.forEach(slot => timeSelect.add(new Option(slot, slot)));
+      } catch (error) {
+        console.error("Falha ao carregar horários", error);
+        timeSelect.replaceChildren(new Option("Erro ao carregar horários", ""));
+      } finally {
+        timeSelect.disabled = false;
       }
-
-      const dataEscolhida = dateInput.value;
-      const [ano, mes, dia] = dataEscolhida.split('-');
-      const dataFormatada = new Date(ano, mes - 1, dia);
-
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const isHoje = dataFormatada.getTime() === hoje.getTime();
-
-      const horaAtual = new Date().getHours();
-      const minutoAtual = new Date().getMinutes();
-
-      Array.from(timeSelect.options).forEach(option => {
-        if (!option.value || option.value === "") return;
-
-        const valorLimpo = option.value.substring(0, 5);
-        const partes = valorLimpo.split(':');
-        const horaOpcao = parseInt(partes[0], 10);
-        const minutoOpcao = parseInt(partes[1], 10);
-
-        const dataHoraCombo = `${dataEscolhida} ${valorLimpo}`;
-
-        // Verifica se a combinação data + hora bate com nosso array de ocupados
-        const jaOcupado = horariosOcupadosDoServico.includes(dataHoraCombo);
-        const jaPassou = isHoje && (horaOpcao < horaAtual || (horaOpcao === horaAtual && minutoOpcao <= minutoAtual));
-
-        if (jaPassou) {
-          option.disabled = true;
-          option.text = valorLimpo + " (Já passou)";
-          option.classList.remove("text-red-600", "font-bold");
-          option.classList.add("text-gray-400", "bg-gray-100");
-        } else if (jaOcupado) {
-          option.disabled = true;
-          option.text = valorLimpo + " (Ocupado)";
-          option.classList.remove("text-gray-400", "bg-gray-100");
-          option.classList.add("text-red-600", "font-bold");
-        } else {
-          option.disabled = false;
-          option.text = valorLimpo;
-          option.classList.remove("text-gray-400", "bg-gray-100", "text-red-600", "font-bold");
-        }
-      });
     }
 
-    dateInput.addEventListener("change", atualizarHorarios);
+    dateInput.onchange = atualizarHorarios;
     atualizarHorarios();
-  }
-
-  document.addEventListener("turbo:load", iniciarScriptsDeAgendamento);
-  document.addEventListener("DOMContentLoaded", iniciarScriptsDeAgendamento);
-  iniciarScriptsDeAgendamento();
+  })();
 </script>

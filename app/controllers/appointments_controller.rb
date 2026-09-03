@@ -2,12 +2,11 @@ class AppointmentsController < ApplicationController
   before_action :authenticate_user!
 
   # 1. Configurações baseadas na Rota Aninhada
-  before_action :set_service, only: %i[new create]
+  before_action :set_service, only: %i[new create available_slots]
   before_action :set_appointment, only: %i[show edit update destroy]
 
   # 2. Carrega os horários apenas quando formos renderizar a tela
-  before_action :set_available_slots, only: %i[new create edit update]
-  before_action :set_busy_slots, only: %i[new create edit update]
+  before_action :set_available_slots, only: %i[new create]
 
   def index
     # Esta tela representa as reservas feitas pela conta. Prestadores consultam
@@ -45,6 +44,15 @@ class AppointmentsController < ApplicationController
     else
       render :new, status: :unprocessable_entity
     end
+  end
+
+  def available_slots
+    date = Date.iso8601(params.require(:date))
+    slots = ProviderAvailability.new(service: @service, date: date).slots
+
+    render json: { slots: slots }
+  rescue ActionController::ParameterMissing, Date::Error
+    render json: { slots: [], error: "Data inválida" }, status: :unprocessable_content
   end
 
   def edit
@@ -114,7 +122,7 @@ class AppointmentsController < ApplicationController
 
   # NOVO: Busca o serviço com base na URL aninhada (ex: /services/5/appointments/new)
   def set_service
-    @service = Service.find(params[:service_id])
+    @service = Service.find(params[:service_id] || params[:id])
   end
 
   def set_appointment
@@ -130,24 +138,16 @@ class AppointmentsController < ApplicationController
   end
 
   def set_available_slots
-    @available_slots = (8..18).flat_map { |hour| [format('%02d:00', hour), format('%02d:30', hour)] }
+    @selected_date = selected_appointment_date
+    @available_slots = ProviderAvailability.new(service: @service, date: @selected_date).slots
   end
 
-  def set_busy_slots
-    # REFATORAÇÃO DE PERFORMANCE:
-    # Em vez de carregar TODOS os agendamentos do banco, carrega apenas os do serviço atual.
-    # O @service já foi carregado no before_action :set_service
+  def selected_appointment_date
+    return Date.current if params[:appointment_date].blank?
 
-    # Se estivermos no método index, show ou dashboard, não precisamos calcular slots de um serviço específico
-    return unless @service
-
-    futuros = @service.appointments
-                       .where.not(status: %i[cancelado reembolsado])
-                       .where("start_time >= ?", Time.zone.now.beginning_of_day)
-
-    @busy_slots = futuros.map do |app|
-      app.start_time.in_time_zone.strftime("%Y-%m-%d %H:%M")
-    end
+    Date.iso8601(params[:appointment_date])
+  rescue Date::Error
+    Date.current
   end
 
 end

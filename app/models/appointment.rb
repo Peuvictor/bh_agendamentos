@@ -10,6 +10,7 @@ class Appointment < ApplicationRecord
   validates :start_time, presence: true
   validate :no_overlapping_appointments
   validate :horario_deve_ser_no_futuro
+  validate :within_provider_availability, if: :availability_validation_required?
 
   # Callback: calcula o fim antes de validar e salvar
   before_validation :calculate_end_time
@@ -59,5 +60,21 @@ class Appointment < ApplicationRecord
     if start_time.present? && will_save_change_to_start_time? && start_time < Time.current
       errors.add(:start_time, "não pode ser no passado, uai! Escolha um horário válido.")
     end
+  end
+
+  def availability_validation_required?
+    schedule_changed = new_record? || will_save_change_to_start_time? || will_save_change_to_service_id?
+    start_time.present? && service.present? && schedule_changed
+  end
+
+  def within_provider_availability
+    availability = ProviderAvailability.new(
+      service: service,
+      date: start_time.to_date,
+      exclude_appointment: self
+    )
+    return if availability.available?(start_time, check_appointments: false)
+
+    errors.add(:start_time, "não está disponível na agenda do prestador")
   end
 end

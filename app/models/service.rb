@@ -1,5 +1,6 @@
 class Service < ApplicationRecord
   belongs_to :user
+  has_many :availability_blocks, dependent: :destroy
   has_many :appointments, dependent: :destroy
 
   # 1. A PREPARAÇÃO PARA NUVEM (Active Storage + Cloudinary)
