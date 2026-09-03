@@ -17,6 +17,20 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     get new_service_url
 
     assert_response :success
+    required_fields = "input[name='service[nome]'][required], " \
+                      "input[name='service[duration]'][required], " \
+                      "input[name='service[preco]'][required]"
+
+    assert_select required_fields, count: 3
+  end
+
+  test "shows validation errors when required service data is missing" do
+    assert_no_difference("Service.count") do
+      post services_url, params: { service: { nome: "", duration: "", preco: "" } }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "[role='alert']", text: /campos que precisam ser corrigidos/
   end
 
   test "creates a service owned by the signed in provider" do

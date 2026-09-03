@@ -1,0 +1,178 @@
+<div class="max-w-6xl mx-auto space-y-8">
+  <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div class="mb-6">
+      <h1 class="text-3xl font-extrabold text-blue-900">Agenda de atendimento</h1>
+      <p class="text-gray-500 mt-1">Defina quando seus serviços podem ser agendados. Deixe todos os turnos vazios para fechar o dia.</p>
+    </div>
+
+    <%= form_with url: provider_availability_path, method: :patch, class: "space-y-4" do %>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-500 border-b">
+              <th class="py-3 pr-4">Dia</th>
+              <th class="py-3 px-2">Turnos de atendimento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% AvailabilityPeriod::DAY_NAMES.each_with_index do |day_name, weekday| %>
+              <% periods = @periods_by_weekday.fetch(weekday, []) %>
+              <% period_count = [periods.length, 2].max %>
+              <tr class="border-b border-gray-100"
+                  data-controller="schedule-periods"
+                  data-schedule-periods-next-index-value="<%= period_count %>">
+                <td class="py-4 pr-4 font-bold text-gray-800 whitespace-nowrap align-top"><%= day_name %></td>
+                <td class="py-3 px-2">
+                  <div class="space-y-2" data-schedule-periods-target="periods">
+                    <% period_count.times do |index| %>
+                      <% period = periods[index] %>
+                      <div class="flex flex-wrap items-center gap-2" data-schedule-periods-target="period">
+                        <span class="w-16 text-xs font-bold text-gray-500" data-schedule-periods-target="label">Turno <%= index + 1 %></span>
+                        <%= time_field_tag "schedule[#{weekday}][periods][#{index}][start]",
+                                           period&.start_label,
+                                           aria: { label: "Início do turno #{index + 1} de #{day_name}" },
+                                           data: { role: "start" },
+                                           class: "rounded-lg border-gray-300 text-sm" %>
+                        <span class="text-gray-400">até</span>
+                        <%= time_field_tag "schedule[#{weekday}][periods][#{index}][end]",
+                                           period&.end_label,
+                                           aria: { label: "Fim do turno #{index + 1} de #{day_name}" },
+                                           data: { role: "end" },
+                                           class: "rounded-lg border-gray-300 text-sm" %>
+                        <button type="button"
+                                data-action="schedule-periods#remove"
+                                class="text-xs font-bold text-red-600 hover:text-red-800">
+                          Remover
+                        </button>
+                      </div>
+                    <% end %>
+                  </div>
+
+                  <template data-schedule-periods-target="template">
+                    <div class="flex flex-wrap items-center gap-2" data-schedule-periods-target="period">
+                      <span class="w-16 text-xs font-bold text-gray-500" data-schedule-periods-target="label">Novo turno</span>
+                      <input type="time"
+                             name="schedule[<%= weekday %>][periods][NEW_INDEX][start]"
+                             data-role="start"
+                             class="rounded-lg border-gray-300 text-sm">
+                      <span class="text-gray-400">até</span>
+                      <input type="time"
+                             name="schedule[<%= weekday %>][periods][NEW_INDEX][end]"
+                             data-role="end"
+                             class="rounded-lg border-gray-300 text-sm">
+                      <button type="button"
+                              data-action="schedule-periods#remove"
+                              class="text-xs font-bold text-red-600 hover:text-red-800">
+                        Remover
+                      </button>
+                    </div>
+                  </template>
+
+                  <button type="button"
+                          data-action="schedule-periods#add"
+                          class="mt-3 text-sm font-bold text-blue-700 hover:text-blue-900">
+                    + Adicionar turno
+                  </button>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <%= submit_tag "Salvar horários semanais",
+                       class: "bg-blue-900 hover:bg-blue-800 text-white font-bold px-6 py-3 rounded-xl cursor-pointer" %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="grid lg:grid-cols-2 gap-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-1">Adicionar feriado ou imprevisto</h2>
+      <p class="text-sm text-gray-500 mb-6">Bloqueie a agenda inteira ou somente um serviço em uma data.</p>
+
+      <div class="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        O bloqueio impede novas reservas, mas não cancela agendamentos que já foram feitos.
+      </div>
+
+      <%= form_with url: provider_availability_blocks_path, scope: :availability_block, class: "space-y-4" do |form| %>
+        <div>
+          <%= form.label :date, "Data", class: "block text-sm font-bold text-gray-700 mb-1" %>
+          <%= form.date_field :date, min: Date.current, required: true, class: "w-full rounded-lg border-gray-300" %>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <%= form.check_box :all_day, checked: true, class: "rounded border-gray-300" %>
+          <%= form.label :all_day, "Dia inteiro", class: "text-sm font-bold text-gray-700" %>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= form.label :start_time, "De", class: "block text-sm font-bold text-gray-700 mb-1" %>
+            <%= form.time_field :start_time, value: "08:00", class: "w-full rounded-lg border-gray-300" %>
+          </div>
+          <div>
+            <%= form.label :end_time, "Até", class: "block text-sm font-bold text-gray-700 mb-1" %>
+            <%= form.time_field :end_time, value: "19:00", class: "w-full rounded-lg border-gray-300" %>
+          </div>
+        </div>
+
+        <div>
+          <%= form.label :service_id, "Aplicar a", class: "block text-sm font-bold text-gray-700 mb-1" %>
+          <%= form.collection_select :service_id,
+                                     @services,
+                                     :id,
+                                     :nome,
+                                     { include_blank: "Todos os serviços" },
+                                     class: "w-full rounded-lg border-gray-300" %>
+        </div>
+
+        <div>
+          <%= form.label :reason, "Motivo (opcional)", class: "block text-sm font-bold text-gray-700 mb-1" %>
+          <%= form.text_field :reason,
+                              maxlength: 150,
+                              placeholder: "Feriado, manutenção, compromisso...",
+                              class: "w-full rounded-lg border-gray-300" %>
+        </div>
+
+        <%= form.submit "Adicionar bloqueio",
+                        class: "w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-xl cursor-pointer" %>
+      <% end %>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-6">Próximos bloqueios</h2>
+
+      <% if @availability_blocks.any? %>
+        <div class="space-y-3">
+          <% @availability_blocks.each do |block| %>
+            <div class="border border-gray-200 rounded-xl p-4 flex justify-between gap-4">
+              <div>
+                <p class="font-bold text-gray-900"><%= l(block.starts_at.to_date) %></p>
+                <p class="text-sm text-gray-600">
+                  <% if block.starts_at.beginning_of_day == block.starts_at && block.ends_at == block.starts_at + 1.day %>
+                    Dia inteiro
+                  <% else %>
+                    <%= block.starts_at.strftime("%H:%M") %>–<%= block.ends_at.strftime("%H:%M") %>
+                  <% end %>
+                  · <%= block.service&.nome || "Todos os serviços" %>
+                </p>
+                <% if block.reason.present? %>
+                  <p class="text-xs text-gray-400 mt-1"><%= block.reason %></p>
+                <% end %>
+              </div>
+              <%= button_to "Remover",
+                            provider_availability_block_path(block),
+                            method: :delete,
+                            form: { data: { turbo_confirm: "Remover este bloqueio?" } },
+                            class: "text-sm font-bold text-red-600 hover:text-red-800" %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-gray-500 text-sm">Nenhum bloqueio futuro cadastrado.</p>
+      <% end %>
+    </div>
+  </section>
+</div>

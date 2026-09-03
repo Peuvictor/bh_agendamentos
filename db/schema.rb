@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_28_210000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_03_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -58,6 +58,34 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_210000) do
     t.index ["service_id"], name: "index_appointments_on_service_id"
     t.index ["start_time", "end_time"], name: "index_appointments_on_start_time_and_end_time"
     t.index ["status", "expires_at"], name: "index_appointments_on_status_and_expires_at"
+  end
+
+  create_table "availability_blocks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "provider_id", null: false
+    t.uuid "service_id"
+    t.datetime "starts_at", null: false
+    t.datetime "ends_at", null: false
+    t.string "reason", limit: 150
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider_id", "starts_at", "ends_at"], name: "idx_on_provider_id_starts_at_ends_at_94f134d9ef"
+    t.index ["provider_id"], name: "index_availability_blocks_on_provider_id"
+    t.index ["service_id", "starts_at", "ends_at"], name: "idx_on_service_id_starts_at_ends_at_d2907f6cfa"
+    t.index ["service_id"], name: "index_availability_blocks_on_service_id"
+    t.check_constraint "starts_at < ends_at", name: "availability_blocks_valid_range"
+  end
+
+  create_table "availability_periods", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "provider_id", null: false
+    t.integer "weekday", null: false
+    t.integer "start_minute", null: false
+    t.integer "end_minute", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider_id", "weekday", "start_minute", "end_minute"], name: "index_availability_periods_on_provider_and_range", unique: true
+    t.index ["provider_id"], name: "index_availability_periods_on_provider_id"
+    t.check_constraint "start_minute >= 0 AND end_minute <= 1440 AND start_minute < end_minute", name: "availability_periods_valid_minutes"
+    t.check_constraint "weekday >= 0 AND weekday <= 6", name: "availability_periods_valid_weekday"
   end
 
   create_table "payments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -143,6 +171,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_28_210000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "appointments", "services"
   add_foreign_key "appointments", "users", column: "client_id"
+  add_foreign_key "availability_blocks", "services"
+  add_foreign_key "availability_blocks", "users", column: "provider_id"
+  add_foreign_key "availability_periods", "users", column: "provider_id"
   add_foreign_key "payments", "appointments"
   add_foreign_key "reviews", "appointments"
   add_foreign_key "services", "users"

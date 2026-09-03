@@ -7,7 +7,9 @@ Marketplace de agendamentos para profissionais independentes e negócios locais 
 - Cadastro e autenticação com Devise, incluindo perfis de cliente, prestador e administrador, com proteção contra criação pública de contas administrativas.
 - Vitrine pública de serviços com busca por texto e filtro por bairros de Belo Horizonte.
 - Cadastro e gerenciamento de serviços por prestadores.
-- Agendamento inicialmente pendente, com cálculo de duração, validação de horários passados e prevenção de conflitos de agenda.
+- Agenda semanal configurável pelo prestador, com turnos dinâmicos, dias fechados e horários calculados conforme a duração de cada serviço.
+- Bloqueios de feriados e imprevistos por dia inteiro ou faixa de horário, para todos os serviços ou somente um serviço específico.
+- Agendamento inicialmente pendente, com cálculo de duração, validação de expediente, bloqueios e horários passados, além da prevenção de conflitos entre todos os serviços do prestador.
 - Confirmação condicionada à aprovação do pagamento, sem permitir alteração manual de status pelo cliente.
 - Cancelamento lógico, preservando o histórico do agendamento e do pagamento enquanto libera o horário na agenda.
 - Área de agendamentos para clientes e prestadores.
@@ -185,10 +187,10 @@ O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os teste
 docker compose exec web bin/rails test
 ```
 
-A suíte cobre os principais fluxos de cadastro seguro, serviços, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
+A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
 
 ```text
-109 testes, 435 asserções, 0 falhas e 0 erros
+141 testes, 528 asserções, 0 falhas e 0 erros
 ```
 
 O cenário de sistema do agendamento até a tela de checkout também está validado com `1 teste e 5 asserções`.

@@ -42,4 +42,28 @@ class AppointmentTest < ActiveSupport::TestCase
       Appointment.statuses
     )
   end
+
+  test "rejects a time blocked for every provider service" do
+    date = 5.days.from_now.to_date
+    provider = services(:one).user
+    start_time = Time.zone.local(date.year, date.month, date.day, 10)
+    provider.availability_blocks.create!(
+      starts_at: start_time,
+      ends_at: start_time + 1.hour,
+      reason: "Loja fechada"
+    )
+
+    appointment = Appointment.new(client: users(:two), service: services(:one), start_time: start_time)
+
+    assert_not appointment.valid?
+    assert_includes appointment.errors[:start_time], "não está disponível na agenda do prestador"
+  end
+
+  test "rejects a time outside the providers slot intervals" do
+    start_time = 5.days.from_now.change(hour: 10, min: 15, sec: 0)
+    appointment = Appointment.new(client: users(:two), service: services(:one), start_time: start_time)
+
+    assert_not appointment.valid?
+    assert_includes appointment.errors[:start_time], "não está disponível na agenda do prestador"
+  end
 end

@@ -1,0 +1,13 @@
+<% 0.upto(6) do |weekday| %>
+provider_one_day_<%= weekday %>:
+  provider_id: <%= ActiveRecord::FixtureSet.identify(:one, :uuid) %>
+  weekday: <%= weekday %>
+  start_minute: 480
+  end_minute: 1140
+
+provider_two_day_<%= weekday %>:
+  provider_id: <%= ActiveRecord::FixtureSet.identify(:two, :uuid) %>
+  weekday: <%= weekday %>
+  start_minute: 480
+  end_minute: 1140
+<% end %>

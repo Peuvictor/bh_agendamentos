@@ -26,8 +26,30 @@ class User < ApplicationRecord
   has_many :services, dependent: :destroy
   has_many :appointments, foreign_key: 'client_id', dependent: :destroy
   has_many :received_appointments, through: :services, source: :appointments
+  has_many :availability_periods,
+           foreign_key: :provider_id,
+           inverse_of: :provider,
+           dependent: :destroy
+  has_many :availability_blocks,
+           foreign_key: :provider_id,
+           inverse_of: :provider,
+           dependent: :destroy
+
+  after_create :create_default_availability_periods, if: :provider?
 
   # 4. VALIDAÇÕES SÊNIOR
   # Garante que o bairro seja um dos oficiais da nossa lista
   validates :bairro, inclusion: { in: BAIRROS_BH, message: "deve ser um bairro válido de BH, uai!" }, allow_blank: true
+
+  private
+
+  def create_default_availability_periods
+    (0..6).each do |weekday|
+      availability_periods.create!(
+        weekday: weekday,
+        start_minute: AvailabilityPeriod::DEFAULT_START_MINUTE,
+        end_minute: AvailabilityPeriod::DEFAULT_END_MINUTE
+      )
+    end
+  end
 end
