@@ -1,13 +1,13 @@
 # Roadmap do BH Agendamentos
 
-Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficial e RuboCop para análise estática; não há migração planejada para RSpec.
+Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte oficial e RuboCop para análise estática; não há migração planejada para RSpec.
 
 ## Entregue
 
 - [x] Autenticação e perfis de cliente, prestador e administrador com Devise.
 - [x] Serviços, busca por texto e filtros por bairros de Belo Horizonte.
 - [x] Agendamentos com duração, bloqueio de horários passados e prevenção de conflitos.
-- [x] Agenda semanal configurável pelo prestador, com períodos separados, dias fechados e bloqueios gerais ou por serviço.
+- [x] Agenda semanal configurável pelo prestador, com turnos dinâmicos, dias fechados e bloqueios gerais ou por serviço.
 - [x] Cancelamento lógico preservando o histórico e liberando o horário.
 - [x] Dashboard do prestador, avaliações e painel administrativo.
 - [x] Active Storage com Cloudinary para avatares e imagens de serviços.
@@ -24,16 +24,37 @@ Estado revisado em agosto de 2026. O projeto utiliza Minitest como suíte oficia
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
 - [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
+- [x] Deploy de demonstração no Render com SMTP da Brevo e Mercado Pago sandbox.
+- [x] Runbook de staging validado com cartão, PIX, webhook assinado e agenda configurável.
 
 ## Próximas tarefas prioritárias
 
-- [x] Registrar eventos e falhas do webhook para observabilidade em produção, com retenção configurável.
-- [ ] Executar o [runbook de staging](docs/mercado_pago_sandbox.md) e registrar uma cobrança completa no sandbox real do Mercado Pago.
-- [x] Revisar e consolidar as métricas de faturamento e volume de clientes do dashboard.
-- [x] GitHub Actions para RuboCop, Minitest, Zeitwerk e auditoria de dependências.
+### Integridade e experiência principal
+
+- [ ] Arquivar e reativar serviços em vez de apagá-los, preservando agendamentos, pagamentos e avaliações anteriores.
+- [ ] Impedir novas reservas para serviços arquivados sem ocultar o histórico existente.
+- [ ] Criar calendário visual diário, semanal e mensal para o prestador, reunindo agendamentos e bloqueios.
+- [ ] Permitir a edição de feriados e bloqueios, incluindo data, horário, motivo e serviço afetado.
+- [ ] Implementar reagendamento seguro com nova validação de disponibilidade e preservação do histórico.
+
+### Interface e portfólio
+
+- [ ] Revisar a navegação e os formulários em celulares e telas pequenas.
+- [ ] Adicionar capturas de tela e uma visão da arquitetura ao README.
+- [ ] Preparar dados de demonstração que apresentem claramente os fluxos de cliente, prestador e administrador.
+
+### Qualidade e automação
+
+- [ ] Adicionar testes de navegador para criar, remover e persistir múltiplos turnos da agenda.
+- [ ] Adicionar testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
+- [ ] Ampliar testes de sistema para os estados finais do pagamento.
+
+### Evoluções dependentes de infraestrutura
+
+- [ ] Enviar lembretes de atendimento com 24 horas de antecedência quando houver Background Worker ativo no ambiente hospedado.
+- [ ] Integrar os eventos estruturados do webhook a alertas e painéis operacionais.
 
 ## Manutenção contínua
 
 - [ ] Reduzir gradualmente as exceções registradas em `.rubocop_todo.yml`.
 - [ ] Manter `npm audit` sem vulnerabilidades e dependências atualizadas.
-- [ ] Ampliar testes de sistema para os estados finais do pagamento.
