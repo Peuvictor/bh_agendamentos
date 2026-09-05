@@ -1,6 +1,47 @@
 require "test_helper"
 
 class AppointmentTest < ActiveSupport::TestCase
+  test "rejects a new appointment for an archived service" do
+    service = services(:one)
+    service.archive!
+    appointment = Appointment.new(
+      client: users(:two),
+      service: service,
+      start_time: 5.days.from_now.change(hour: 10, min: 0)
+    )
+
+    assert_not appointment.valid?
+    assert_includes appointment.errors[:service], "está arquivado e não aceita novas reservas"
+    assert_not appointment.save
+  end
+
+  test "rechecks the service under lock immediately before insertion" do
+    service = Service.find(services(:one).id)
+    appointment = Appointment.new(
+      client: users(:two),
+      service: service,
+      start_time: 5.days.from_now.change(hour: 10, min: 0)
+    )
+
+    assert_predicate appointment, :valid?
+    Service.find(service.id).archive!
+
+    assert_no_difference("Appointment.count") do
+      assert_not appointment.save_for_active_service
+    end
+  end
+
+  test "allows status changes to an existing appointment after archiving" do
+    appointment = Appointment.create!(
+      client: users(:two),
+      service: services(:one),
+      start_time: 5.days.from_now.change(hour: 10, min: 0)
+    )
+    appointment.service.archive!
+
+    assert appointment.update(status: :cancelado)
+  end
+
   test "a canceled appointment does not block the providers schedule" do
     canceled = Appointment.create!(
       client: users(:two),

@@ -19,8 +19,8 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 141 testes e 528 asserções aprovados.
-- [x] Teste de sistema do fluxo agendamento → checkout com suporte a Selenium e Chrome portátil.
+- [x] Minitest compatível com Rails 7.1: 170 testes e 637 asserções de aplicação aprovados.
+- [x] Quatro testes de sistema para agendamento, checkout e gestão de serviços, com suporte a Selenium e Chrome portátil.
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
 - [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
@@ -31,8 +31,8 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ### Integridade e experiência principal
 
-- [ ] Arquivar e reativar serviços em vez de apagá-los, preservando agendamentos, pagamentos e avaliações anteriores.
-- [ ] Impedir novas reservas para serviços arquivados sem ocultar o histórico existente.
+- [x] Arquivar e reativar serviços em vez de apagá-los, preservando agendamentos, pagamentos e avaliações anteriores.
+- [x] Impedir novas reservas para serviços arquivados sem ocultar o histórico existente.
 - [ ] Criar calendário visual diário, semanal e mensal para o prestador, reunindo agendamentos e bloqueios.
 - [ ] Permitir a edição de feriados e bloqueios, incluindo data, horário, motivo e serviço afetado.
 - [ ] Implementar reagendamento seguro com nova validação de disponibilidade e preservação do histórico.

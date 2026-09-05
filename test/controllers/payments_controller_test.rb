@@ -27,6 +27,21 @@ class PaymentsControllerTest < ActionDispatch::IntegrationTest
     payment_service.verify
   end
 
+  test "allows payment for an appointment created before service archiving" do
+    @appointment.service.archive!
+    payment_service = Minitest::Mock.new
+    payment_service.expect :call, true
+    payment_service.expect :payload, { "status" => "pending", "id" => "mp-archived-service" }
+
+    ProcessPaymentService.stub(:new, ->(**) { payment_service }) do
+      post payments_url, params: payment_params
+    end
+
+    assert_response :created
+    assert_equal "pending", response.parsed_body["status"]
+    payment_service.verify
+  end
+
   test "does not allow payment for another clients appointment" do
     sign_out @client
     sign_in users(:one)

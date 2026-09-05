@@ -12,6 +12,8 @@ class ProviderAvailability
   end
 
   def slots
+    return [] if @service.archived?
+
     periods.flat_map { |period| slots_for(period) }
            .select { |start_time| available?(start_time) }
            .map { |start_time| start_time.strftime('%H:%M') }
@@ -19,6 +21,8 @@ class ProviderAvailability
   end
 
   def available?(start_time, check_appointments: true)
+    return false if @service.archived?
+
     finish_time = start_time + duration.minutes
 
     within_available_period?(start_time, finish_time) &&

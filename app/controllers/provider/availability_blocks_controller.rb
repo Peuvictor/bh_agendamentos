@@ -59,7 +59,7 @@ module Provider
     def selected_service(service_id)
       return if service_id.blank?
 
-      current_user.services.find(service_id)
+      current_user.services.active.find(service_id)
     end
   end
 end

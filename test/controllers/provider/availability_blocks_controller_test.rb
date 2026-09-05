@@ -63,6 +63,23 @@ module Provider
       assert_response :not_found
     end
 
+    test 'does not accept an archived owned service' do
+      service = services(:one)
+      service.archive!
+
+      assert_no_difference('AvailabilityBlock.count') do
+        post provider_availability_blocks_url, params: {
+          availability_block: {
+            date: 5.days.from_now.to_date.iso8601,
+            all_day: '1',
+            service_id: service.id
+          }
+        }
+      end
+
+      assert_response :not_found
+    end
+
     test 'removes an owned block' do
       block = @provider.availability_blocks.create!(
         starts_at: 2.days.from_now.beginning_of_day,

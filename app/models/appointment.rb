@@ -8,6 +8,7 @@ class Appointment < ApplicationRecord
   enum :status, { confirmado: 0, cancelado: 1, pendente: 2, reembolsado: 4 }, default: :pendente
 
   validates :start_time, presence: true
+  validate :service_must_be_active, if: :service_availability_validation_required?
   validate :no_overlapping_appointments
   validate :horario_deve_ser_no_futuro
   validate :within_provider_availability, if: :availability_validation_required?
@@ -17,7 +18,30 @@ class Appointment < ApplicationRecord
   before_save :clear_expiration_for_terminal_status
   before_create :set_initial_expiration, if: :pendente?
 
+  def save_for_active_service
+    return save unless new_record? && service.present?
+
+    service.with_lock do
+      if service.archived?
+        errors.add(:service, "está arquivado e não aceita novas reservas")
+        false
+      else
+        save
+      end
+    end
+  end
+
   private
+
+  def service_must_be_active
+    return unless service&.archived?
+
+    errors.add(:service, "está arquivado e não aceita novas reservas")
+  end
+
+  def service_availability_validation_required?
+    new_record? || will_save_change_to_service_id?
+  end
 
   def set_initial_expiration
     self.expires_at ||= Time.current + Rails.configuration.x.payment_expiration_minutes.minutes

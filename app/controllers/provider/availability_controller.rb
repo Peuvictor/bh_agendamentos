@@ -25,7 +25,7 @@ module Provider
                                          .includes(:service)
                                          .active_from(Time.current)
                                          .order(:starts_at)
-      @services = current_user.services.order(:nome)
+      @services = current_user.services.active.order(:nome)
     end
   end
 end

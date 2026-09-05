@@ -6,11 +6,14 @@ class ServicesController < ApplicationController
   before_action :check_provider_role
 
   # 3. Localiza o serviço apenas se o usuário for o dono (segurança extra)
-  before_action :set_service, only: %i[ show edit update destroy ]
+  before_action :set_service, only: %i[show edit update archive reactivate]
+  before_action :ensure_active_service, only: %i[edit update]
 
   def index
     # O prestador SÓ vê os serviços que pertencem a ele
-    @services = current_user.services
+    @services = current_user.services.order(created_at: :desc)
+    @active_services = @services.active
+    @archived_services = @services.archived.order(archived_at: :desc)
   end
 
   def show
@@ -41,9 +44,16 @@ class ServicesController < ApplicationController
     end
   end
 
-  def destroy
-    @service.destroy!
-    redirect_to services_path, notice: "Serviço removido com sucesso.", status: :see_other
+  def archive
+    @service.archive!
+    redirect_to services_path, notice: "Serviço arquivado. O histórico foi preservado."
+  end
+
+  def reactivate
+    @service.reactivate!
+    redirect_to services_path, notice: "Serviço reativado com sucesso."
+  rescue ActiveRecord::RecordInvalid
+    redirect_to services_path, alert: @service.errors.full_messages.to_sentence
   end
 
   private
@@ -58,6 +68,12 @@ class ServicesController < ApplicationController
     @service = current_user.services.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to services_path, alert: "Serviço não encontrado ou você não tem permissão."
+  end
+
+  def ensure_active_service
+    return unless @service.archived?
+
+    redirect_to services_path, alert: "Reative o serviço antes de editá-lo."
   end
 
   def service_params
