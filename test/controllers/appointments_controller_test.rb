@@ -50,6 +50,37 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "redirects the form for an archived service to the storefront" do
+    @service.archive!
+
+    get new_service_appointment_url(@service)
+
+    assert_redirected_to vitrine_url
+    assert_equal "Este serviço está arquivado e não aceita novas reservas.", flash[:alert]
+  end
+
+  test "redirects available slots for an archived service to the storefront" do
+    @service.archive!
+
+    get available_slots_service_url(@service, date: 3.days.from_now.to_date.iso8601), as: :json
+
+    assert_redirected_to vitrine_url
+  end
+
+  test "rejects direct creation for an archived service" do
+    @service.archive!
+
+    assert_no_difference("Appointment.count") do
+      post service_appointments_url(@service), params: {
+        appointment: {},
+        appointment_date: 3.days.from_now.to_date.iso8601,
+        appointment_hour: "10:00"
+      }
+    end
+
+    assert_redirected_to vitrine_url
+  end
+
   test "returns only available slots for a selected date" do
     date = 3.days.from_now.to_date
     @service.user.availability_blocks.create!(
@@ -130,6 +161,20 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#paymentBrick_container"
   ensure
     ENV["MERCADO_PAGO_PUBLIC_KEY"] = previous_public_key
+  end
+
+  test "keeps a preexisting appointment visible after its service is archived" do
+    appointment = Appointment.create!(
+      client: @client,
+      service: @service,
+      start_time: 6.days.from_now.change(hour: 14, min: 0)
+    )
+    @service.archive!
+
+    get appointments_url
+
+    assert_response :success
+    assert_select "a[href='#{appointment_path(appointment)}']", text: "Ver detalhes"
   end
 
   test "does not let a client confirm an appointment through the update route" do

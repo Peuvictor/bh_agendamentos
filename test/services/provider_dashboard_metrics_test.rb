@@ -32,6 +32,15 @@ class ProviderDashboardMetricsTest < ActiveSupport::TestCase
     assert_equal 50.to_d, @metrics.average_ticket
   end
 
+  test 'keeps archived service appointments in provider metrics' do
+    appointment = create_confirmed_appointment(start_time: @now + 5.days)
+    create_payment(appointment: appointment, amount: 85)
+    appointment.service.archive!
+
+    assert_equal 85.to_d, @metrics.revenue_received
+    assert_equal 1, @metrics.appointments_by_status.fetch('confirmado')
+  end
+
   private
 
   def create_confirmed_appointment(start_time:)

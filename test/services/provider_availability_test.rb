@@ -2,6 +2,7 @@
 
 require 'test_helper'
 
+# rubocop:disable-next Metrics/ClassLength
 class ProviderAvailabilityTest < ActiveSupport::TestCase
   setup do
     @provider = users(:one)
@@ -36,6 +37,29 @@ class ProviderAvailabilityTest < ActiveSupport::TestCase
     assert_includes slots, '10:00'
   end
 
+  test 'keeps future appointments from archived services as schedule conflicts' do
+    other_service = @provider.services.create!(nome: 'Outro atendimento', duration: 60, preco: 80)
+    Appointment.create!(
+      client: users(:two),
+      service: @service,
+      start_time: time_at('09:00')
+    )
+    @service.archive!
+
+    slots = ProviderAvailability.new(service: other_service, date: @date, now: @now).slots
+
+    assert_not_includes slots, '09:00'
+    assert_includes slots, '09:30'
+    assert_includes slots, '10:00'
+  end
+
+  test 'returns no slots for an archived service' do
+    @service.archive!
+
+    assert_empty availability.slots
+    assert_not availability.available?(time_at('09:00'))
+  end
+
   test 'applies a block to every service' do
     @provider.availability_blocks.create!(
       starts_at: time_at('08:30'),
@@ -60,6 +84,20 @@ class ProviderAvailabilityTest < ActiveSupport::TestCase
 
     assert_empty availability.slots.grep(/\A(?:08|09|10|11):/)
     assert_includes ProviderAvailability.new(service: other_service, date: @date, now: @now).slots, '09:00'
+  end
+
+  test 'preserves a service-specific block across archiving and reactivation' do
+    @provider.availability_blocks.create!(
+      service: @service,
+      starts_at: time_at('08:00'),
+      ends_at: time_at('09:00')
+    )
+
+    @service.archive!
+    @service.reactivate!
+
+    assert_not_includes availability.slots, '08:00'
+    assert_includes availability.slots, '09:00'
   end
 
   test 'aligns a slot with the start of the period that contains it' do

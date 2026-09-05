@@ -25,4 +25,18 @@ class AvailabilityBlockTest < ActiveSupport::TestCase
     assert_predicate block, :valid?
     assert_predicate block, :all_services?
   end
+
+  test 'rejects a new service-specific block for an archived service' do
+    service = services(:one)
+    service.archive!
+    block = AvailabilityBlock.new(
+      provider: users(:one),
+      service: service,
+      starts_at: 1.day.from_now,
+      ends_at: 2.days.from_now
+    )
+
+    assert_not block.valid?
+    assert_includes block.errors[:service], 'está arquivado'
+  end
 end

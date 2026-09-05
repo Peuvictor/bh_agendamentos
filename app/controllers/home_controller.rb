@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   def index
     # Eager loading para evitar N+1
-    @services = Service.includes(user: :avatar_attachment).all
+    @services = Service.active.includes(user: :avatar_attachment)
 
     # 1. Filtro por Texto (Nome do Serviço ou Prestador)
     if params[:query].present?

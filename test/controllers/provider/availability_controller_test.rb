@@ -24,6 +24,24 @@ module Provider
       assert_select "button[data-action='schedule-periods#add']", text: /Adicionar turno/, count: 7
     end
 
+    # rubocop:disable-next Minitest/MultipleAssertions
+    test 'omits archived services from the new block selector but keeps their existing blocks visible' do
+      service = services(:one)
+      block = @provider.availability_blocks.create!(
+        service: service,
+        starts_at: 2.days.from_now.beginning_of_day,
+        ends_at: 2.days.from_now.beginning_of_day + 1.hour
+      )
+      service.archive!
+
+      get provider_availability_url
+
+      assert_response :success
+      assert_select "select[name='availability_block[service_id]'] option[value='#{service.id}']", count: 0
+      assert_select "form[action='#{provider_availability_block_path(block)}']"
+      assert_match service.nome, response.body
+    end
+
     test 'saves more than two turns on the same day' do
       patch provider_availability_url, params: {
         schedule: {

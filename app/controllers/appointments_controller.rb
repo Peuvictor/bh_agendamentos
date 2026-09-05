@@ -39,8 +39,10 @@ class AppointmentsController < ApplicationController
       end
     end
 
-    if @appointment.save
+    if @appointment.save_for_active_service
       redirect_to appointment_path(@appointment), notice: "Horário reservado. Conclua o pagamento para confirmar o agendamento."
+    elsif @service.reload.archived?
+      redirect_to vitrine_path, alert: "Este serviço está arquivado e não aceita novas reservas."
     else
       render :new, status: :unprocessable_entity
     end
@@ -123,6 +125,9 @@ class AppointmentsController < ApplicationController
   # NOVO: Busca o serviço com base na URL aninhada (ex: /services/5/appointments/new)
   def set_service
     @service = Service.find(params[:service_id] || params[:id])
+    return unless @service.archived?
+
+    redirect_to vitrine_path, alert: "Este serviço está arquivado e não aceita novas reservas."
   end
 
   def set_appointment

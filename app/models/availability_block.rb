@@ -8,6 +8,7 @@ class AvailabilityBlock < ApplicationRecord
   validates :reason, length: { maximum: 150 }
   validate :ends_after_start
   validate :service_belongs_to_provider
+  validate :service_is_active, on: :create
 
   scope :active_from, ->(time) { where(ends_at: time..) }
 
@@ -27,5 +28,11 @@ class AvailabilityBlock < ApplicationRecord
     return if service.blank? || provider.blank? || service.user_id == provider_id
 
     errors.add(:service, 'deve pertencer ao prestador')
+  end
+
+  def service_is_active
+    return unless service&.archived?
+
+    errors.add(:service, 'está arquivado')
   end
 end

@@ -3,8 +3,14 @@
 <%= render @service %>
 
 <div>
-  <%= link_to "Edit this service", edit_service_path(@service) %> |
+  <% if @service.archived? %>
+    <p>Este serviço está arquivado.</p>
+    <% unless @service.archived_by_admin? %>
+      <%= button_to "Reativar", reactivate_service_path(@service), method: :patch %>
+    <% end %>
+  <% else %>
+    <%= link_to "Editar serviço", edit_service_path(@service) %> |
+    <%= button_to "Arquivar", archive_service_path(@service), method: :patch %>
+  <% end %>
   <%= link_to "Back to services", services_path %>
-
-  <%= button_to "Destroy this service", @service, method: :delete %>
 </div>

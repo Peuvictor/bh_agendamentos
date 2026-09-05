@@ -1,0 +1,37 @@
+<article class="border <%= service.archived? ? 'border-amber-200 bg-amber-50/50' : 'border-gray-200 bg-gray-50' %> rounded-xl p-5">
+  <div class="flex justify-between items-start gap-3 mb-2">
+    <h3 class="text-xl font-bold text-gray-800"><%= service.nome %></h3>
+    <% if service.archived? %>
+      <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded border border-amber-200">Arquivado</span>
+    <% else %>
+      <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded border border-green-200">Ativo</span>
+    <% end %>
+  </div>
+
+  <p class="text-sm text-gray-600 mb-4 line-clamp-2"><%= service.descricao %></p>
+  <div class="flex items-center justify-between text-xs text-gray-500 font-medium mb-4">
+    <span>Duração: <%= service.duration %> min</span>
+    <span class="font-bold text-green-700"><%= number_to_currency(service.preco, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+  </div>
+
+  <% if service.archived? %>
+    <% if service.archived_by_admin? %>
+      <p class="mb-4 rounded-lg bg-red-50 border border-red-100 p-3 text-sm text-red-700">
+        Arquivado pela administração. Somente um administrador pode reativá-lo.
+      </p>
+    <% end %>
+    <div class="pt-3 border-t border-amber-200">
+      <% unless service.archived_by_admin? %>
+        <%= button_to "Reativar", reactivate_service_path(service), method: :patch,
+                      class: "text-sm text-green-700 hover:text-green-900 font-bold" %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="flex space-x-3 pt-3 border-t border-gray-200">
+      <%= link_to "Editar", edit_service_path(service), class: "text-sm text-blue-600 hover:text-blue-900 font-bold" %>
+      <%= button_to "Arquivar", archive_service_path(service), method: :patch,
+                    form: { data: { turbo_confirm: "Arquivar este serviço? Ele deixará de aceitar novas reservas, mas o histórico será preservado." } },
+                    class: "text-sm text-amber-700 hover:text-amber-900 font-bold" %>
+    </div>
+  <% end %>
+</article>

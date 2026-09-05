@@ -69,19 +69,62 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Serviço atualizado", @service.reload.nome
   end
 
-  test "destroys an owned service without appointments" do
-    service = @provider.services.create!(
-      nome: "Serviço descartável",
-      descricao: "Criado para o teste de exclusão",
-      duration: 30,
-      preco: 50
-    )
+  # rubocop:disable-next Minitest/MultipleAssertions
+  test "archives an owned service without changing historical counts" do
+    historical_counts = [Appointment.count, Payment.count, Review.count]
 
-    assert_difference("Service.count", -1) do
-      delete service_url(service)
+    assert_no_difference(["Service.count", "Appointment.count", "Payment.count", "Review.count"]) do
+      patch archive_service_url(@service)
     end
 
+    assert_predicate @service.reload, :archived?
+    assert_equal historical_counts, [Appointment.count, Payment.count, Review.count]
     assert_redirected_to services_url
+  end
+
+  test "reactivates a service archived by its provider" do
+    @service.archive!
+
+    patch reactivate_service_url(@service)
+
+    assert_not_predicate @service.reload, :archived?
+    assert_redirected_to services_url
+  end
+
+  test "does not edit an archived service" do
+    @service.archive!
+
+    get edit_service_url(@service)
+
+    assert_redirected_to services_url
+
+    patch service_url(@service), params: { service: { nome: "Nome manipulado" } }
+
+    assert_redirected_to services_url
+    assert_not_equal "Nome manipulado", @service.reload.nome
+  end
+
+  test "does not reactivate an administrative archive" do
+    @service.archive!(by_admin: true)
+
+    patch reactivate_service_url(@service)
+
+    assert_predicate @service.reload, :archived?
+    assert_predicate @service, :archived_by_admin?
+    assert_redirected_to services_url
+  end
+
+  # rubocop:disable-next Minitest/MultipleAssertions
+  test "lists active and archived services in separate sections" do
+    @service.archive!
+
+    get services_url
+
+    assert_response :success
+    assert_select "#active-services-heading", text: "Serviços ativos"
+    assert_select "#archived-services-heading", text: "Serviços arquivados"
+    assert_select "form[action='#{reactivate_service_path(@service)}']"
+    assert_select "a[href='#{edit_service_path(@service)}']", count: 0
   end
 
   test "rejects a client" do

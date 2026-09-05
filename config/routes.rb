@@ -17,11 +17,20 @@ Rails.application.routes.draw do
     root to: 'dashboard#index'
     get 'dashboard', to: 'dashboard#index', as: 'dashboard'
     resources :users, only: [:index, :destroy]
-    resources :services, only: [:index, :destroy]
+    resources :services, only: :index do
+      member do
+        patch :archive
+        patch :reactivate
+      end
+    end
   end
 
   # 4. DOMÍNIO: SERVIÇOS E AGENDAMENTOS
-  resources :services do
+  resources :services, except: :destroy do
+    member do
+      patch :archive
+      patch :reactivate
+    end
     get :available_slots, on: :member, to: "appointments#available_slots"
     resources :appointments, only: [:new, :create]
     resources :reviews, only: [:index]

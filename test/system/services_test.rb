@@ -2,48 +2,58 @@ require "application_system_test_case"
 
 class ServicesTest < ApplicationSystemTestCase
   setup do
+    @provider = users(:one)
     @service = services(:one)
+
+    visit new_user_session_path
+    fill_in "E-mail", with: @provider.email
+    fill_in "Senha", with: "password123"
+    click_button "Entrar"
   end
 
-  test "visiting the index" do
-    visit services_url
-    assert_selector "h1", text: "Services"
+  test "provider sees active and archived service sections" do
+    visit services_path
+
+    assert_selector "h1", text: "Meus Serviços"
+    assert_selector "h2", text: "Serviços ativos"
+    assert_selector "h2", text: "Serviços arquivados"
   end
 
-  test "should create service" do
-    visit services_url
-    click_on "New service"
+  test "provider creates and updates a service" do
+    visit services_path
+    click_on "+ Novo Serviço"
 
-    fill_in "Descricao", with: @service.descricao
-    fill_in "Duracao minutos", with: @service.duracao_minutos
-    fill_in "Nome", with: @service.nome
-    fill_in "Preco", with: @service.preco
-    fill_in "User", with: @service.user_id
-    click_on "Create Service"
+    fill_in "Nome do Serviço", with: "Barba completa"
+    fill_in "Descrição", with: "Atendimento completo"
+    fill_in "Duração do Serviço", with: 45
+    fill_in "Preço do Serviço", with: 75
+    click_button "Salvar Serviço"
 
-    assert_text "Service was successfully created"
-    click_on "Back"
+    assert_text "Serviço criado com sucesso"
+    click_on "Editar", match: :first
+    fill_in "Nome do Serviço", with: "Barba premium"
+    click_button "Salvar Serviço"
+
+    assert_text "Serviço atualizado com sucesso"
+    assert_text "Barba premium"
   end
 
-  test "should update Service" do
-    visit service_url(@service)
-    click_on "Edit this service", match: :first
+  # rubocop:disable-next Minitest/MultipleAssertions
+  test "provider archives and reactivates a service without deleting it" do
+    visit services_path
 
-    fill_in "Descricao", with: @service.descricao
-    fill_in "Duracao minutos", with: @service.duracao_minutos
-    fill_in "Nome", with: @service.nome
-    fill_in "Preco", with: @service.preco
-    fill_in "User", with: @service.user_id
-    click_on "Update Service"
+    click_button "Arquivar"
 
-    assert_text "Service was successfully updated"
-    click_on "Back"
-  end
+    assert_text "Serviço arquivado. O histórico foi preservado."
+    assert_text @service.nome
+    assert_selector "h2", text: "Serviços arquivados"
+    assert_button "Reativar"
 
-  test "should destroy Service" do
-    visit service_url(@service)
-    click_on "Destroy this service", match: :first
+    click_button "Reativar"
 
-    assert_text "Service was successfully destroyed"
+    assert_text "Serviço reativado com sucesso."
+    assert_text @service.nome
+    assert_button "Arquivar"
+    assert Service.exists?(@service.id)
   end
 end
