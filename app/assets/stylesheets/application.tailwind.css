@@ -1,1 +1,54 @@
 @import "tailwindcss";
+
+.fc {
+  --fc-border-color: #e5e7eb;
+  --fc-button-bg-color: #1e3a8a;
+  --fc-button-border-color: #1e3a8a;
+  --fc-button-hover-bg-color: #1d4ed8;
+  --fc-button-hover-border-color: #1d4ed8;
+  --fc-button-active-bg-color: #1e40af;
+  --fc-button-active-border-color: #1e40af;
+  --fc-today-bg-color: #eff6ff;
+  font-size: 0.875rem;
+}
+
+.fc .fc-toolbar {
+  gap: 0.75rem;
+}
+
+.fc .fc-toolbar-title {
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.fc .fc-event {
+  border-radius: 0.375rem;
+  cursor: pointer;
+  padding: 0.125rem;
+}
+
+.fc .fc-non-business {
+  background: repeating-linear-gradient(-45deg, #f8fafc, #f8fafc 6px, #f1f5f9 6px, #f1f5f9 12px);
+}
+
+@media (max-width: 639px) {
+  .fc .fc-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+  }
+
+  .fc .fc-button {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.55rem;
+  }
+}

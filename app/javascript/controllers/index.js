@@ -10,6 +10,9 @@ application.register("hello", HelloController)
 import PaymentController from "./payment_controller"
 application.register("payment", PaymentController)
 
+import ProviderCalendarController from "./provider_calendar_controller"
+application.register("provider-calendar", ProviderCalendarController)
+
 import SchedulePeriodsController from "./schedule_periods_controller"
 application.register("schedule-periods", SchedulePeriodsController)
 

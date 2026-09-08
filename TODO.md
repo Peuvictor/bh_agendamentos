@@ -8,6 +8,8 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Serviços, busca por texto e filtros por bairros de Belo Horizonte.
 - [x] Agendamentos com duração, bloqueio de horários passados e prevenção de conflitos.
 - [x] Agenda semanal configurável pelo prestador, com turnos dinâmicos, dias fechados e bloqueios gerais ou por serviço.
+- [x] Arquivamento e reativação de serviços, preservando o histórico e impedindo novas reservas enquanto arquivados.
+- [x] Calendário visual diário, semanal e mensal do prestador, com agendamentos, bloqueios, expediente e histórico opcional.
 - [x] Cancelamento lógico preservando o histórico e liberando o horário.
 - [x] Dashboard do prestador, avaliações e painel administrativo.
 - [x] Active Storage com Cloudinary para avatares e imagens de serviços.
@@ -19,8 +21,9 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 170 testes e 637 asserções de aplicação aprovados.
-- [x] Quatro testes de sistema para agendamento, checkout e gestão de serviços, com suporte a Selenium e Chrome portátil.
+- [x] Minitest compatível com Rails 7.1: 178 testes de aplicação aprovados na validação do calendário.
+- [x] Cinco testes de sistema para agendamento, checkout, gestão de serviços e calendário, com suporte a Selenium e Chrome portátil.
+- [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (12 asserções aprovadas).
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
 - [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
@@ -31,9 +34,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ### Integridade e experiência principal
 
-- [x] Arquivar e reativar serviços em vez de apagá-los, preservando agendamentos, pagamentos e avaliações anteriores.
-- [x] Impedir novas reservas para serviços arquivados sem ocultar o histórico existente.
-- [ ] Criar calendário visual diário, semanal e mensal para o prestador, reunindo agendamentos e bloqueios.
 - [ ] Permitir a edição de feriados e bloqueios, incluindo data, horário, motivo e serviço afetado.
 - [ ] Implementar reagendamento seguro com nova validação de disponibilidade e preservação do histórico.
 

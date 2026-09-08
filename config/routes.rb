@@ -37,6 +37,8 @@ Rails.application.routes.draw do
   end
 
   namespace :provider do
+    resource :calendar, only: :show, controller: "calendar"
+    get "calendar/events", to: "calendar#events", as: :calendar_events
     resource :availability, only: %i[show update], controller: "availability"
     resources :availability_blocks, only: %i[create destroy]
   end

@@ -28,14 +28,15 @@ Este é um ambiente de demonstração para portfólio. A integração financeira
 
 ### Prestadores
 
-- Cadastro, edição e remoção dos próprios serviços, com nome, descrição, duração, preço e foto.
+- Cadastro, edição, arquivamento e reativação dos próprios serviços, preservando agendamentos, pagamentos e avaliações anteriores.
 - Avisos imediatos no formulário quando dados obrigatórios do serviço estão ausentes.
 - Agenda semanal configurável com quantos turnos forem necessários em cada dia.
+- Calendário visual diário, semanal e mensal reunindo agendamentos, bloqueios e expediente.
 - Dias sem expediente definidos ao deixar os turnos vazios.
 - Bloqueio de feriados e imprevistos por dia inteiro ou por faixa de horário.
 - Bloqueios aplicáveis a todos os serviços ou somente a um serviço específico.
 - Cálculo dos horários disponíveis considerando duração do serviço, expediente, bloqueios e reservas de todos os serviços do prestador.
-- Dashboard com agendamentos recebidos, receita recebida e prevista, ticket médio, clientes pagantes e indicadores por status.
+- Dashboard com receita recebida e prevista, ticket médio, clientes pagantes e indicadores por status.
 - Confirmação de agendamentos condicionada à existência de pagamento aprovado.
 
 ### Pagamentos e automações
@@ -61,6 +62,16 @@ Este é um ambiente de demonstração para portfólio. A integração financeira
 - UUIDs, chaves estrangeiras, índices únicos e restrições no PostgreSQL para integridade dos dados.
 - Upload de avatar e fotos de serviços com Active Storage e Cloudinary.
 - Interface responsiva com Tailwind CSS, Turbo e Stimulus.
+
+## Calendário do prestador
+
+Após entrar com uma conta de prestador, acesse **Calendário** (`/provider/calendar`). A página reúne os agendamentos recebidos e os bloqueios gerais ou por serviço, com visualizações de dia, semana e mês. A visualização inicial é semanal no desktop e diária em telas pequenas; os horários usam o fuso de Brasília (`America/Sao_Paulo`).
+
+Agendamentos pendentes e confirmados aparecem por padrão. A opção **Exibir cancelados e reembolsados** acrescenta esses registros ao período consultado. Ao selecionar um evento, o prestador vê cliente, serviço, horário e status do agendamento, ou motivo e abrangência do bloqueio. Agendamentos oferecem um link para sua página de detalhes.
+
+O expediente configurado é destacado na grade. A tela **Disponibilidade** (`/provider/availability`) continua responsável pelos turnos semanais e pelo cadastro e remoção de bloqueios. O calendário é de consulta; edição de bloqueios e reagendamento permanecem no [roadmap](TODO.md).
+
+O FullCalendar carrega somente os eventos que cruzam o período visível, por meio de `GET /provider/calendar/events`, com parâmetros `start`, `end` e `include_history`. O endpoint é restrito ao prestador autenticado e não retorna contato do cliente nem dados financeiros. A grade diária/semanal desta versão exibe o intervalo das 06h às 22h.
 
 ## Pagamentos
 
@@ -106,6 +117,7 @@ O arquivo `config/sidekiq.yml` configura o processo para consumir as filas `defa
 - Devise
 - Hotwire (Turbo e Stimulus)
 - Tailwind CSS
+- FullCalendar e Luxon para calendário e fuso horário
 - Docker e Docker Compose
 - Minitest e RuboCop
 - Cloudinary / Active Storage
@@ -230,13 +242,21 @@ O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os teste
 docker compose exec web bin/rails test
 ```
 
-A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Estado validado atualmente:
+A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação da entrega do calendário, os 178 testes de aplicação passaram sem falhas nem erros.
 
-```text
-141 testes, 528 asserções, 0 falhas e 0 erros
+Os cinco testes de sistema ficam em `test/system` e podem ser executados separadamente:
+
+```bash
+docker compose exec web bin/rails test:system
 ```
 
-O cenário de sistema do agendamento até a tela de checkout também está validado com `1 teste e 5 asserções`.
+O teste do calendário com Selenium foi validado com 12 asserções, cobrindo navegação, detalhes, histórico e alternância de visualizações:
+
+```bash
+docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/system/provider_calendar_test.rb
+```
+
+Esse comando exige Chrome e ChromeDriver compatíveis no container, com suas bibliotecas de sistema instaladas. Para executáveis portáteis, informe também `CHROME_BINARY` e `CHROMEDRIVER_PATH`. Com o driver padrão `rack_test`, o teste verifica a estrutura da página; as interações JavaScript exigem Selenium.
 
 O código Ruby, Rails e Minitest é analisado pelo RuboCop:
 
@@ -265,8 +285,11 @@ alterações enviadas para a branch `main`.
 
 ## Próximas evoluções
 
+- Permitir a edição de feriados e bloqueios e implementar reagendamento seguro.
 - Ampliar os testes de sistema executados com navegador para a administração da agenda.
 - Integrar os eventos estruturados do webhook a alertas e painéis operacionais do ambiente de produção.
+
+O acompanhamento completo das tarefas está no [roadmap](TODO.md).
 
 ## Autor
 
