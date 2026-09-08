@@ -4,6 +4,8 @@ pt-BR:
     availability:
       updated: "Horários semanais atualizados com sucesso."
     availability_blocks:
+      updated: "Bloqueio atualizado com sucesso. Agendamentos existentes foram preservados."
+      ended: "Este bloqueio já foi encerrado e não pode ser editado."
       created: "Bloqueio adicionado à agenda."
       destroyed: "Bloqueio removido da agenda."
       invalid_period: "Informe uma data e um período válidos."

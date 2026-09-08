@@ -97,44 +97,9 @@
       </div>
 
       <%= form_with url: provider_availability_blocks_path, scope: :availability_block, class: "space-y-4" do |form| %>
-        <div>
-          <%= form.label :date, "Data", class: "block text-sm font-bold text-gray-700 mb-1" %>
-          <%= form.date_field :date, min: Date.current, required: true, class: "w-full rounded-lg border-gray-300" %>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <%= form.check_box :all_day, checked: true, class: "rounded border-gray-300" %>
-          <%= form.label :all_day, "Dia inteiro", class: "text-sm font-bold text-gray-700" %>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <%= form.label :start_time, "De", class: "block text-sm font-bold text-gray-700 mb-1" %>
-            <%= form.time_field :start_time, value: "08:00", class: "w-full rounded-lg border-gray-300" %>
-          </div>
-          <div>
-            <%= form.label :end_time, "Até", class: "block text-sm font-bold text-gray-700 mb-1" %>
-            <%= form.time_field :end_time, value: "19:00", class: "w-full rounded-lg border-gray-300" %>
-          </div>
-        </div>
-
-        <div>
-          <%= form.label :service_id, "Aplicar a", class: "block text-sm font-bold text-gray-700 mb-1" %>
-          <%= form.collection_select :service_id,
-                                     @services,
-                                     :id,
-                                     :nome,
-                                     { include_blank: "Todos os serviços" },
-                                     class: "w-full rounded-lg border-gray-300" %>
-        </div>
-
-        <div>
-          <%= form.label :reason, "Motivo (opcional)", class: "block text-sm font-bold text-gray-700 mb-1" %>
-          <%= form.text_field :reason,
-                              maxlength: 150,
-                              placeholder: "Feriado, manutenção, compromisso...",
-                              class: "w-full rounded-lg border-gray-300" %>
-        </div>
+        <%= render "provider/availability_blocks/fields", form: form, services: @services,
+                   minimum_date: Date.current,
+                   values: { date: nil, all_day: true, start_time: "08:00", end_time: "19:00", service_id: nil, reason: nil } %>
 
         <%= form.submit "Adicionar bloqueio",
                         class: "w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-xl cursor-pointer" %>
@@ -162,11 +127,16 @@
                   <p class="text-xs text-gray-400 mt-1"><%= block.reason %></p>
                 <% end %>
               </div>
-              <%= button_to "Remover",
-                            provider_availability_block_path(block),
-                            method: :delete,
-                            form: { data: { turbo_confirm: "Remover este bloqueio?" } },
-                            class: "text-sm font-bold text-red-600 hover:text-red-800" %>
+              <div class="flex flex-wrap items-start gap-3">
+                <% if block.editable? %>
+                  <%= link_to "Editar", edit_provider_availability_block_path(block), class: "text-sm font-bold text-blue-700 hover:text-blue-900" %>
+                <% end %>
+                <%= button_to "Remover",
+                              provider_availability_block_path(block),
+                              method: :delete,
+                              form: { data: { turbo_confirm: "Remover este bloqueio?" } },
+                              class: "text-sm font-bold text-red-600 hover:text-red-800" %>
+              </div>
             </div>
           <% end %>
         </div>

@@ -81,7 +81,8 @@ class ProviderCalendarEventFeed
       kind: 'availabilityBlock',
       reason: block.reason.presence || 'Sem motivo informado',
       serviceName: block.service&.nome,
-      scope: block.service&.nome || 'Todos os serviços'
+      scope: block.service&.nome || 'Todos os serviços',
+      editUrl: block.editable? ? Rails.application.routes.url_helpers.edit_provider_availability_block_path(block) : nil
     }
   end
 

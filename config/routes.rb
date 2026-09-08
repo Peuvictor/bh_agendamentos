@@ -40,7 +40,7 @@ Rails.application.routes.draw do
     resource :calendar, only: :show, controller: "calendar"
     get "calendar/events", to: "calendar#events", as: :calendar_events
     resource :availability, only: %i[show update], controller: "availability"
-    resources :availability_blocks, only: %i[create destroy]
+    resources :availability_blocks, only: %i[create edit update destroy]
   end
 
   resources :appointments, only: [:index, :show, :edit, :update, :destroy] do

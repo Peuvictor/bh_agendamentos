@@ -8,7 +8,7 @@ class AvailabilityBlock < ApplicationRecord
   validates :reason, length: { maximum: 150 }
   validate :ends_after_start
   validate :service_belongs_to_provider
-  validate :service_is_active, on: :create
+  validate :service_is_active, if: :service_selection_changed?
 
   scope :active_from, ->(time) { where(ends_at: time..) }
 
@@ -16,7 +16,19 @@ class AvailabilityBlock < ApplicationRecord
     service_id.nil?
   end
 
+  def editable?
+    ends_at > Time.current
+  end
+
+  def all_day?
+    starts_at == starts_at.beginning_of_day && ends_at == starts_at + 1.day
+  end
+
   private
+
+  def service_selection_changed?
+    new_record? || will_save_change_to_service_id?
+  end
 
   def ends_after_start
     return if starts_at.blank? || ends_at.blank? || starts_at < ends_at

@@ -9,7 +9,7 @@ export default class extends Controller {
   static targets = [
     "calendar", "history", "error", "dialog", "kind", "title", "time",
     "client", "clientRow", "service", "status", "statusRow", "reason",
-    "reasonRow", "detailsLink"
+    "reasonRow", "detailsLink", "editBlockLink"
   ]
 
   static values = {
@@ -81,6 +81,11 @@ export default class extends Controller {
     this.statusRowTarget.classList.toggle("hidden", !appointment)
     this.reasonRowTarget.classList.toggle("hidden", appointment)
     this.detailsLinkTarget.classList.toggle("hidden", !appointment)
+    const canEditBlock = !appointment && Boolean(properties.editUrl)
+    this.editBlockLinkTarget.classList.toggle("hidden", !canEditBlock)
+    this.editBlockLinkTarget.classList.toggle("inline-flex", canEditBlock)
+    if (canEditBlock) this.editBlockLinkTarget.href = properties.editUrl
+    else this.editBlockLinkTarget.removeAttribute("href")
 
     if (appointment) {
       this.clientTarget.textContent = properties.clientName

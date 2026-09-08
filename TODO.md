@@ -10,6 +10,7 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Agenda semanal configurável pelo prestador, com turnos dinâmicos, dias fechados e bloqueios gerais ou por serviço.
 - [x] Arquivamento e reativação de serviços, preservando o histórico e impedindo novas reservas enquanto arquivados.
 - [x] Calendário visual diário, semanal e mensal do prestador, com agendamentos, bloqueios, expediente e histórico opcional.
+- [x] Edição de feriados e bloqueios futuros ou em andamento pela Disponibilidade e pelo calendário, incluindo data, horário, motivo e serviço afetado, sem alterar agendamentos existentes.
 - [x] Cancelamento lógico preservando o histórico e liberando o horário.
 - [x] Dashboard do prestador, avaliações e painel administrativo.
 - [x] Active Storage com Cloudinary para avatares e imagens de serviços.
@@ -21,9 +22,10 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 178 testes de aplicação aprovados na validação do calendário.
-- [x] Cinco testes de sistema para agendamento, checkout, gestão de serviços e calendário, com suporte a Selenium e Chrome portátil.
+- [x] Minitest compatível com Rails 7.1: 194 testes de aplicação e 728 asserções aprovados na validação da edição de bloqueios.
+- [x] Sete testes de sistema para agendamento, checkout, gestão de serviços, calendário e edição de bloqueios, com suporte a Selenium e Chrome portátil.
 - [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (12 asserções aprovadas).
+- [x] Edição de bloqueios validada com Selenium pela Disponibilidade e pelo calendário, incluindo persistência após recarregar (dois testes e sete asserções aprovados).
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
 - [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
@@ -34,7 +36,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ### Integridade e experiência principal
 
-- [ ] Permitir a edição de feriados e bloqueios, incluindo data, horário, motivo e serviço afetado.
 - [ ] Implementar reagendamento seguro com nova validação de disponibilidade e preservação do histórico.
 
 ### Interface e portfólio

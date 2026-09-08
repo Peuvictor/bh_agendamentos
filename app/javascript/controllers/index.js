@@ -4,6 +4,9 @@
 
 import { application } from "./application"
 
+import BlockPeriodController from "./block_period_controller"
+application.register("block-period", BlockPeriodController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
 

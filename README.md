@@ -35,6 +35,7 @@ Este é um ambiente de demonstração para portfólio. A integração financeira
 - Dias sem expediente definidos ao deixar os turnos vazios.
 - Bloqueio de feriados e imprevistos por dia inteiro ou por faixa de horário.
 - Bloqueios aplicáveis a todos os serviços ou somente a um serviço específico.
+- Edição de bloqueios futuros e em andamento pela Disponibilidade ou pelo calendário, preservando agendamentos existentes.
 - Cálculo dos horários disponíveis considerando duração do serviço, expediente, bloqueios e reservas de todos os serviços do prestador.
 - Dashboard com receita recebida e prevista, ticket médio, clientes pagantes e indicadores por status.
 - Confirmação de agendamentos condicionada à existência de pagamento aprovado.
@@ -69,9 +70,19 @@ Após entrar com uma conta de prestador, acesse **Calendário** (`/provider/cale
 
 Agendamentos pendentes e confirmados aparecem por padrão. A opção **Exibir cancelados e reembolsados** acrescenta esses registros ao período consultado. Ao selecionar um evento, o prestador vê cliente, serviço, horário e status do agendamento, ou motivo e abrangência do bloqueio. Agendamentos oferecem um link para sua página de detalhes.
 
-O expediente configurado é destacado na grade. A tela **Disponibilidade** (`/provider/availability`) continua responsável pelos turnos semanais e pelo cadastro e remoção de bloqueios. O calendário é de consulta; edição de bloqueios e reagendamento permanecem no [roadmap](TODO.md).
+O expediente configurado é destacado na grade. A tela **Disponibilidade** (`/provider/availability`) reúne os turnos semanais e o cadastro, edição e remoção de bloqueios. O diálogo do calendário oferece **Editar bloqueio** para registros ainda não encerrados, abrindo o mesmo formulário usado pela lista. Reagendamento permanece no [roadmap](TODO.md).
 
 O FullCalendar carrega somente os eventos que cruzam o período visível, por meio de `GET /provider/calendar/events`, com parâmetros `start`, `end` e `include_history`. O endpoint é restrito ao prestador autenticado e não retorna contato do cliente nem dados financeiros. A grade diária/semanal desta versão exibe o intervalo das 06h às 22h.
+
+### Edição de feriados e bloqueios
+
+Na Disponibilidade, selecione **Editar** ao lado do bloqueio, ou use **Editar bloqueio** no calendário. O formulário permite alterar data, dia inteiro ou faixa de horário, serviço afetado e motivo opcional (até 150 caracteres). Ao salvar, a aplicação retorna à Disponibilidade com a confirmação. Erros mantêm os valores digitados para correção.
+
+Bloqueios encerrados não podem ser editados. Nos bloqueios em andamento, o início original pode ser mantido; um novo início deve estar no futuro, exceto ao selecionar dia inteiro de hoje. O término deve permanecer no futuro. Os horários são interpretados no fuso de Brasília.
+
+Um bloqueio associado a serviço arquivado pode manter esse vínculo, migrar para um serviço ativo ou passar a valer para todos os serviços. Não é permitido selecionar outro serviço arquivado. A atualização mantém o mesmo registro e não cancela nem modifica agendamentos existentes, mesmo quando o novo intervalo os sobrepõe.
+
+As rotas de edição são `GET /provider/availability_blocks/:id/edit` e `PATCH /provider/availability_blocks/:id`, restritas aos bloqueios do prestador autenticado. O servidor verifica novamente se o bloqueio ainda pode ser editado no momento de salvar.
 
 ## Pagamentos
 
@@ -242,9 +253,9 @@ O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os teste
 docker compose exec web bin/rails test
 ```
 
-A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação da entrega do calendário, os 178 testes de aplicação passaram sem falhas nem erros.
+A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, edição de bloqueios, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação da edição de bloqueios, os 194 testes de aplicação passaram com 728 asserções, sem falhas nem erros.
 
-Os cinco testes de sistema ficam em `test/system` e podem ser executados separadamente:
+Os sete testes de sistema ficam em `test/system` e podem ser executados separadamente:
 
 ```bash
 docker compose exec web bin/rails test:system
@@ -257,6 +268,14 @@ docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/syste
 ```
 
 Esse comando exige Chrome e ChromeDriver compatíveis no container, com suas bibliotecas de sistema instaladas. Para executáveis portáteis, informe também `CHROME_BINARY` e `CHROMEDRIVER_PATH`. Com o driver padrão `rack_test`, o teste verifica a estrutura da página; as interações JavaScript exigem Selenium.
+
+Os dois fluxos de edição de bloqueios (Disponibilidade e calendário) foram validados com Selenium, incluindo persistência após recarregar, com sete asserções:
+
+```bash
+docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/system/availability_block_editing_test.rb
+```
+
+Com `rack_test`, o fluxo pela Disponibilidade continua sendo executado; o cenário do calendário é pulado por exigir JavaScript.
 
 O código Ruby, Rails e Minitest é analisado pelo RuboCop:
 
@@ -285,7 +304,7 @@ alterações enviadas para a branch `main`.
 
 ## Próximas evoluções
 
-- Permitir a edição de feriados e bloqueios e implementar reagendamento seguro.
+- Implementar reagendamento seguro, com nova validação de disponibilidade e preservação do histórico.
 - Ampliar os testes de sistema executados com navegador para a administração da agenda.
 - Integrar os eventos estruturados do webhook a alertas e painéis operacionais do ambiente de produção.
 

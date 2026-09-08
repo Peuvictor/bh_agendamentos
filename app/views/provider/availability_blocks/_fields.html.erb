@@ -1,0 +1,37 @@
+<div data-controller="block-period" class="space-y-4">
+  <div>
+    <%= form.label :date, "Data", class: "block text-sm font-bold text-gray-700 mb-1" %>
+    <%= form.date_field :date, value: values[:date], min: minimum_date, required: true, class: "w-full rounded-lg border-gray-300" %>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <%= form.check_box :all_day, checked: values[:all_day], data: { block_period_target: "allDay", action: "block-period#toggle" }, class: "rounded border-gray-300" %>
+    <%= form.label :all_day, "Dia inteiro", class: "text-sm font-bold text-gray-700" %>
+  </div>
+
+  <fieldset data-block-period-target="times" class="grid grid-cols-2 gap-4">
+    <legend class="sr-only">Horários do bloqueio parcial</legend>
+    <div>
+      <%= form.label :start_time, "De", class: "block text-sm font-bold text-gray-700 mb-1" %>
+      <%= form.time_field :start_time, value: values[:start_time], class: "w-full rounded-lg border-gray-300" %>
+    </div>
+    <div>
+      <%= form.label :end_time, "Até", class: "block text-sm font-bold text-gray-700 mb-1" %>
+      <%= form.time_field :end_time, value: values[:end_time], class: "w-full rounded-lg border-gray-300" %>
+    </div>
+  </fieldset>
+
+  <div>
+    <%= form.label :service_id, "Aplicar a", class: "block text-sm font-bold text-gray-700 mb-1" %>
+    <%= form.select :service_id,
+                    services.map { |service| [service.archived? ? "#{service.nome} (arquivado)" : service.nome, service.id] },
+                    { include_blank: "Todos os serviços", selected: values[:service_id] },
+                    class: "w-full rounded-lg border-gray-300" %>
+  </div>
+
+  <div>
+    <%= form.label :reason, "Motivo (opcional)", class: "block text-sm font-bold text-gray-700 mb-1" %>
+    <%= form.text_field :reason, value: values[:reason], maxlength: 150,
+                        placeholder: "Feriado, manutenção, compromisso...", class: "w-full rounded-lg border-gray-300" %>
+  </div>
+</div>
