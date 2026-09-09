@@ -21,3 +21,6 @@ application.register("schedule-periods", SchedulePeriodsController)
 
 import StarRatingController from "./star_rating_controller"
 application.register("star-rating", StarRatingController)
+
+import ReschedulingSlotsController from "./rescheduling_slots_controller"
+application.register("rescheduling-slots", ReschedulingSlotsController)

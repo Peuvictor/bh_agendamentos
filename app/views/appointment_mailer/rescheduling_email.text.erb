@@ -1,0 +1,8 @@
+Agendamento reagendado: <%= @service.nome %>
+
+<%= @rescheduling.actor.nome %> alterou o horário do atendimento.
+Anterior: <%= l(@rescheduling.previous_start_time, format: :long) %> até <%= @rescheduling.previous_end_time.strftime("%H:%M") %>
+Novo: <%= l(@rescheduling.new_start_time, format: :long) %> até <%= @rescheduling.new_end_time.strftime("%H:%M") %>
+
+A duração e o pagamento foram mantidos.
+Ver agendamento: <%= appointment_url(@appointment) %>

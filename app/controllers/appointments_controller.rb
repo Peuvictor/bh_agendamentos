@@ -3,7 +3,7 @@ class AppointmentsController < ApplicationController
 
   # 1. Configurações baseadas na Rota Aninhada
   before_action :set_service, only: %i[new create available_slots]
-  before_action :set_appointment, only: %i[show edit update destroy]
+  before_action :set_appointment, only: %i[show edit update destroy rescheduling_slots]
 
   # 2. Carrega os horários apenas quando formos renderizar a tela
   before_action :set_available_slots, only: %i[new create]
@@ -58,14 +58,46 @@ class AppointmentsController < ApplicationController
   end
 
   def edit
-    redirect_to appointment_path(@appointment), alert: "Este agendamento não pode ser editado. Cancele e reserve um novo horário."
+    return unavailable_rescheduling unless @appointment.reschedulable?
+
+    load_rescheduling_form
   end
 
   def update
-    redirect_to appointment_path(@appointment), alert: "O status do agendamento não pode ser alterado por esta rota."
+    return unavailable_rescheduling unless @appointment.reschedulable?
+
+    updater = RescheduleAppointmentService.new(
+      appointment: @appointment, actor: current_user,
+      date: params[:appointment_date], hour: params[:appointment_hour], schedule_token: params[:schedule_token]
+    )
+    if updater.call
+      redirect_to appointment_path(@appointment), notice: 'Agendamento reagendado com sucesso.', status: :see_other
+    else
+      @appointment.reload
+      @rescheduling_error = updater.error
+      @stale_schedule = updater.stale?
+      load_rescheduling_form
+      render :edit, status: updater.stale? ? :conflict : :unprocessable_content
+    end
+  end
+
+  def rescheduling_slots
+    unless @appointment.reschedulable?
+      return render json: { slots: [], error: 'Este agendamento não está disponível para reagendamento.' },
+                    status: :unprocessable_content
+    end
+
+    date = Date.iso8601(params.require(:date))
+    render json: { slots: rescheduling_availability(date).slots }
+  rescue ActionController::ParameterMissing, Date::Error
+    render json: { slots: [], error: 'Data inválida' }, status: :unprocessable_content
   end
 
   def destroy
+    @appointment.with_lock { cancel_locked }
+  end
+
+  def cancel_locked
     if @appointment.reembolsado?
       redirect_back fallback_location: appointments_path, alert: "Este agendamento foi reembolsado e não pode ser alterado."
     elsif @appointment.cancelado?
@@ -91,8 +123,16 @@ class AppointmentsController < ApplicationController
   def update_status
     @appointment = Appointment.find(params[:id])
 
+    @appointment.with_lock { update_status_locked }
+  end
+
+  def update_status_locked
     # Trava de Segurança: Só o prestador dono do serviço pode alterar
     if @appointment.service.user == current_user
+      if @appointment.cancelado? || @appointment.reembolsado? || @appointment.start_time <= Time.current
+        return redirect_to dashboard_path, alert: 'Este agendamento não pode mais ser alterado.'
+      end
+
       requested_status = params[:status].to_s
 
       unless %w[confirmado cancelado].include?(requested_status)
@@ -120,7 +160,28 @@ class AppointmentsController < ApplicationController
       redirect_to dashboard_path, alert: "Você não tem permissão, uai!"
     end
   end
+  private :cancel_locked, :update_status_locked
+
   private
+
+  def unavailable_rescheduling
+    redirect_to appointment_path(@appointment), alert: 'Este agendamento não está disponível para reagendamento.'
+  end
+
+  def load_rescheduling_form
+    @selected_date = if params[:appointment_date].present?
+                       selected_appointment_date
+                     else
+                       @appointment.start_time.to_date
+                     end
+    @available_slots = rescheduling_availability(@selected_date).slots
+    @schedule_token = params[:schedule_token].presence || @appointment.schedule_token
+  end
+
+  def rescheduling_availability(date)
+    ProviderAvailability.new(service: @appointment.service, date: date,
+                             exclude_appointment: @appointment, duration: @appointment.reserved_duration)
+  end
 
   # NOVO: Busca o serviço com base na URL aninhada (ex: /services/5/appointments/new)
   def set_service

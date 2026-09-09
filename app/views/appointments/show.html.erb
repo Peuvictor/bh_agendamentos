@@ -70,12 +70,15 @@
         <div class="flex justify-between pt-2">
           <span class="text-gray-500 font-medium">Valor:</span>
           <span class="text-green-600 font-extrabold text-lg">
-            <%= number_to_currency(@appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
+            <%= number_to_currency(@appointment.payment&.amount || @appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %>
           </span>
         </div>
       </div>
 
       <div class="space-y-3">
+        <% if @appointment.reschedulable? %>
+          <%= link_to "Reagendar", edit_appointment_path(@appointment), class: "w-full block text-center bg-blue-900 text-white py-3 rounded-xl font-bold" %>
+        <% end %>
         <%
           google_url = "https://www.google.com/calendar/render?action=TEMPLATE" +
                        "&text=#{u(@appointment.service.nome)} - Agenda BH" +
@@ -111,7 +114,7 @@
         </div>
         <div class="flex justify-between mt-2 text-sm">
           <span class="text-gray-500">Valor a pagar:</span>
-          <span class="text-green-600 font-bold"><%= number_to_currency(@appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+          <span class="text-green-600 font-bold"><%= number_to_currency(@appointment.payment&.amount || @appointment.service.preco, unit: "R$ ", separator: ",", delimiter: ".") %></span>
         </div>
       </div>
 
@@ -134,3 +137,5 @@
     </div>
   </div>
 <% end %>
+
+<%= render "rescheduling_history" %>

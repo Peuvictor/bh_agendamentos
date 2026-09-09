@@ -26,10 +26,12 @@ class AvailabilityBlockForm
   end
 
   def save
-    block.with_lock do
-      raise EndedBlock unless block.editable?
+    block.provider.with_schedule_lock do
+      block.with_lock do
+        raise EndedBlock unless block.editable?
 
-      save_block
+        save_block
+      end
     end
   rescue ArgumentError, TypeError
     errors.add(:base, I18n.t('provider.availability_blocks.invalid_period'))

@@ -1,4 +1,11 @@
 class AppointmentMailer < ApplicationMailer
+  def rescheduling_email(rescheduling, recipient)
+    @rescheduling = rescheduling
+    @appointment = rescheduling.appointment
+    @service = @appointment.service
+    mail(to: recipient.email, subject: "Agendamento reagendado: #{@service.nome}")
+  end
+
   def confirmation_email(appointment)
     @appointment = appointment
     @client = appointment.client

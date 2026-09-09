@@ -1,33 +1,41 @@
-<div class="max-w-2xl mx-auto mt-10 px-4">
-  <%# Card Principal %>
-  <div class="bg-white rounded-3xl shadow-xl shadow-blue-900/5 overflow-hidden border border-gray-100">
+<div class="max-w-2xl mx-auto my-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
+  <h1 class="text-2xl font-bold mb-6">Reagendar atendimento</h1>
+  <p class="font-semibold"><%= @appointment.service.nome %></p>
+  <p>Prestador: <%= @appointment.service.user.nome %></p>
+  <p>Horário atual: <%= l(@appointment.start_time, format: :long) %></p>
+  <p>Duração: <%= @appointment.reserved_duration&.to_i %> minutos</p>
+  <p>Valor pago: <%= number_to_currency(@appointment.payment&.amount, unit: "R$ ", separator: ",", delimiter: ".") %></p>
+  <p class="mt-3 text-sm text-gray-600">A duração e o pagamento serão mantidos. Cliente e prestador receberão um e-mail com a mudança.</p>
 
-    <%# Header Azul (Diferente da 'New' para o usuário saber onde está) %>
-    <div class="bg-blue-900 px-8 py-6">
-      <h1 class="text-2xl font-bold text-white tracking-tight">Editar Agendamento</h1>
-      <p class="text-blue-100 text-sm opacity-80">Altere os detalhes da sua reserva abaixo.</p>
+  <% if @rescheduling_error %>
+    <p role="alert" class="my-4 p-4 rounded-lg bg-red-50 text-red-800"><%= @rescheduling_error %></p>
+  <% end %>
+  <% if @stale_schedule %>
+    <%= link_to "Recarregar formulário", edit_appointment_path(@appointment), class: "block my-4 underline" %>
+  <% end %>
+
+  <%= form_with url: appointment_path(@appointment), method: :patch, class: "mt-6 space-y-5",
+      data: { controller: "rescheduling-slots", rescheduling_slots_url_value: available_slots_appointment_path(@appointment) } do %>
+    <%= hidden_field_tag :schedule_token, @schedule_token %>
+    <div>
+      <%= label_tag :appointment_date, "Nova data", class: "block font-medium" %>
+      <%= date_field_tag :appointment_date, @selected_date, min: Date.current, required: true,
+          class: "w-full rounded-lg border-gray-300",
+          data: { rescheduling_slots_target: "date", action: "change->rescheduling-slots#refresh" } %>
     </div>
-
-    <div class="p-8">
-      <%# Reutilizando o mesmo formulário %>
-      <%= render "form", appointment: @appointment %>
-
-      <div class="mt-8 flex justify-center space-x-6">
-        <%= link_to appointment_path(@appointment), class: "text-gray-400 hover:text-blue-900 text-sm font-medium transition inline-flex items-center" do %>
-          <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
-          Visualizar detalhes
-        <% end %>
-
-        <%= link_to appointments_path, class: "text-gray-400 hover:text-gray-600 text-sm font-medium transition inline-flex items-center" do %>
-          <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Voltar para a lista
-        <% end %>
-      </div>
+    <div>
+      <%= label_tag :appointment_hour, "Novo horário", class: "block font-medium" %>
+      <% options = @available_slots.map { |slot| [slot, slot] } %>
+      <% if params[:appointment_hour].present? && !@available_slots.include?(params[:appointment_hour]) %>
+        <% options.unshift(["#{params[:appointment_hour]} (indisponível)", params[:appointment_hour], { disabled: true }]) %>
+      <% end %>
+      <%= select_tag :appointment_hour, options_for_select(options, params[:appointment_hour]),
+          prompt: @available_slots.any? ? "Selecione um horário" : "Nenhum horário disponível", required: true,
+          class: "w-full rounded-lg border-gray-300", data: { rescheduling_slots_target: "hour" } %>
     </div>
-  </div>
+    <p role="status" aria-live="polite" class="text-sm text-red-700" data-rescheduling-slots-target="feedback"></p>
+    <%= submit_tag "Confirmar reagendamento", disabled: @stale_schedule,
+        class: "w-full bg-blue-900 text-white font-bold py-3 px-6 rounded-xl disabled:opacity-50" %>
+    <%= link_to "Voltar ao agendamento", appointment_path(@appointment), class: "block text-center underline" %>
+  <% end %>
 </div>

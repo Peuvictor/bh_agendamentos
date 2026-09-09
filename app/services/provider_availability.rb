@@ -3,12 +3,13 @@
 class ProviderAvailability
   SLOT_INTERVAL_MINUTES = 30
 
-  def initialize(service:, date:, now: Time.current, exclude_appointment: nil)
+  def initialize(service:, date:, now: Time.current, exclude_appointment: nil, duration: nil)
     @service = service
     @provider = service.user
     @date = date.to_date
     @now = now
     @exclude_appointment = exclude_appointment
+    @duration = duration
   end
 
   def slots

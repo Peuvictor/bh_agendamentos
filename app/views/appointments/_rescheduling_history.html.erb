@@ -1,0 +1,14 @@
+<% if @appointment.reschedulings.exists? %>
+  <section class="max-w-2xl mx-auto my-8 p-6 bg-white rounded-xl border border-gray-200" aria-label="Histórico de reagendamentos">
+    <h2 class="text-xl font-bold mb-4">Histórico de reagendamentos</h2>
+    <ol class="space-y-4">
+      <% @appointment.reschedulings.includes(:actor).order(created_at: :desc).each do |change| %>
+        <li class="border-b border-gray-100 pb-4">
+          <p><strong><%= change.actor.nome %></strong> alterou em <%= l(change.created_at, format: :long) %>.</p>
+          <p>Anterior: <%= l(change.previous_start_time, format: :long) %> até <%= change.previous_end_time.strftime("%H:%M") %></p>
+          <p>Novo: <%= l(change.new_start_time, format: :long) %> até <%= change.new_end_time.strftime("%H:%M") %></p>
+        </li>
+      <% end %>
+    </ol>
+  </section>
+<% end %>

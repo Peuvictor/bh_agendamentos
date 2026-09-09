@@ -14,7 +14,7 @@ module Provider
     def create
       block = current_user.availability_blocks.build(block_attributes)
 
-      if block.save
+      if save_block(block)
         redirect_to provider_availability_path, notice: t('provider.availability_blocks.created')
       else
         redirect_to provider_availability_path, alert: block.errors.full_messages.to_sentence
@@ -36,11 +36,17 @@ module Provider
     end
 
     def destroy
-      current_user.availability_blocks.find(params[:id]).destroy!
+      current_user.with_schedule_lock do
+        current_user.availability_blocks.find(params[:id]).destroy!
+      end
       redirect_to provider_availability_path, notice: t('provider.availability_blocks.destroyed')
     end
 
     private
+
+    def save_block(block)
+      current_user.with_schedule_lock { block.save }
+    end
 
     def set_block
       @block = current_user.availability_blocks.find(params[:id])

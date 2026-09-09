@@ -20,10 +20,7 @@ class AppointmentsTest < ApplicationSystemTestCase
 
     visit new_service_appointment_path(@service)
     appointment_date = 10.days.from_now.to_date.iso8601
-    fill_in "Dia do Agendamento", with: appointment_date
-    # Date inputs do not consistently emit `change` in headless Chrome when
-    # Capybara sets their value; trigger it so the available slots refresh.
-    page.execute_script("document.getElementById('appointment_date').dispatchEvent(new Event('change', { bubbles: true }))") if Capybara.current_driver != :rack_test
+    choose_appointment_date(appointment_date)
     select "11:30", from: "Horário Disponível"
     click_button "Confirmar Agendamento"
 
@@ -35,6 +32,19 @@ class AppointmentsTest < ApplicationSystemTestCase
 
     if Capybara.current_driver != :rack_test
       assert_no_selector "#paymentBrick_container .animate-pulse", wait: 15
+    end
+  end
+
+  private
+
+  def choose_appointment_date(date)
+    if Capybara.current_driver == :rack_test
+      fill_in 'Dia do Agendamento', with: date
+    else
+      page.execute_script(
+        "const input = document.getElementById('appointment_date'); input.value = arguments[0]; " \
+        "input.dispatchEvent(new Event('change', { bubbles: true }));", date
+      )
     end
   end
 end

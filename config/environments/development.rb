@@ -45,6 +45,9 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = false
 
   config.action_mailer.perform_caching = false
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch("APP_HOST", "localhost:3000"), protocol: ENV.fetch("MAILER_PROTOCOL", "http")
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

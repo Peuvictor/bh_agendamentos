@@ -4,6 +4,7 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ## Entregue
 
+- [x] Reagendamento por cliente e prestador de reservas confirmadas e pagas, com duração e pagamento preservados, histórico, e-mail aos participantes e proteção contra disputas de horário.
 - [x] Autenticação e perfis de cliente, prestador e administrador com Devise.
 - [x] Serviços, busca por texto e filtros por bairros de Belo Horizonte.
 - [x] Agendamentos com duração, bloqueio de horários passados e prevenção de conflitos.
@@ -22,8 +23,8 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 194 testes de aplicação e 728 asserções aprovados na validação da edição de bloqueios.
-- [x] Sete testes de sistema para agendamento, checkout, gestão de serviços, calendário e edição de bloqueios, com suporte a Selenium e Chrome portátil.
+- [x] Minitest compatível com Rails 7.1: 226 testes de aplicação e 870 asserções aprovados na validação do reagendamento, incluindo seis cenários de concorrência PostgreSQL.
+- [x] Dez testes de sistema aprovados com Selenium e Chrome portátil (56 asserções), cobrindo agendamento, checkout, gestão de serviços, calendário, edição de bloqueios e reagendamento.
 - [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (12 asserções aprovadas).
 - [x] Edição de bloqueios validada com Selenium pela Disponibilidade e pelo calendário, incluindo persistência após recarregar (dois testes e sete asserções aprovados).
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
@@ -33,10 +34,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Runbook de staging validado com cartão, PIX, webhook assinado e agenda configurável.
 
 ## Próximas tarefas prioritárias
-
-### Integridade e experiência principal
-
-- [ ] Implementar reagendamento seguro com nova validação de disponibilidade e preservação do histórico.
 
 ### Interface e portfólio
 

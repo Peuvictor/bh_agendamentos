@@ -45,6 +45,7 @@ Rails.application.routes.draw do
 
   resources :appointments, only: [:index, :show, :edit, :update, :destroy] do
     member do
+      get :available_slots, action: :rescheduling_slots
       patch :update_status
     end
     resources :reviews, only: [:create]

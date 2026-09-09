@@ -10,7 +10,7 @@ class ProviderScheduleUpdater
   def call(raw_schedule)
     attributes = period_attributes(raw_schedule)
 
-    AvailabilityPeriod.transaction do
+    @provider.with_schedule_lock do
       @provider.availability_periods.delete_all
       attributes.each { |attributes_for_period| @provider.availability_periods.create!(attributes_for_period) }
     end

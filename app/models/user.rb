@@ -41,6 +41,11 @@ class User < ApplicationRecord
   # Garante que o bairro seja um dos oficiais da nossa lista
   validates :bairro, inclusion: { in: BAIRROS_BH, message: "deve ser um bairro válido de BH, uai!" }, allow_blank: true
 
+  # Serialize schedule changes without blocking foreign keys when providers also book as clients.
+  def with_schedule_lock(&)
+    with_lock('FOR NO KEY UPDATE', &)
+  end
+
   private
 
   def create_default_availability_periods

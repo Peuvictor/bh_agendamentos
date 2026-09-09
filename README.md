@@ -23,6 +23,7 @@ Este é um ambiente de demonstração para portfólio. A integração financeira
 - Pagamento por cartão ou PIX no Checkout Bricks do Mercado Pago.
 - Acompanhamento do estado e dos detalhes dos próprios agendamentos.
 - Cancelamento lógico de reservas futuras, preservando o histórico e liberando o horário.
+- Reagendamento de atendimentos confirmados e pagos, com histórico e e-mail aos participantes.
 - Avaliação do serviço após o atendimento.
 - Notificações por e-mail para confirmação, cancelamento, expiração e reembolso.
 
@@ -70,7 +71,7 @@ Após entrar com uma conta de prestador, acesse **Calendário** (`/provider/cale
 
 Agendamentos pendentes e confirmados aparecem por padrão. A opção **Exibir cancelados e reembolsados** acrescenta esses registros ao período consultado. Ao selecionar um evento, o prestador vê cliente, serviço, horário e status do agendamento, ou motivo e abrangência do bloqueio. Agendamentos oferecem um link para sua página de detalhes.
 
-O expediente configurado é destacado na grade. A tela **Disponibilidade** (`/provider/availability`) reúne os turnos semanais e o cadastro, edição e remoção de bloqueios. O diálogo do calendário oferece **Editar bloqueio** para registros ainda não encerrados, abrindo o mesmo formulário usado pela lista. Reagendamento permanece no [roadmap](TODO.md).
+O expediente configurado é destacado na grade. A tela **Disponibilidade** (`/provider/availability`) reúne os turnos semanais e o cadastro, edição e remoção de bloqueios. O diálogo do calendário oferece **Editar bloqueio** para registros ainda não encerrados, abrindo o mesmo formulário usado pela lista. Para reagendar um atendimento confirmado e pago, abra seus detalhes e selecione **Reagendar**.
 
 O FullCalendar carrega somente os eventos que cruzam o período visível, por meio de `GET /provider/calendar/events`, com parâmetros `start`, `end` e `include_history`. O endpoint é restrito ao prestador autenticado e não retorna contato do cliente nem dados financeiros. A grade diária/semanal desta versão exibe o intervalo das 06h às 22h.
 
@@ -83,6 +84,22 @@ Bloqueios encerrados não podem ser editados. Nos bloqueios em andamento, o iní
 Um bloqueio associado a serviço arquivado pode manter esse vínculo, migrar para um serviço ativo ou passar a valer para todos os serviços. Não é permitido selecionar outro serviço arquivado. A atualização mantém o mesmo registro e não cancela nem modifica agendamentos existentes, mesmo quando o novo intervalo os sobrepõe.
 
 As rotas de edição são `GET /provider/availability_blocks/:id/edit` e `PATCH /provider/availability_blocks/:id`, restritas aos bloqueios do prestador autenticado. O servidor verifica novamente se o bloqueio ainda pode ser editado no momento de salvar.
+
+## Reagendamento
+
+Cliente titular e prestador responsável podem selecionar **Reagendar** nos detalhes de um atendimento confirmado com pagamento aprovado, enquanto ele ainda não começou. O serviço precisa estar ativo e a reserva deve ter um intervalo válido. O prestador acessa os detalhes também pelo calendário.
+
+A tela mostra o horário atual, a duração reservada e o valor efetivamente pago. Ao escolher nova data e hora, a aplicação valida novamente o expediente, os turnos, os bloqueios gerais ou por serviço e as reservas de todos os serviços do prestador. Os horários seguem o fuso de Brasília e a grade de 30 minutos. A consulta desconsidera o próprio agendamento, permitindo sobreposição parcial com seu intervalo anterior.
+
+A mudança mantém o mesmo agendamento, cliente, serviço, pagamento e duração registrada, mesmo se preço ou duração do serviço forem alterados depois da reserva. O horário anterior é liberado somente quando a alteração e seu histórico são gravados juntos. Os detalhes exibem autor, momento da alteração e intervalos anterior e novo, inclusive após cancelamento ou reembolso. Cada mudança envia um e-mail ao cliente e ao prestador após a confirmação da transação; o e-mail usa os horários registrados no histórico.
+
+Formulários desatualizados são recusados com instrução para recarregar, evitando sobrescrever outra mudança. Reservas pendentes, canceladas, reembolsadas, já iniciadas ou de serviços arquivados não podem ser reagendadas. Não há troca de serviço, nova cobrança, aprovação da outra parte ou reagendamento por arrastar no calendário.
+
+As rotas autenticadas são `GET /appointments/:id/edit`, `PATCH /appointments/:id` e `GET /appointments/:id/available_slots?date=YYYY-MM-DD`. A atualização aceita `appointment_date`, `appointment_hour` e `schedule_token`, emitido pelo formulário. Sucesso redireciona aos detalhes com HTTP 303; erros de validação retornam 422 e conflitos de formulário retornam 409. A consulta retorna `{ "slots": ["08:00", "08:30"] }` e é restrita aos participantes da reserva.
+
+Criação e reagendamento compartilham uma trava por prestador, também usada nas alterações de expediente e bloqueios. O reagendamento trava prestador, serviço, agendamento e pagamento nessa ordem e revalida as condições dentro da transação. Cancelamento e reconciliação financeira compartilham a trava do agendamento. Bloqueios continuam preservando reservas existentes.
+
+A migração `CreateAppointmentReschedulings` é aditiva e deve ser aplicada antes de iniciar a nova versão. Reservas anteriores continuam válidas, sem criação artificial de histórico. Registros antigos sem intervalo positivo não podem ser reagendados.
 
 ## Pagamentos
 
@@ -253,9 +270,9 @@ O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os teste
 docker compose exec web bin/rails test
 ```
 
-A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, edição de bloqueios, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação da edição de bloqueios, os 194 testes de aplicação passaram com 728 asserções, sem falhas nem erros.
+A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, edição de bloqueios, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação do reagendamento, os 226 testes de aplicação passaram com 870 asserções, sem falhas nem erros, incluindo seis cenários de concorrência com conexões PostgreSQL separadas. Os dez testes de sistema também passaram com Selenium e Chrome portátil, totalizando 56 asserções, sem falhas, erros ou testes pulados.
 
-Os sete testes de sistema ficam em `test/system` e podem ser executados separadamente:
+Os dez testes de sistema ficam em `test/system` e podem ser executados separadamente:
 
 ```bash
 docker compose exec web bin/rails test:system
@@ -276,6 +293,17 @@ docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/syste
 ```
 
 Com `rack_test`, o fluxo pela Disponibilidade continua sendo executado; o cenário do calendário é pulado por exigir JavaScript.
+
+Os três cenários de reagendamento passaram com Selenium (17 asserções), cobrindo o cliente, o prestador acessando pelo calendário e um horário ocupado depois de abrir o formulário. Para executar as interações JavaScript com os binários portáteis disponíveis no ambiente local:
+
+```bash
+docker compose exec web env SYSTEM_TEST_DRIVER=selenium \
+  CHROME_BINARY=/myapp/tmp/chrome-linux64/chrome \
+  CHROMEDRIVER_PATH=/myapp/tmp/chromedriver-linux64/chromedriver \
+  bin/rails test test/system/appointment_rescheduling_test.rb
+```
+
+Ajuste os caminhos para a instalação disponível e mantenha as bibliotecas de sistema do Chrome instaladas no container. O serviço web usa `init: true` para recolher os processos auxiliares do navegador sem encerrar o gerenciador de desenvolvimento. O perfil Selenium desativa o gerenciador e os avisos de senha do Chrome para que não capturem o foco após o login com usuários de teste. Com `rack_test`, os dois fluxos pelo formulário são executados e o cenário do calendário é pulado.
 
 O código Ruby, Rails e Minitest é analisado pelo RuboCop:
 
@@ -304,7 +332,6 @@ alterações enviadas para a branch `main`.
 
 ## Próximas evoluções
 
-- Implementar reagendamento seguro, com nova validação de disponibilidade e preservação do histórico.
 - Ampliar os testes de sistema executados com navegador para a administração da agenda.
 - Integrar os eventos estruturados do webhook a alertas e painéis operacionais do ambiente de produção.
 

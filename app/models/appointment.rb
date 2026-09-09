@@ -1,8 +1,11 @@
 class Appointment < ApplicationRecord
+  include ReschedulableAppointment
+
   belongs_to :client, class_name: 'User', foreign_key: 'client_id'
   belongs_to :service
   has_one :review, dependent: :destroy
   has_one :payment, dependent: :restrict_with_error
+  has_many :reschedulings, class_name: 'AppointmentRescheduling', dependent: :restrict_with_error
 
   # Enum de status mantido e blindado
   enum :status, { confirmado: 0, cancelado: 1, pendente: 2, reembolsado: 4 }, default: :pendente
@@ -21,17 +24,23 @@ class Appointment < ApplicationRecord
   def save_for_active_service
     return save unless new_record? && service.present?
 
-    service.with_lock do
-      if service.archived?
-        errors.add(:service, "está arquivado e não aceita novas reservas")
-        false
-      else
-        save
+    service.user.with_schedule_lock do
+      service.with_lock do
+        save_with_service_check
       end
     end
   end
 
   private
+
+  def save_with_service_check
+    if service.archived?
+      errors.add(:service, "está arquivado e não aceita novas reservas")
+      false
+    else
+      save
+    end
+  end
 
   def service_must_be_active
     return unless service&.archived?
@@ -53,29 +62,41 @@ class Appointment < ApplicationRecord
 
   def calculate_end_time
     return unless start_time && service
+    return unless schedule_changed?
 
-    # FIM DA GAMBIARRA: Puxa direto da coluna oficial, com fallback de 30 minutos por segurança
-    minutos = service.duration || 30
-    self.end_time = start_time + minutos.minutes
+    duration = if service_availability_validation_required?
+                 (service.duration || 30).minutes
+               else
+                 original_duration_seconds
+               end
+    self.end_time = start_time + duration if duration
+  end
+
+  def original_duration_seconds
+    return unless start_time_in_database && end_time_in_database
+
+    end_time_in_database - start_time_in_database
   end
 
   def no_overlapping_appointments
-    return if start_time.blank? || end_time.blank? || service.blank?
+    return unless overlap_validation_required?
+    return unless overlapping_appointments.exists?
 
-    prestador_id = service.user_id
+    errors.add(:base, "Ops! O prestador já está atendendo outro cliente neste horário.")
+  end
 
-    servicos_do_prestador_ids = Service.where(user_id: prestador_id).pluck(:id)
+  def overlap_validation_required?
+    return false if cancelado? || reembolsado?
 
-    overlapping = Appointment.where(service_id: servicos_do_prestador_ids)
-                             .where.not(status: %i[cancelado reembolsado])
-                             .where("start_time < ? AND end_time > ?", end_time, start_time)
+    start_time.present? && end_time.present? && service.present? &&
+      (schedule_changed? || will_save_change_to_status?)
+  end
 
-    overlapping = overlapping.where.not(id: id) if persisted?
-
-    # A trava final
-    if overlapping.exists?
-      errors.add(:base, "Ops! O prestador já está atendendo outro cliente neste horário.")
-    end
+  def overlapping_appointments
+    Appointment.where(service_id: Service.where(user_id: service.user_id).select(:id))
+               .where.not(status: %i[cancelado reembolsado])
+               .where('start_time < ? AND end_time > ?', end_time, start_time)
+               .where.not(id: id)
   end
 
   def horario_deve_ser_no_futuro
@@ -87,15 +108,19 @@ class Appointment < ApplicationRecord
   end
 
   def availability_validation_required?
-    schedule_changed = new_record? || will_save_change_to_start_time? || will_save_change_to_service_id?
-    start_time.present? && service.present? && schedule_changed
+    start_time.present? && service.present? && schedule_changed?
+  end
+
+  def schedule_changed?
+    new_record? || will_save_change_to_start_time? || will_save_change_to_service_id?
   end
 
   def within_provider_availability
     availability = ProviderAvailability.new(
       service: service,
       date: start_time.to_date,
-      exclude_appointment: self
+      exclude_appointment: self,
+      duration: reserved_duration
     )
     return if availability.available?(start_time, check_appointments: false)
 

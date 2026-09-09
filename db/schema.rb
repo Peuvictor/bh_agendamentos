@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_04_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_09_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -41,6 +41,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_04_120000) do
     t.uuid "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "appointment_reschedulings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "appointment_id", null: false
+    t.uuid "actor_id", null: false
+    t.datetime "previous_start_time", null: false
+    t.datetime "previous_end_time", null: false
+    t.datetime "new_start_time", null: false
+    t.datetime "new_end_time", null: false
+    t.datetime "created_at", null: false
+    t.index ["actor_id"], name: "index_appointment_reschedulings_on_actor_id"
+    t.index ["appointment_id"], name: "index_appointment_reschedulings_on_appointment_id"
+    t.check_constraint "new_start_time < new_end_time", name: "reschedulings_valid_new_range"
+    t.check_constraint "previous_start_time < previous_end_time", name: "reschedulings_valid_previous_range"
   end
 
   create_table "appointments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -172,6 +186,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_04_120000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "appointment_reschedulings", "appointments"
+  add_foreign_key "appointment_reschedulings", "users", column: "actor_id"
   add_foreign_key "appointments", "services"
   add_foreign_key "appointments", "users", column: "client_id"
   add_foreign_key "availability_blocks", "services"

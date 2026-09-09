@@ -28,6 +28,7 @@ services:
       retries: 10
 
   web:
+    init: true
     build:
       context: .
     working_dir: /myapp
