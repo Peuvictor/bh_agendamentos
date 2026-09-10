@@ -1,5 +1,5 @@
 <%# BANNER PRINCIPAL %>
-<div class="bg-gradient-to-b from-blue-50 to-white rounded-3xl p-8 md:p-16 mb-12 text-center shadow-sm border border-blue-100 relative overflow-hidden">
+<div class="bg-gradient-to-b from-blue-50 to-white rounded-3xl p-4 sm:p-8 md:p-16 mb-12 text-center shadow-sm border border-blue-100 relative overflow-hidden">
 
   <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 relative z-10">
     Agende seus serviços em <span class="text-blue-600">Belo Horizonte</span>
@@ -40,7 +40,7 @@
       <div class="flex gap-2">
         <%# O botão limpar agora aparece se tiver texto OU bairro selecionado %>
         <% if params[:query].present? || params[:bairro].present? %>
-          <%= link_to "Limpar", vitrine_path, class: "flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-red-600 font-bold px-6 py-4 rounded-2xl transition shadow-sm hover:bg-gray-50" %>
+          <%= link_to "Limpar", vitrine_path, class: "touch-link flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-red-600 font-bold px-6 py-4 rounded-2xl transition shadow-sm hover:bg-gray-50" %>
         <% end %>
 
         <%= f.submit "Pesquisar", class: "bg-blue-800 text-yellow-400 font-extrabold py-4 px-10 rounded-2xl hover:bg-black transition cursor-pointer shadow-lg active:scale-95 w-full md:w-auto" %>
@@ -52,14 +52,14 @@
   <% unless user_signed_in? %>
     <div class="mt-10 pt-6 relative z-10 flex justify-center gap-2 text-sm border-t border-blue-50 max-w-xs mx-auto">
       <span class="text-gray-500">É um profissional?</span>
-      <%= link_to "Anuncie aqui", new_user_registration_path, class: "text-blue-600 font-bold hover:underline" %>
+      <%= link_to "Anuncie aqui", new_user_registration_path, class: "touch-link text-blue-600 font-bold hover:underline" %>
     </div>
   <% end %>
 </div>
 
 <%# LISTAGEM DE SERVIÇOS %>
 <div class="mb-10 px-4">
-  <div class="flex items-center justify-between mb-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-8">
     <%# 👇 TÍTULO DINÂMICO DE ACORDO COM O FILTRO 👇 %>
     <% if params[:query].present? || params[:bairro].present? %>
       <h2 class="text-xl font-bold text-gray-800">
@@ -94,7 +94,7 @@
             <% end %>
           </div>
 
-          <div class="p-6 flex-1 flex flex-col">
+          <div class="p-4 sm:p-6 flex-1 flex flex-col">
             <%# PRESTADOR %>
             <div class="flex items-center gap-3 mb-4">
               <% if service.user.avatar&.attached? %>
@@ -110,7 +110,7 @@
             <%# AVALIAÇÕES %>
             <div class="mb-3">
               <% if service.reviews.any? %>
-                <%= link_to service_reviews_path(service), class: "inline-flex items-center gap-1 hover:bg-gray-50 p-1 -ml-1 rounded-lg transition group" do %>
+                <%= link_to service_reviews_path(service), class: "touch-link inline-flex items-center gap-1 hover:bg-gray-50 p-1 -ml-1 rounded-lg transition group" do %>
                   <span class="text-yellow-400 text-sm">⭐</span>
                   <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition">
                     <%= number_with_precision(service.reviews.average(:rating), precision: 1) %>
@@ -129,12 +129,12 @@
 
             <p class="text-gray-500 text-sm mb-6 line-clamp-2"><%= service.descricao %></p>
 
-            <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+            <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-50">
               <div class="flex flex-col">
                 <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">Valor</span>
                 <span class="text-lg font-black text-green-600"><%= number_to_currency(service.preco, unit: "R$ ") %></span>
               </div>
-              <%= link_to "Agendar", new_service_appointment_path(service), class: "bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-600 transition" %>
+              <%= link_to "Agendar", new_service_appointment_path(service), class: "touch-link bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-600 transition" %>
             </div>
           </div>
         </div>
@@ -148,7 +148,7 @@
 
       <% if params[:query].present? || params[:bairro].present? %>
         <p class="text-gray-500 mt-2">Não achamos nada correspondente à sua busca.</p>
-        <%= link_to "Limpar busca", vitrine_path, class: "mt-6 inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition-colors" %>
+        <%= link_to "Limpar busca", vitrine_path, class: "touch-link mt-6 inline-block bg-blue-600 text-white px-4 sm:px-8 py-3 rounded-xl font-bold hover:bg-black transition-colors" %>
       <% else %>
         <p class="text-gray-500 mt-2">Ainda não há serviços cadastrados na plataforma.</p>
       <% end %>

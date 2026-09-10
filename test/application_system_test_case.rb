@@ -1,5 +1,8 @@
 require "test_helper"
 
+# Match the accessible names used by screen readers and keyboard users.
+Capybara.enable_aria_label = true
+
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   if ENV["SYSTEM_TEST_DRIVER"] == "selenium"
     require "selenium-webdriver"

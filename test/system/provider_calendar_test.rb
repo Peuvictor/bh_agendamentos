@@ -71,6 +71,8 @@ class ProviderCalendarTest < ApplicationSystemTestCase
     fill_in 'E-mail', with: @provider.email
     fill_in 'Senha', with: 'password123'
     click_button 'Entrar'
+
+    assert_current_path root_path, wait: 10
   end
 
   def future_time(hour:)

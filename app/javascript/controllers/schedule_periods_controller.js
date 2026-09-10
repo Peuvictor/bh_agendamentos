@@ -4,7 +4,8 @@ export default class extends Controller {
   static targets = ["periods", "template", "period", "label"]
 
   static values = {
-    nextIndex: Number
+    nextIndex: Number,
+    day: String
   }
 
   add() {
@@ -29,8 +30,8 @@ export default class extends Controller {
       const endInput = period.querySelector("[data-role='end']")
 
       if (label) label.textContent = `Turno ${number}`
-      if (startInput) startInput.setAttribute("aria-label", `Início do turno ${number}`)
-      if (endInput) endInput.setAttribute("aria-label", `Fim do turno ${number}`)
+      if (startInput) startInput.setAttribute("aria-label", `Início do turno ${number} de ${this.dayValue}`)
+      if (endInput) endInput.setAttribute("aria-label", `Fim do turno ${number} de ${this.dayValue}`)
     })
   }
 }

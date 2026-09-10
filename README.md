@@ -65,6 +65,14 @@ Este é um ambiente de demonstração para portfólio. A integração financeira
 - Upload de avatar e fotos de serviços com Active Storage e Cloudinary.
 - Interface responsiva com Tailwind CSS, Turbo e Stimulus.
 
+## Uso em celulares e telas pequenas
+
+A navegação usa um menu expansível abaixo de 1280 px, com links conforme o perfil e suporte à tecla Escape. Em telas maiores, os links aparecem no cabeçalho. Formulários, mensagens e ações se adaptam à largura disponível, mantendo as cores e a identidade visual do projeto.
+
+Na administração, as listagens aparecem como cartões abaixo de 768 px e como tabelas nas demais larguras. Cada registro é renderizado uma única vez, preservando seus dados e ações. A edição do expediente usa seções por dia, com turnos que podem ser adicionados e removidos. O calendário mantém a data e a visão escolhida ao redimensionar a janela; os detalhes permitem rolagem interna quando necessário.
+
+Os cenários mobile usam Chrome com larguras de 320, 390, 768 e 1440 px, incluindo textos longos, estados vazios, erros e persistência de alterações. Os testes de pagamento simulam respostas para verificar a interface própria de PIX, erro e aprovação; não efetuam cobranças nem certificam o conteúdo interno do Brick. Essa validação não equivale a testes em Safari ou aparelhos físicos. As interfaces de terceiros do Sidekiq e do visualizador de e-mails não fazem parte desta revisão.
+
 ## Calendário do prestador
 
 Após entrar com uma conta de prestador, acesse **Calendário** (`/provider/calendar`). A página reúne os agendamentos recebidos e os bloqueios gerais ou por serviço, com visualizações de dia, semana e mês. A visualização inicial é semanal no desktop e diária em telas pequenas; os horários usam o fuso de Brasília (`America/Sao_Paulo`).
@@ -270,15 +278,15 @@ O projeto utiliza Minitest 5, compatível com a versão atual do Rails. Os teste
 docker compose exec web bin/rails test
 ```
 
-A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, edição de bloqueios, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação do reagendamento, os 226 testes de aplicação passaram com 870 asserções, sem falhas nem erros, incluindo seis cenários de concorrência com conexões PostgreSQL separadas. Os dez testes de sistema também passaram com Selenium e Chrome portátil, totalizando 56 asserções, sem falhas, erros ou testes pulados.
+A suíte cobre os principais fluxos de cadastro seguro, serviços, agenda configurável, edição de bloqueios, calendário do prestador, agendamentos, pagamentos, cancelamentos, mailers, dashboard e administração. Na validação da revisão mobile, os 226 testes de aplicação passaram com 870 asserções, sem falhas nem erros, incluindo seis cenários de concorrência com conexões PostgreSQL separadas. Os 18 testes de sistema também passaram com Selenium e Chrome portátil, totalizando 315 asserções, sem falhas, erros ou testes pulados.
 
-Os dez testes de sistema ficam em `test/system` e podem ser executados separadamente:
+Os 18 testes de sistema ficam em `test/system` e podem ser executados separadamente:
 
 ```bash
 docker compose exec web bin/rails test:system
 ```
 
-O teste do calendário com Selenium foi validado com 12 asserções, cobrindo navegação, detalhes, histórico e alternância de visualizações:
+O teste do calendário com Selenium foi validado com 13 asserções, cobrindo navegação, detalhes, histórico e alternância de visualizações:
 
 ```bash
 docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/system/provider_calendar_test.rb
@@ -286,7 +294,7 @@ docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/syste
 
 Esse comando exige Chrome e ChromeDriver compatíveis no container, com suas bibliotecas de sistema instaladas. Para executáveis portáteis, informe também `CHROME_BINARY` e `CHROMEDRIVER_PATH`. Com o driver padrão `rack_test`, o teste verifica a estrutura da página; as interações JavaScript exigem Selenium.
 
-Os dois fluxos de edição de bloqueios (Disponibilidade e calendário) foram validados com Selenium, incluindo persistência após recarregar, com sete asserções:
+Os dois fluxos de edição de bloqueios (Disponibilidade e calendário) foram validados com Selenium, incluindo persistência após recarregar, com nove asserções:
 
 ```bash
 docker compose exec -e SYSTEM_TEST_DRIVER=selenium web bin/rails test test/system/availability_block_editing_test.rb
@@ -304,6 +312,18 @@ docker compose exec web env SYSTEM_TEST_DRIVER=selenium \
 ```
 
 Ajuste os caminhos para a instalação disponível e mantenha as bibliotecas de sistema do Chrome instaladas no container. O serviço web usa `init: true` para recolher os processos auxiliares do navegador sem encerrar o gerenciador de desenvolvimento. O perfil Selenium desativa o gerenciador e os avisos de senha do Chrome para que não capturem o foco após o login com usuários de teste. Com `rack_test`, os dois fluxos pelo formulário são executados e o cenário do calendário é pulado.
+
+Os oito cenários mobile verificam navegação por perfil, largura das páginas, cartões administrativos, calendário, reagendamento, serviços, conta, turnos, bloqueios, avaliações e estados simulados de pagamento:
+
+```bash
+docker compose exec web env PARALLEL_WORKERS=1 SYSTEM_TEST_DRIVER=selenium \
+  CHROME_BINARY=/myapp/tmp/chrome-linux64/chrome \
+  CHROMEDRIVER_PATH=/myapp/tmp/chromedriver-linux64/chromedriver \
+  bin/rails test test/system/mobile_layout_test.rb \
+  test/system/mobile_journeys_test.rb test/system/mobile_payment_test.rb
+```
+
+Esses cenários exigem Selenium e são pulados com `rack_test`. A largura é aplicada somente durante cada teste e restaurada ao terminar. As capturas para inspeção visual ficam em `tmp/screenshots/mobile-*.png`, usando apenas dados de fixtures.
 
 O código Ruby, Rails e Minitest é analisado pelo RuboCop:
 

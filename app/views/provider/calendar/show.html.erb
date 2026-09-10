@@ -36,14 +36,14 @@
     <div data-provider-calendar-target="calendar" aria-label="Calendário do prestador"></div>
   </section>
 
-  <dialog data-provider-calendar-target="dialog"
+  <dialog data-provider-calendar-target="dialog" aria-labelledby="calendar-event-title"
           data-action="click->provider-calendar#closeOnBackdrop"
           class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-slate-900/50">
-    <div class="p-6">
+    <div class="p-4 sm:p-6">
       <div class="flex items-start justify-between gap-4">
         <div>
           <p data-provider-calendar-target="kind" class="text-xs font-bold uppercase tracking-wider text-blue-700"></p>
-          <h2 data-provider-calendar-target="title" class="mt-1 text-xl font-extrabold text-gray-900"></h2>
+          <h2 id="calendar-event-title" data-provider-calendar-target="title" class="mt-1 text-xl font-extrabold text-gray-900"></h2>
         </div>
         <button type="button"
                 data-action="provider-calendar#closeDialog"

@@ -1,15 +1,15 @@
 <div class="max-w-7xl mx-auto px-4 py-10">
-  <div class="flex items-center justify-between mb-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-8">
     <div>
-      <%= link_to "← Voltar ao Dashboard", admin_dashboard_path, class: "text-sm font-bold text-gray-500 hover:text-blue-600 transition" %>
+      <%= link_to "← Voltar ao Dashboard", admin_dashboard_path, class: "touch-link text-sm font-bold text-gray-500 hover:text-blue-600 transition" %>
       <h1 class="text-3xl font-extrabold text-gray-900 mt-2 text-blue-900">Gestão de Serviços</h1>
       <p class="text-gray-500 text-sm">Monitore e altere a disponibilidade dos anúncios sem apagar o histórico.</p>
     </div>
   </div>
 
-  <div class="bg-white shadow-sm rounded-3xl border border-gray-100 overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
+  <div class="bg-white shadow-sm rounded-3xl border border-gray-100 overflow-x-auto">
+    <table role="table" class="responsive-records min-w-full divide-y divide-gray-200">
+      <thead role="rowgroup" class="bg-gray-50">
         <tr>
           <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase italic">Serviço</th>
           <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Prestador</th>
@@ -18,10 +18,10 @@
           <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Controle</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody role="rowgroup" class="divide-y divide-gray-100">
         <% @services.each do |service| %>
-          <tr class="hover:bg-gray-50 transition">
-            <td class="px-6 py-4 whitespace-nowrap">
+          <tr role="row" class="hover:bg-gray-50 transition">
+            <td role="cell" data-label="Serviço" class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border">
                    <% if service.photo.attached? %>
@@ -33,15 +33,15 @@
                 <div class="ml-4 font-bold text-gray-900"><%= service.nome %></div>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+            <td role="cell" data-label="Prestador" class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
               <%= service.user.nome %>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td role="cell" data-label="Preço" class="px-6 py-4 whitespace-nowrap">
               <span class="text-sm font-black text-green-600">
                 <%= number_to_currency(service.preco, unit: "R$") %>
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td role="cell" data-label="Status" class="px-6 py-4 whitespace-nowrap">
               <% if service.archived_by_admin? %>
                 <span class="text-xs font-bold text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-1.5">Arquivado pela administração</span>
               <% elsif service.archived? %>
@@ -50,7 +50,7 @@
                 <span class="text-xs font-bold text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-1.5">Ativo</span>
               <% end %>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right">
+            <td role="cell" data-label="Controle" class="px-6 py-4 whitespace-nowrap text-right">
               <% if service.archived? %>
                 <%= button_to "Reativar", reactivate_admin_service_path(service), method: :patch,
                               class: "text-green-700 hover:text-green-900 font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 transition" %>

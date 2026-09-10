@@ -1,9 +1,9 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
   <%# CABEÇALHO %>
-  <div class="flex items-center justify-between mb-8">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-8">
     <div>
-      <%= link_to "← Voltar ao Dashboard", admin_dashboard_path, class: "text-sm font-bold text-gray-500 hover:text-blue-600 transition" %>
+      <%= link_to "← Voltar ao Dashboard", admin_dashboard_path, class: "touch-link text-sm font-bold text-gray-500 hover:text-blue-600 transition" %>
       <h1 class="text-3xl font-extrabold text-gray-900 mt-2">Gestão de Usuários</h1>
       <p class="text-gray-500">Administre as contas cadastradas na plataforma.</p>
     </div>
@@ -15,8 +15,8 @@
   <%# TABELA DE USUÁRIOS %>
   <div class="bg-white shadow-sm rounded-3xl border border-gray-100 overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+      <table role="table" class="responsive-records min-w-full divide-y divide-gray-200">
+        <thead role="rowgroup" class="bg-gray-50">
           <tr>
             <th class="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Usuário</th>
             <th class="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Contato</th>
@@ -24,12 +24,12 @@
             <th class="px-6 py-4 text-right text-xs font-extrabold text-gray-500 uppercase tracking-wider">Ações</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-100">
+        <tbody role="rowgroup" class="bg-white divide-y divide-gray-100">
           <% @users.each do |user| %>
-            <tr class="hover:bg-gray-50 transition-colors">
+            <tr role="row" class="hover:bg-gray-50 transition-colors">
 
               <%# IDENTIDADE %>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td role="cell" data-label="Usuário" class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="h-10 w-10 flex-shrink-0">
                     <% if user.avatar.attached? %>
@@ -48,13 +48,13 @@
               </td>
 
               <%# CONTATO %>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td role="cell" data-label="Contato" class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900 font-medium"><%= user.email %></div>
                 <div class="text-xs text-gray-500"><%= user.telefone.present? ? user.telefone : "Sem telefone" %></div>
               </td>
 
               <%# ROLE (BADGES DINÂMICOS) %>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td role="cell" data-label="Perfil" class="px-6 py-4 whitespace-nowrap">
                 <%
                   role_classes = case user.role
                                  when 'admin' then 'bg-purple-100 text-purple-700 border-purple-200'
@@ -68,7 +68,7 @@
               </td>
 
               <%# AÇÕES %>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td role="cell" data-label="Ações" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <% if user == current_user %>
                   <span class="text-xs text-gray-400 italic">Você (Admin)</span>
                 <% else %>

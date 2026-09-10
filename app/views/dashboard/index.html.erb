@@ -3,7 +3,7 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
       <p class="text-sm font-medium text-gray-500 mb-1">Receita Recebida</p>
       <h3 class="text-3xl font-bold text-gray-900">
         <%= number_to_currency(@faturamento_realizado, unit: "R$ ", separator: ",", delimiter: ".") %>
@@ -11,7 +11,7 @@
       <p class="text-xs text-green-600 mt-2 font-semibold">Pagamentos aprovados</p>
     </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
       <p class="text-sm font-medium text-gray-500 mb-1">Receita Prevista</p>
       <h3 class="text-3xl font-bold text-gray-900">
         <%= number_to_currency(@faturamento_previsto, unit: "R$ ", separator: ",", delimiter: ".") %>
@@ -19,7 +19,7 @@
       <p class="text-xs text-blue-600 mt-2 font-semibold">Reservas pendentes e ativas</p>
     </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500">
       <p class="text-sm font-medium text-gray-500 mb-1">Ticket Médio</p>
       <h3 class="text-3xl font-bold text-gray-900">
         <%= number_to_currency(@ticket_medio, unit: "R$ ", separator: ",", delimiter: ".") %>
@@ -27,7 +27,7 @@
       <p class="text-xs text-purple-600 mt-2 font-semibold">Por pagamento aprovado</p>
     </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500">
       <p class="text-sm font-medium text-gray-500 mb-1">Clientes Pagantes</p>
       <h3 class="text-3xl font-bold text-gray-900">
         <%= number_with_delimiter(@clientes_pagantes, delimiter: ".") %>
@@ -40,13 +40,13 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
     <%# Card Faturamento %>
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
       <h3 class="text-lg font-bold text-gray-700 mb-6">Receita aprovada (Últimos 30 dias)</h3>
       <%= line_chart @faturamento_diario, prefix: "R$ ", thousands: ".", decimal: ",", colors: ["#2563eb"], empty: "Nenhum faturamento registrado." %>
     </div>
 
     <%# Card Volume %>
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
       <h3 class="text-lg font-bold text-gray-700 mb-6">Volume por Status</h3>
       <%= pie_chart @agendamentos_por_status, donut: true, colors: ["#10b981", "#f59e0b", "#ef4444"], empty: "Nenhum agendamento." %>
     </div>

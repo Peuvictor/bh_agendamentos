@@ -135,11 +135,11 @@ export default class extends Controller {
     }
 
     this.containerTarget.innerHTML = `
-      <div class="text-center p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
+      <div class="text-center p-3 sm:p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
         <h3 class="text-xl font-bold text-slate-800 mb-4">Escaneie o QR Code</h3>
-        <img data-role="pix-image" alt="QR Code Pix" class="mx-auto w-48 h-48 mb-4 border rounded-lg">
+        <img data-role="pix-image" alt="QR Code Pix" class="mx-auto w-48 max-w-full h-auto mb-4 border rounded-lg">
         <p class="text-sm font-bold text-slate-500 mb-2">Ou use o Pix Copia e Cola:</p>
-        <input data-role="pix-code" type="text" readonly class="w-full text-xs font-mono p-3 border rounded-lg bg-slate-50">
+        <input data-role="pix-code" type="text" readonly class="w-full text-base font-mono p-3 border rounded-lg bg-slate-50">
         <button data-role="copy-pix" type="button" class="mt-3 text-sm font-bold text-blue-700 hover:text-blue-900">Copiar código Pix</button>
         <p class="text-xs text-slate-400 mt-4">Aguardando confirmação do pagamento...</p>
       </div>

@@ -4,6 +4,8 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ## Entregue
 
+- [x] Revisão mobile de visitantes, clientes, prestadores e administradores: menu expansível, formulários responsivos, turnos por dia e cartões administrativos, preservando a identidade visual.
+- [x] Testes de navegador para criar, remover e persistir múltiplos turnos da agenda.
 - [x] Reagendamento por cliente e prestador de reservas confirmadas e pagas, com duração e pagamento preservados, histórico, e-mail aos participantes e proteção contra disputas de horário.
 - [x] Autenticação e perfis de cliente, prestador e administrador com Devise.
 - [x] Serviços, busca por texto e filtros por bairros de Belo Horizonte.
@@ -23,10 +25,10 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 226 testes de aplicação e 870 asserções aprovados na validação do reagendamento, incluindo seis cenários de concorrência PostgreSQL.
-- [x] Dez testes de sistema aprovados com Selenium e Chrome portátil (56 asserções), cobrindo agendamento, checkout, gestão de serviços, calendário, edição de bloqueios e reagendamento.
-- [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (12 asserções aprovadas).
-- [x] Edição de bloqueios validada com Selenium pela Disponibilidade e pelo calendário, incluindo persistência após recarregar (dois testes e sete asserções aprovados).
+- [x] Minitest compatível com Rails 7.1: 226 testes de aplicação e 870 asserções aprovados na validação da revisão mobile, incluindo seis cenários de concorrência PostgreSQL.
+- [x] 18 testes de sistema aprovados com Selenium e Chrome portátil (315 asserções), incluindo oito cenários mobile com validação de larguras, acessibilidade e persistência.
+- [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (13 asserções aprovadas).
+- [x] Edição de bloqueios validada com Selenium pela Disponibilidade e pelo calendário, incluindo persistência após recarregar (dois testes e nove asserções aprovados).
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
 - [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
@@ -37,13 +39,11 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ### Interface e portfólio
 
-- [ ] Revisar a navegação e os formulários em celulares e telas pequenas.
 - [ ] Adicionar capturas de tela e uma visão da arquitetura ao README.
 - [ ] Preparar dados de demonstração que apresentem claramente os fluxos de cliente, prestador e administrador.
 
 ### Qualidade e automação
 
-- [ ] Adicionar testes de navegador para criar, remover e persistir múltiplos turnos da agenda.
 - [ ] Adicionar testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
 - [ ] Ampliar testes de sistema para os estados finais do pagamento.
 

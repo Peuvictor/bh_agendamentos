@@ -1,4 +1,4 @@
-<div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
+<div class="max-w-2xl mx-auto mt-10 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-gray-100">
   <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Novo Agendamento em BH</h1>
 
   <%# A INJEÇÃO DE ROTA: Passamos o @service e o @appointment para o Rails montar a URL do POST %>
@@ -49,10 +49,10 @@
 
     <p class="mt-2 text-xs text-gray-500 italic text-center">O tempo de término será calculado automaticamente, uai!</p>
 
-    <div class="flex items-center justify-between pt-6 border-t border-gray-100">
-      <%= link_to "Voltar", root_path, class: "text-sm text-gray-600 hover:text-gray-900 font-medium underline" %>
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-6 border-t border-gray-100">
+      <%= link_to "Voltar", root_path, class: "touch-link text-sm text-gray-600 hover:text-gray-900 font-medium underline" %>
       <%= f.submit "Confirmar Agendamento",
-          class: "bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-xl transition duration-200 shadow-md cursor-pointer" %>
+          class: "bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-4 sm:px-8 rounded-xl transition duration-200 shadow-md cursor-pointer" %>
     </div>
   <% end %>
 </div>

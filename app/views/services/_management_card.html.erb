@@ -9,7 +9,7 @@
   </div>
 
   <p class="text-sm text-gray-600 mb-4 line-clamp-2"><%= service.descricao %></p>
-  <div class="flex items-center justify-between text-xs text-gray-500 font-medium mb-4">
+  <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500 font-medium mb-4">
     <span>Duração: <%= service.duration %> min</span>
     <span class="font-bold text-green-700"><%= number_to_currency(service.preco, unit: "R$ ", separator: ",", delimiter: ".") %></span>
   </div>
@@ -28,7 +28,7 @@
     </div>
   <% else %>
     <div class="flex space-x-3 pt-3 border-t border-gray-200">
-      <%= link_to "Editar", edit_service_path(service), class: "text-sm text-blue-600 hover:text-blue-900 font-bold" %>
+      <%= link_to "Editar", edit_service_path(service), class: "touch-link text-sm text-blue-600 hover:text-blue-900 font-bold" %>
       <%= button_to "Arquivar", archive_service_path(service), method: :patch,
                     form: { data: { turbo_confirm: "Arquivar este serviço? Ele deixará de aceitar novas reservas, mas o histórico será preservado." } },
                     class: "text-sm text-amber-700 hover:text-amber-900 font-bold" %>

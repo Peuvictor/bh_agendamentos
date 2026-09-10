@@ -19,7 +19,7 @@
   </div>
 
   <%# 2. FOTO DE CAPA (BOX MAIS DISCRETO) %>
-  <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
+  <div class="border-2 border-dashed border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50 hover:bg-gray-100 transition-colors">
     <%= f.label :photo, class: "flex flex-col items-center cursor-pointer" do %>
       <span class="text-2xl mb-2">📸</span>
       <span class="text-sm font-bold text-blue-600">Escolher foto de capa</span>
@@ -76,7 +76,7 @@
 
     <%# Botão Cancelar - Mais discreto %>
     <%= link_to "Cancelar", services_path,
-        class: "w-full sm:flex-1 text-center py-4 px-6 rounded-2xl border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 transition-all order-2 sm:order-1" %>
+        class: "touch-link w-full sm:flex-1 text-center py-4 px-6 rounded-2xl border border-gray-200 text-gray-500 font-bold hover:bg-gray-50 transition-all order-2 sm:order-1" %>
 
     <%# Botão Salvar - Destaque Total (Cores do Cruzeiro) %>
     <%= f.submit "Salvar Serviço",

@@ -24,3 +24,6 @@ application.register("star-rating", StarRatingController)
 
 import ReschedulingSlotsController from "./rescheduling_slots_controller"
 application.register("rescheduling-slots", ReschedulingSlotsController)
+
+import NavigationController from "./navigation_controller"
+application.register("navigation", NavigationController)

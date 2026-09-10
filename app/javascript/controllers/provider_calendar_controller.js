@@ -81,6 +81,7 @@ export default class extends Controller {
     this.statusRowTarget.classList.toggle("hidden", !appointment)
     this.reasonRowTarget.classList.toggle("hidden", appointment)
     this.detailsLinkTarget.classList.toggle("hidden", !appointment)
+    this.detailsLinkTarget.classList.toggle("inline-flex", appointment)
     const canEditBlock = !appointment && Boolean(properties.editUrl)
     this.editBlockLinkTarget.classList.toggle("hidden", !canEditBlock)
     this.editBlockLinkTarget.classList.toggle("inline-flex", canEditBlock)

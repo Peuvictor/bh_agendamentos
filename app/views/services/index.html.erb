@@ -1,14 +1,14 @@
-<div class="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
-  <div class="flex justify-between items-center mb-8 border-b pb-4">
+<div class="max-w-5xl mx-auto mt-10 p-4 sm:p-6 bg-white rounded-2xl shadow-xl border border-gray-100">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-8 border-b pb-4">
     <div>
       <h1 class="text-3xl font-extrabold text-blue-900 italic">Meus Serviços</h1>
       <p class="text-gray-500 text-sm mt-1">Gerencie os serviços que você oferece no Agenda BH</p>
     </div>
-    <%= link_to "+ Novo Serviço", new_service_path, class: "bg-blue-800 hover:bg-black text-yellow-400 font-bold py-2 px-6 rounded-lg transition shadow-md" %>
+    <%= link_to "+ Novo Serviço", new_service_path, class: "touch-link bg-blue-800 hover:bg-black text-yellow-400 font-bold py-2 px-6 rounded-lg transition shadow-md" %>
   </div>
 
   <section aria-labelledby="active-services-heading">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
       <h2 id="active-services-heading" class="text-xl font-bold text-gray-900">Serviços ativos</h2>
       <span class="text-sm text-gray-500"><%= pluralize(@active_services.count, "serviço") %></span>
     </div>
@@ -27,7 +27,7 @@
   </section>
 
   <section aria-labelledby="archived-services-heading" class="mt-10 border-t pt-8">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
       <div>
         <h2 id="archived-services-heading" class="text-xl font-bold text-gray-900">Serviços arquivados</h2>
         <p class="text-sm text-gray-500">O histórico, as imagens e os bloqueios destes serviços continuam preservados.</p>

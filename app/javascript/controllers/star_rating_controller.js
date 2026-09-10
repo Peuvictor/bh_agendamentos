@@ -28,6 +28,7 @@ export default class extends Controller {
 
   updateStars(rating) {
     this.starTargets.forEach((star) => {
+      star.setAttribute("aria-pressed", String(star.dataset.value === String(this.currentValue)))
       if (parseInt(star.dataset.value) <= parseInt(rating)) {
         star.classList.remove("text-gray-300")
         star.classList.add("text-yellow-400")

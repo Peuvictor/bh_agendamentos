@@ -1,29 +1,29 @@
 <% if @appointment.reembolsado? %>
   <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-purple-100">
-    <div class="bg-purple-700 p-6 text-center">
+    <div class="bg-purple-700 p-4 sm:p-6 text-center">
       <div class="text-4xl mb-3">↩️</div>
       <h2 class="text-white text-xl font-bold">Pagamento reembolsado</h2>
     </div>
 
-    <div class="p-8 text-center">
+    <div class="p-4 sm:p-8 text-center">
       <p class="text-gray-700"><%= @appointment.service.nome %></p>
       <p class="text-gray-500 mt-2"><%= @appointment.start_time.strftime("%d/%m/%Y às %H:%M") %></p>
       <p class="text-sm text-gray-500 mt-6">
         A reserva não está mais ativa e o horário foi liberado. Para realizar o serviço, faça uma nova reserva.
       </p>
-      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "mt-6 w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition" %>
+      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "touch-link mt-6 w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition" %>
     </div>
   </div>
 <% elsif @appointment.cancelado? %>
   <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-red-100">
-    <div class="bg-red-600 p-6 text-center">
+    <div class="bg-red-600 p-4 sm:p-6 text-center">
       <div class="text-4xl mb-3">❌</div>
       <h2 class="text-white text-xl font-bold">
         <%= @appointment.expired_at? ? "Expirado por falta de pagamento" : "Agendamento cancelado" %>
       </h2>
     </div>
 
-    <div class="p-8 text-center">
+    <div class="p-4 sm:p-8 text-center">
       <p class="text-gray-700"><%= @appointment.service.nome %></p>
       <p class="text-gray-500 mt-2"><%= @appointment.start_time.strftime("%d/%m/%Y às %H:%M") %></p>
       <p class="text-sm text-gray-500 mt-6">
@@ -33,7 +33,7 @@
           Este horário foi liberado e não aceita novos pagamentos.
         <% end %>
       </p>
-      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "mt-6 w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition" %>
+      <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "touch-link mt-6 w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition" %>
     </div>
   </div>
 <% elsif @appointment.payment&.aprovado? || @appointment.confirmado? %>
@@ -41,14 +41,14 @@
   <!-- ESTADO 1: PAGO E CONFIRMADO (Seu layout)   -->
   <!-- ========================================== -->
   <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-    <div class="bg-green-500 p-6 text-center">
+    <div class="bg-green-500 p-4 sm:p-6 text-center">
       <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-3 shadow-sm">
         <span class="text-3xl">✅</span>
       </div>
       <h2 class="text-white text-xl font-bold italic">Agendamento Confirmado!</h2>
     </div>
 
-    <div class="p-8">
+    <div class="p-4 sm:p-8">
       <div class="text-center mb-8">
         <h1 class="text-2xl font-extrabold text-gray-900 mb-1"><%= @appointment.service.nome %></h1>
         <p class="text-gray-500 text-sm italic">Belo Horizonte, MG</p>
@@ -77,7 +77,7 @@
 
       <div class="space-y-3">
         <% if @appointment.reschedulable? %>
-          <%= link_to "Reagendar", edit_appointment_path(@appointment), class: "w-full block text-center bg-blue-900 text-white py-3 rounded-xl font-bold" %>
+          <%= link_to "Reagendar", edit_appointment_path(@appointment), class: "touch-link w-full block text-center bg-blue-900 text-white py-3 rounded-xl font-bold" %>
         <% end %>
         <%
           google_url = "https://www.google.com/calendar/render?action=TEMPLATE" +
@@ -86,11 +86,11 @@
                        "&details=Agendamento realizado pelo app BH Agendamentos." +
                        "&location=Belo Horizonte, MG"
         %>
-        <%= link_to google_url, target: "_blank", class: "w-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition" do %>
+        <%= link_to google_url, target: "_blank", class: "touch-link w-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition" do %>
           <span>🗓️ Adicionar ao Google Agenda</span>
         <% end %>
 
-        <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg" %>
+        <%= link_to "Voltar para Meus Agendamentos", appointments_path, class: "touch-link w-full block text-center bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg" %>
       </div>
     </div>
   </div>
@@ -100,12 +100,12 @@
   <!-- ESTADO 2: PENDENTE DE PAGAMENTO            -->
   <!-- ========================================== -->
   <div class="max-w-md mx-auto mt-12 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-    <div class="bg-slate-800 p-6 text-center">
+    <div class="bg-slate-800 p-4 sm:p-6 text-center">
       <h2 class="text-white text-xl font-bold">Concluir Agendamento</h2>
       <p class="text-slate-300 text-sm mt-1">Efetue o pagamento para garantir seu horário</p>
     </div>
 
-    <div class="p-8">
+    <div class="p-4 sm:p-8">
       <div class="mb-6 pb-6 border-b border-gray-200">
         <h3 class="text-lg font-bold text-gray-900"><%= @appointment.service.nome %></h3>
         <div class="flex justify-between mt-2 text-sm">
@@ -130,7 +130,7 @@
 
         <!-- O Brick do Mercado Pago será injetado nesta div -->
         <div id="paymentBrick_container" data-payment-target="container" class="min-h-[300px]">
-           <span class="block py-12 text-center text-sm text-slate-400 animate-pulse">Carregando ambiente seguro...</span>
+           <span class="block py-6 sm:py-12 text-center text-sm text-slate-400 animate-pulse">Carregando ambiente seguro...</span>
         </div>
       </div>
 

@@ -18,6 +18,8 @@ class AppointmentsTest < ApplicationSystemTestCase
     fill_in "Senha", with: "password123"
     click_button "Entrar"
 
+    assert_current_path root_path, wait: 10
+
     visit new_service_appointment_path(@service)
     appointment_date = 10.days.from_now.to_date.iso8601
     choose_appointment_date(appointment_date)

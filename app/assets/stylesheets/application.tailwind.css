@@ -52,3 +52,78 @@
     padding: 0.4rem 0.55rem;
   }
 }
+
+@layer base {
+  :focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+  }
+
+  main { overflow-wrap: anywhere; }
+  main :where(div, section, article, header, form, fieldset, p, h1, h2, h3, dl, dd) { min-width: 0; }
+  main :where(input, select, textarea) { max-width: 100%; min-width: 0; }
+  main :where(button, input[type="submit"], input[type="button"], a[class]) { min-height: 44px; }
+  main :where(button, input[type="submit"], input[type="button"]) { min-width: 44px; }
+  main :where(img, canvas) { max-width: 100%; }
+  main label:has(input[type="checkbox"]), main label[for$="all_day"] { min-height: 44px; }
+}
+
+.site-navigation [hidden] { display: none; }
+.navigation-header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-height: 72px; }
+.site-brand { flex-shrink: 0; }
+.navigation-toggle { min-width: 64px; min-height: 44px; }
+.navigation-links { display: flex; flex-direction: column; gap: .5rem; padding: .5rem 0 1rem; max-height: calc(100dvh - 72px); overflow-y: auto; }
+.navigation-links a, .navigation-links button { display: flex; align-items: center; min-height: 44px; padding: .5rem .75rem; width: 100%; font-size: .875rem; }
+.navigation-links [aria-current="page"] { background: #eff6ff; border-radius: .5rem; }
+
+.schedule-period { display: grid; grid-template-columns: 1fr; align-items: center; gap: .5rem; padding: .75rem; background: #f9fafb; border-radius: .75rem; }
+.schedule-period input { width: 100%; min-height: 44px; }
+.schedule-period button { justify-self: start; }
+.rating-star { display: inline-flex; justify-content: center; align-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: .5rem; }
+[data-controller="star-rating"] { gap: 0; flex-wrap: wrap; }
+[data-provider-calendar-target="dialog"] { width: calc(100% - 2rem); max-height: calc(100dvh - 2rem); overflow-y: auto; overflow-wrap: anywhere; }
+.fc .fc-toolbar-chunk { flex-wrap: wrap; gap: .5rem; }
+.fc .fc-button { min-width: 44px; min-height: 44px; }
+.fc .fc-event { overflow-wrap: anywhere; }
+
+@media (min-width: 640px) {
+  .schedule-period { grid-template-columns: 5rem minmax(0, 1fr) auto minmax(0, 1fr) auto; }
+}
+
+@media (min-width: 1280px) {
+  .site-navigation > div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .navigation-links { flex-direction: row; align-items: center; padding: 0; max-height: none; overflow: visible; gap: .25rem; }
+  .navigation-links a, .navigation-links button { width: auto; white-space: nowrap; }
+}
+
+@media (max-width: 767px) {
+  .responsive-records, .responsive-records tbody { display: block; width: 100%; }
+  .responsive-records thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .responsive-records tbody { padding: .75rem; }
+  .responsive-records tr { display: block; border: 1px solid #e5e7eb; border-radius: .75rem; margin-bottom: .75rem; padding: .75rem; }
+  .responsive-records td { display: block; padding: .5rem 0; white-space: normal; text-align: left; overflow-wrap: anywhere; }
+  .responsive-records td[data-label]::before { content: attr(data-label); display: block; color: #6b7280; font-size: .75rem; font-weight: 700; margin-bottom: .25rem; }
+  .responsive-records td > .flex { flex-wrap: wrap; gap: .5rem; }
+  .responsive-records td .ml-4 { margin-left: 0; }
+  .responsive-records td form, .responsive-records td button { width: 100%; }
+}
+
+@media (max-width: 639px) {
+  main :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 16px; min-height: 44px; }
+  main :where(input[type="submit"], button) { white-space: normal; }
+  main :where(.flex-1) { min-width: 0; }
+  main :where(.grid) { min-width: 0; }
+  main :where(.grid-cols-2) { grid-template-columns: minmax(0, 1fr); }
+  main :where(.whitespace-nowrap) { white-space: normal; }
+  .fc .fc-toolbar { align-items: center; }
+  .fc .fc-toolbar-chunk { max-width: 100%; }
+}
+
+.touch-link { display: inline-flex; align-items: center; min-height: 44px; }
+.touch-link.text-center { justify-content: center; }
+@media (max-width: 639px) {
+  .rating-form { padding: .5rem; }
+}
+
+.account-form .field input { width: 100%; border: 1px solid #d1d5db; border-radius: .5rem; padding: .5rem .75rem; }
+.account-form .actions input { width: 100%; background: #1e3a8a; color: white; border-radius: .75rem; padding: .75rem; font-weight: 700; }

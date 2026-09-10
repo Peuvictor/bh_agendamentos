@@ -1,10 +1,10 @@
-<div class="max-w-5xl mx-auto mt-10 p-6">
-  <div class="flex items-center justify-between mb-8">
+<div class="max-w-5xl mx-auto mt-10 p-4 sm:p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-8">
     <div>
       <h1 class="text-3xl font-bold text-gray-800">Minha Agenda 📅</h1>
       <p class="text-gray-600 mt-1">Acompanhe os próximos clientes agendados com você.</p>
     </div>
-    <%= link_to "Novo Serviço", new_service_path, class: "bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg shadow transition" %>
+    <%= link_to "Novo Serviço", new_service_path, class: "touch-link bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-lg shadow transition" %>
   </div>
 
   <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
@@ -49,7 +49,7 @@
                 <% if appointment.client.telefone.present? %>
                   <%= link_to "https://wa.me/55#{appointment.client.telefone.gsub(/\D/, '')}?text=Olá #{appointment.client.nome.split.first}, aqui é do #{appointment.service.user.nome}. Confirmo seu horário das #{appointment.start_time.strftime('%H:%M')}?",
                       target: "_blank",
-                      class: "inline-flex items-center gap-1.5 mt-1 bg-green-50 text-green-700 px-2 py-1 rounded-md font-bold text-xs hover:bg-green-100 transition shadow-sm" do %>
+                      class: "touch-link inline-flex items-center gap-1.5 mt-1 bg-green-50 text-green-700 px-2 py-1 rounded-md font-bold text-xs hover:bg-green-100 transition shadow-sm" do %>
                     <span>💬 WhatsApp</span>
                   <% end %>
                 <% else %>
