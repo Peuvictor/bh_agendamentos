@@ -10,6 +10,52 @@ A aplicação está hospedada no **Render** e pode ser acessada em:
 
 Este é um ambiente de demonstração para portfólio. A integração financeira utiliza o sandbox do Mercado Pago; não devem ser usados cartões, contas ou pagamentos reais.
 
+## Capturas de tela
+
+Telas reais da aplicação, capturadas com dados fictícios no ambiente de teste. Clique nas imagens para abrir em tamanho original. As janelas usam 1440 × 900 px no desktop e 390 × 900 px no mobile; as capturas incluem a página inteira.
+
+### Desktop
+
+**Vitrine:** busca de serviços e filtro por bairro, com preço e acesso ao agendamento.
+
+[![Vitrine de serviços em Belo Horizonte com busca e filtro por bairro](docs/screenshots/desktop-vitrine.png)](docs/screenshots/desktop-vitrine.png)
+
+<details>
+<summary>Agendamento confirmado e calendário semanal do prestador</summary>
+
+**Cliente:** detalhes da reserva confirmada, valor pago e ação de reagendamento.
+
+[![Detalhes de um agendamento confirmado de corte e barba, com data, horário e botão Reagendar](docs/screenshots/desktop-agendamento.png)](docs/screenshots/desktop-agendamento.png)
+
+**Prestador:** agenda semanal com atendimentos confirmados, reserva pendente e bloqueio de horário.
+
+[![Calendário semanal do prestador com reservas e bloqueio de horário](docs/screenshots/desktop-calendario.png)](docs/screenshots/desktop-calendario.png)
+
+</details>
+
+### Mobile
+
+O calendário inicia na visão diária e a administração apresenta os serviços em cartões.
+
+<table>
+  <tr><th>Calendário diário</th><th>Administração de serviços</th></tr>
+  <tr>
+    <td valign="top"><a href="docs/screenshots/mobile-calendario.png"><img src="docs/screenshots/mobile-calendario.png" width="260" alt="Calendário diário no celular com atendimentos e bloqueio de horário"></a></td>
+    <td valign="top"><a href="docs/screenshots/mobile-administracao.png"><img src="docs/screenshots/mobile-administracao.png" width="260" alt="Administração no celular com cartões de serviços e ações de arquivar ou reativar"></a></td>
+  </tr>
+</table>
+
+<details>
+<summary>Disponibilidade: turnos semanais e bloqueios no celular</summary>
+
+Domingo sem expediente, dois turnos nos demais dias e um bloqueio por imprevisto.
+
+<a href="docs/screenshots/mobile-disponibilidade.png"><img src="docs/screenshots/mobile-disponibilidade.png" width="260" alt="Página de disponibilidade no celular com turnos por dia, formulário de bloqueio e próximos bloqueios"></a>
+
+</details>
+
+O [roteiro de atualização das capturas](docs/screenshots/README.md) descreve os dados e o comando para reproduzi-las.
+
 ## Funcionalidades
 
 ### Clientes
@@ -144,6 +190,54 @@ O `sidekiq-cron` agenda `ExpireAppointmentsSweepJob` na fila `maintenance` a cad
 Estados remotos `pending`, `in_process` e `authorized` são cancelados no gateway antes da expiração local. Uma aprovação confirma a reserva; `cancelled` e `rejected` concluem a expiração; `refunded` registra o reembolso e libera o horário. Erros temporários ou dados divergentes levantam erro para retry e não liberam o horário. A primeira expiração ou transição para reembolso envia o respectivo e-mail específico ao cliente.
 
 O arquivo `config/sidekiq.yml` configura o processo para consumir as filas `default` e `maintenance`. Em produção, mantenha esse arquivo no comando padrão `bundle exec sidekiq`; se a plataforma substituir a lista de filas pela linha de comando, inclua `-q default -q maintenance`.
+
+## Arquitetura
+
+O projeto é uma aplicação Rails organizada em MVC, com páginas renderizadas no servidor e interações no navegador por Turbo e Stimulus. Os controllers recebem as requisições e verificam autenticação, perfil e propriedade dos registros; models e serviços concentram validações, persistência e operações de negócio.
+
+```mermaid
+flowchart TB
+  browser["Navegador<br/>Turbo, Stimulus e Tailwind<br/>FullCalendar"]
+  rails["Rails<br/>Controllers e views<br/>Models e serviços"]
+  postgres[(PostgreSQL)]
+  redis[("Redis: filas")]
+  worker["Sidekiq<br/>Jobs e mailers"]
+  mp["Mercado Pago"]
+  media["Cloudinary<br/>Active Storage"]
+  smtp["Servidor SMTP"]
+
+  browser <-->|HTML e JSON| rails
+  browser <-->|Payment Brick| mp
+  rails <-->|Active Record| postgres
+  rails -->|Active Job| redis
+  redis -->|Consumo das filas| worker
+  worker <-->|Active Record| postgres
+  rails -->|API de pagamentos| mp
+  mp -->|Webhook assinado| rails
+  worker -->|Reconciliação| mp
+  rails <-->|Imagens| media
+  worker -->|Action Mailer| smtp
+```
+
+| Camada | Responsabilidade e exemplos |
+| --- | --- |
+| Interface | Views ERB, Tailwind, Turbo e controllers Stimulus. FullCalendar consulta os eventos do período visível; o Payment Brick coleta os dados do pagamento. |
+| Acesso | Devise autentica usuários. Controllers e consultas vinculadas ao usuário restringem os recursos de clientes, prestadores e administradores; operações como reagendamento também verificam o participante no serviço. |
+| Agenda | `ProviderAvailability` calcula horários com base em turnos, duração, bloqueios e reservas. `RescheduleAppointmentService` altera o horário e grava o histórico. |
+| Pagamentos | `ProcessPaymentService` cria cobranças por meio de `MercadoPagoPaymentGateway`. Os serviços de sincronização, transição e expiração conciliam o estado local com o Mercado Pago. |
+| Persistência | Active Record e PostgreSQL armazenam usuários, serviços, expediente, bloqueios, agendamentos, histórico, pagamentos, avaliações e auditoria de webhooks. Transações, travas, chaves estrangeiras e índices únicos protegem a integridade. |
+| Processamento assíncrono | Active Job usa Sidekiq e Redis. Jobs de manutenção expiram reservas e removem auditorias antigas; mailers enviam notificações por SMTP. O `sidekiq-cron` agenda as rotinas de manutenção. |
+| Arquivos | Active Storage integra avatares e fotos ao Cloudinary em desenvolvimento e produção; testes usam armazenamento local temporário. |
+
+### Fluxos principais
+
+**Reserva e pagamento:** o servidor valida a disponibilidade e cria a reserva pendente sob trava da agenda do prestador. O checkout envia os dados do pagamento ao backend, que obtém o preço do serviço no banco e cria a cobrança sob trava do agendamento. Aprovação imediata ou reconciliação pelo webhook confirma a reserva. O webhook verifica a assinatura e consulta a API antes de aplicar transições idempotentes. Jobs reconciliam cobranças vencidas antes de liberar os horários e enfileiram as notificações correspondentes.
+
+**Reagendamento:** cliente ou prestador solicita um novo horário para uma reserva confirmada e paga. O serviço verifica o participante, o token do formulário e a disponibilidade dentro de uma transação, travando prestador, serviço, agendamento e pagamento nessa ordem. O novo intervalo e seu histórico são gravados juntos, preservando duração e pagamento; após o commit, o histórico dispara e-mails aos participantes.
+
+### Execução dos componentes
+
+O Docker Compose local define processos separados para web, PostgreSQL, Redis e Sidekiq. Em testes, os adaptadores de jobs e e-mails são de teste. A demonstração web está no Render; o diagrama descreve os componentes configurados pelo projeto, sem afirmar que há um Background Worker ativo na hospedagem. Jobs, expirações programadas e e-mails enfileirados dependem de um processo Sidekiq ativo, conectado ao mesmo banco e Redis, com as variáveis das integrações e as filas `default` e `maintenance` configuradas.
 
 ## Tecnologias
 

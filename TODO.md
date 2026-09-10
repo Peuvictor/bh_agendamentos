@@ -4,6 +4,7 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ## Entregue
 
+- [x] README com seis capturas reais de desktop e mobile, roteiro reproduzível com dados fictícios e visão da arquitetura com diagrama e fluxos principais.
 - [x] Revisão mobile de visitantes, clientes, prestadores e administradores: menu expansível, formulários responsivos, turnos por dia e cartões administrativos, preservando a identidade visual.
 - [x] Testes de navegador para criar, remover e persistir múltiplos turnos da agenda.
 - [x] Reagendamento por cliente e prestador de reservas confirmadas e pagas, com duração e pagamento preservados, histórico, e-mail aos participantes e proteção contra disputas de horário.
@@ -39,7 +40,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ### Interface e portfólio
 
-- [ ] Adicionar capturas de tela e uma visão da arquitetura ao README.
 - [ ] Preparar dados de demonstração que apresentem claramente os fluxos de cliente, prestador e administrador.
 
 ### Qualidade e automação
