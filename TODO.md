@@ -4,6 +4,7 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ## Entregue
 
+- [x] Carga explícita `demo:seed` para cliente, prestador e administrador, com fotos fictícias, senhas privadas, renovação semanal sem duplicação, preservação de alterações e recuperação de uploads; roteiro local e Render documentado.
 - [x] README com seis capturas reais de desktop e mobile, roteiro reproduzível com dados fictícios e visão da arquitetura com diagrama e fluxos principais.
 - [x] Revisão mobile de visitantes, clientes, prestadores e administradores: menu expansível, formulários responsivos, turnos por dia e cartões administrativos, preservando a identidade visual.
 - [x] Testes de navegador para criar, remover e persistir múltiplos turnos da agenda.
@@ -37,10 +38,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Runbook de staging validado com cartão, PIX, webhook assinado e agenda configurável.
 
 ## Próximas tarefas prioritárias
-
-### Interface e portfólio
-
-- [ ] Preparar dados de demonstração que apresentem claramente os fluxos de cliente, prestador e administrador.
 
 ### Qualidade e automação
 
