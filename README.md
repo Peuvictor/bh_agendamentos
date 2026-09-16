@@ -305,7 +305,7 @@ O [GitHub Actions](.github/workflows/quality.yml) executa essas verificações e
 
 ### Testes com navegador
 
-Os 21 cenários de sistema estão em `test/system`. Para executar todos com Chrome:
+Os 28 cenários de sistema estão em `test/system`. Para executar todos com Chrome:
 
 ```bash
 docker compose exec web env PARALLEL_WORKERS=1 SYSTEM_TEST_DRIVER=selenium \
@@ -320,16 +320,15 @@ Para executar apenas os fluxos da demonstração, substitua `bin/rails test:syst
 
 Sem `SYSTEM_TEST_DRIVER=selenium`, o driver padrão é `rack_test`: ele valida requisições e HTML, e os cenários que exigem JavaScript são pulados. Execute uma suíte por vez quando utilizarem o mesmo banco de teste.
 
-Os testes mobile cobrem larguras de 320, 390, 768 e 1440 px. Os cenários de pagamento simulam estados da interface; o teste de chegada ao checkout também depende da SDK externa para a renderização no navegador. Essa cobertura não certifica cobranças reais, Safari ou aparelhos físicos.
+Os testes mobile cobrem larguras de 320, 390, 768 e 1440 px. As jornadas de pagamento usam um gateway falso, mas atravessam os endpoints reais, persistem os estados e processam webhooks assinados. O teste de chegada ao checkout também depende da SDK externa para a renderização no navegador. Essa cobertura não certifica cobranças reais, Safari ou aparelhos físicos.
 
 ### Resultados registrados
 
 | Verificação | Resultado |
 | --- | --- |
-| Aplicação, incluindo a carga de demonstração | 243 testes e 971 asserções aprovados: 241 testes na suíte completa e dois testes de trava em execução separada. |
-| Selenium — fluxos existentes e revisão mobile | 18 cenários e 315 asserções aprovados na revisão mobile. |
-| Selenium — nova demonstração | 3 cenários e 23 asserções aprovados. |
-| RuboCop e Zeitwerk | Verificações aprovadas na entrega da demonstração. |
+| Aplicação, incluindo a carga de demonstração | 243 testes e 971 asserções aprovados na suíte completa. |
+| Selenium — fluxos, revisão mobile, demonstração e pagamentos | 28 cenários e 392 asserções aprovados. |
+| RuboCop e Zeitwerk | Verificações aprovadas nesta entrega. |
 | Auditoria JavaScript | Zero vulnerabilidades reportadas na validação da entrega. |
 
 Esses resultados registram as execuções concluídas durante o desenvolvimento, em setembro de 2026. Rodadas adicionais do navegador apresentaram falhas ambientais de inicialização do Chrome; os testes de demonstração mantêm a configuração que passou, com esperas explícitas para fotos e eventos. Consulte o workflow para o resultado de cada novo commit.
@@ -347,8 +346,8 @@ Esses resultados registram as execuções concluídas durante o desenvolvimento,
 
 ## Próximas tarefas
 
-- Testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
-- Ampliação dos testes de sistema para estados finais de pagamento.
+- Lembretes de atendimento com 24 horas de antecedência no ambiente hospedado.
+- Alertas e painéis operacionais alimentados pelos eventos estruturados do webhook.
 - Lembretes com 24 horas de antecedência, dependentes de worker ativo na hospedagem.
 - Alertas e painéis operacionais a partir dos eventos estruturados do webhook.
 - Redução gradual das exceções do RuboCop e manutenção das dependências.

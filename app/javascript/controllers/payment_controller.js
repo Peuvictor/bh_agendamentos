@@ -112,14 +112,16 @@ export default class extends Controller {
       })
       const data = await response.json().catch(() => ({}))
 
-      if (!response.ok || !["approved", "pending"].includes(data.status)) {
+      if (!response.ok || !["approved", "pending", "in_process", "authorized"].includes(data.status)) {
         throw new Error(data.error || "Pagamento não autorizado. Revise os dados e tente novamente.")
       }
 
-      if (selectedPaymentMethod === "pix") {
+      if (data.status === "approved") {
+        this.renderApprovedPayment()
+      } else if (selectedPaymentMethod === "pix") {
         this.renderPix(data)
       } else {
-        this.renderApprovedPayment()
+        this.renderPendingPayment()
       }
     } catch (error) {
       this.showFeedback(error.message || "Erro de comunicação com o servidor. Tente novamente.")
@@ -154,6 +156,14 @@ export default class extends Controller {
     this.containerTarget.innerHTML = `
       <div class="p-6 text-center text-green-700 font-bold bg-green-50 rounded-xl border border-green-200">
         Pagamento aprovado! Seu agendamento está confirmado.
+      </div>
+    `
+  }
+
+  renderPendingPayment() {
+    this.containerTarget.innerHTML = `
+      <div class="p-6 text-center text-amber-800 font-bold bg-amber-50 rounded-xl border border-amber-200">
+        Pagamento em processamento. Aguarde a confirmação antes de tentar novamente.
       </div>
     `
   }

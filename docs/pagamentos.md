@@ -30,6 +30,8 @@ O reembolso total é um estado terminal: notificações atrasadas de aprovação
 
 Nesta etapa, apenas o estado total `refunded` é reconciliado. Um pagamento `approved` com detalhe de reembolso parcial continua aprovado; solicitação de reembolso, valor devolvido e identificador da operação permanecem sob responsabilidade do Mercado Pago e não são persistidos pela aplicação.
 
+No navegador, cartões com estado `pending`, `in_process` ou `authorized` exibem que o pagamento está em processamento. Ao recarregar, a reserva aguarda a confirmação sem oferecer uma segunda cobrança. Os testes de sistema cobrem aprovação, recusa inicial, PIX aprovado por webhook assinado, rejeição remota, expiração e reembolso idempotente com um gateway falso e persistência real no banco de teste.
+
 ### Expiração e operação do Sidekiq
 
 O `sidekiq-cron` agenda `ExpireAppointmentsSweepJob` na fila `maintenance` a cada minuto. O varredor percorre as reservas pendentes vencidas em lotes de 100 e enfileira um job unitário por UUID. Cada job trava primeiro o agendamento e depois o pagamento, consulta o Mercado Pago quando existe cobrança e registra somente IDs, resultado, estado remoto e duração.

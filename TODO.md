@@ -27,8 +27,10 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 226 testes de aplicação e 870 asserções aprovados na validação da revisão mobile, incluindo seis cenários de concorrência PostgreSQL.
-- [x] 18 testes de sistema aprovados com Selenium e Chrome portátil (315 asserções), incluindo oito cenários mobile com validação de larguras, acessibilidade e persistência.
+- [x] Minitest compatível com Rails 7.1: 243 testes de aplicação e 971 asserções aprovados, incluindo cenários de concorrência PostgreSQL.
+- [x] 28 testes de sistema aprovados com Selenium e Chrome portátil (392 asserções), incluindo oito cenários mobile e sete jornadas persistidas para os estados finais do pagamento.
+- [x] Testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
+- [x] Estados finais do pagamento validados no navegador com gateway isolado, endpoint real, webhook assinado, persistência, idempotência e liberação do horário.
 - [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (13 asserções aprovadas).
 - [x] Edição de bloqueios validada com Selenium pela Disponibilidade e pelo calendário, incluindo persistência após recarregar (dois testes e nove asserções aprovados).
 - [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
@@ -38,11 +40,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Runbook de staging validado com cartão, PIX, webhook assinado e agenda configurável.
 
 ## Próximas tarefas prioritárias
-
-### Qualidade e automação
-
-- [ ] Adicionar testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
-- [ ] Ampliar testes de sistema para os estados finais do pagamento.
 
 ### Evoluções dependentes de infraestrutura
 
