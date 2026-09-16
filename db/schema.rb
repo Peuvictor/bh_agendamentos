@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_09_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -68,10 +68,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_09_120000) do
     t.datetime "expires_at"
     t.datetime "expired_at"
     t.datetime "refunded_at"
+    t.datetime "reminder_enqueued_at"
+    t.datetime "reminder_sent_at"
     t.index ["client_id"], name: "index_appointments_on_client_id"
     t.index ["service_id"], name: "index_appointments_on_service_id"
     t.index ["start_time", "end_time"], name: "index_appointments_on_start_time_and_end_time"
     t.index ["status", "expires_at"], name: "index_appointments_on_status_and_expires_at"
+    t.index ["status", "start_time"], name: "index_appointments_for_reminder_delivery", where: "(reminder_sent_at IS NULL)"
   end
 
   create_table "availability_blocks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

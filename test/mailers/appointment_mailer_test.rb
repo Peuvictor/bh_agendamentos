@@ -36,4 +36,19 @@ class AppointmentMailerTest < ActionMailer::TestCase
     assert_includes email.subject, "Pagamento reembolsado"
     assert_match(/reserva não está mais ativa.*horário foi liberado/m, email.body.encoded)
   end
+
+  # rubocop:disable-next Minitest/MultipleAssertions
+  test "builds a reminder with the appointment details" do
+    appointment = Appointment.create!(
+      client: users(:two), service: services(:one),
+      start_time: 7.days.from_now.change(hour: 10, min: 0), status: :confirmado
+    )
+    email = AppointmentMailer.reminder_email(appointment)
+
+    assert_equal [appointment.client.email], email.to
+    assert_includes email.subject, appointment.service.nome
+    assert_includes email.body.encoded, appointment.service.user.nome
+    assert_includes email.body.encoded, appointment.start_time.strftime('%H:%M')
+    assert_includes email.body.encoded, "/appointments/#{appointment.id}"
+  end
 end

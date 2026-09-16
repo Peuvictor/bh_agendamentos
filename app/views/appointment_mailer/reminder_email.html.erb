@@ -1,0 +1,20 @@
+<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+  <h2 style="color: #1e3a8a;">Olá, <%= @client.nome %>!</h2>
+
+  <p>Seu atendimento está chegando. Confira os detalhes:</p>
+
+  <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
+    <p><strong>Serviço:</strong> <%= @service.nome %></p>
+    <p><strong>Prestador:</strong> <%= @provider.nome %></p>
+    <p><strong>Data:</strong> <%= l(@appointment.start_time.to_date, format: :long) %></p>
+    <p><strong>Horário:</strong> <%= @appointment.start_time.strftime("%H:%M") %></p>
+  </div>
+
+  <p style="margin-top: 20px;">
+    <%= link_to "Ver meu agendamento", appointment_url(@appointment) %>
+  </p>
+
+  <p style="color: #4b5563; font-size: 14px;">
+    Se não puder comparecer, acesse o sistema para cancelar ou reagendar enquanto o atendimento ainda estiver disponível.
+  </p>
+</div>

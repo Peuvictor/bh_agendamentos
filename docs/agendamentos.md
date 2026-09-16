@@ -37,3 +37,11 @@ As rotas autenticadas são `GET /appointments/:id/edit`, `PATCH /appointments/:i
 Criação e reagendamento compartilham uma trava por prestador, também usada nas alterações de expediente e bloqueios. O reagendamento trava prestador, serviço, agendamento e pagamento nessa ordem e revalida as condições dentro da transação. Cancelamento e reconciliação financeira compartilham a trava do agendamento. Bloqueios continuam preservando reservas existentes.
 
 A migração `CreateAppointmentReschedulings` é aditiva e deve ser aplicada antes de iniciar a nova versão. Reservas anteriores continuam válidas, sem criação artificial de histórico. Registros antigos sem intervalo positivo não podem ser reagendados.
+
+## Lembretes de atendimento
+
+O Sidekiq verifica a cada cinco minutos quais reservas confirmadas entraram na janela das próximas 24 horas e enfileira um lembrete para o cliente. O e-mail informa serviço, prestador, data, horário e o link para os detalhes do agendamento.
+
+Cada reserva registra o enfileiramento e o envio. Uma trava no agendamento impede que jobs repetidos enviem o mesmo lembrete novamente; marcas de enfileiramento abandonadas podem ser recuperadas após 15 minutos. Se a reserva for cancelada antes da execução, o job não envia o e-mail. Um reagendamento limpa as marcas anteriores, permitindo um novo lembrete de acordo com o horário atualizado.
+
+O recurso depende dos processos Sidekiq e Redis ativos e das configurações SMTP disponíveis para o worker hospedado. Sem o worker, a aplicação web continua operando, mas a varredura e a entrega não acontecem.

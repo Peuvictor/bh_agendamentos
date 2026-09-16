@@ -12,7 +12,7 @@ O ambiente de portfólio está publicado no Render, com integração financeira 
 
 A carga `demo:seed` prepara exemplos para os três perfis, com senhas privadas e fotos fictícias. Sua execução no Render é uma etapa manual após disponibilizar o código e configurar as variáveis; o deploy não popula a demonstração automaticamente. O [roteiro de demonstração](docs/demo.md) reúne os acessos iniciais e as instruções.
 
-Expirações programadas, manutenção e e-mails enfileirados dependem de um processo Sidekiq ativo no ambiente hospedado.
+Expirações programadas, lembretes de atendimento, manutenção e e-mails enfileirados dependem de um processo Sidekiq ativo no ambiente hospedado.
 
 ## Capturas de tela
 
@@ -284,7 +284,7 @@ O worker consome as filas `default` e `maintenance`, definidas em [config/sideki
 bundle exec sidekiq
 ```
 
-Se a hospedagem definir filas na linha de comando, inclua `-q default -q maintenance`. O agendamento em [config/sidekiq_schedule.yml](config/sidekiq_schedule.yml) executa a varredura de reservas vencidas a cada minuto e a limpeza da auditoria diariamente.
+Se a hospedagem definir filas na linha de comando, inclua `-q default -q maintenance`. O agendamento em [config/sidekiq_schedule.yml](config/sidekiq_schedule.yml) executa a varredura de reservas vencidas a cada minuto, procura atendimentos que entraram nas próximas 24 horas a cada cinco minutos e limpa a auditoria diariamente. O lembrete é enviado ao cliente somente para reservas confirmadas; cancelamentos são ignorados e reagendamentos renovam o controle para o novo horário.
 
 No ambiente hospedado, web e worker precisam acessar o mesmo PostgreSQL e Redis e receber as configurações de Mercado Pago, SMTP e armazenamento. Sem o worker ativo, os jobs e e-mails enfileirados aguardam processamento.
 
@@ -326,7 +326,7 @@ Os testes mobile cobrem larguras de 320, 390, 768 e 1440 px. As jornadas de paga
 
 | Verificação | Resultado |
 | --- | --- |
-| Aplicação, incluindo a carga de demonstração | 243 testes e 971 asserções aprovados na suíte completa. |
+| Aplicação, incluindo a carga de demonstração | 250 testes e 1.001 asserções aprovados na suíte completa. |
 | Selenium — fluxos, revisão mobile, demonstração e pagamentos | 28 cenários e 392 asserções aprovados. |
 | RuboCop e Zeitwerk | Verificações aprovadas nesta entrega. |
 | Auditoria JavaScript | Zero vulnerabilidades reportadas na validação da entrega. |
@@ -346,10 +346,7 @@ Esses resultados registram as execuções concluídas durante o desenvolvimento,
 
 ## Próximas tarefas
 
-- Lembretes de atendimento com 24 horas de antecedência no ambiente hospedado.
 - Alertas e painéis operacionais alimentados pelos eventos estruturados do webhook.
-- Lembretes com 24 horas de antecedência, dependentes de worker ativo na hospedagem.
-- Alertas e painéis operacionais a partir dos eventos estruturados do webhook.
 - Redução gradual das exceções do RuboCop e manutenção das dependências.
 
 O acompanhamento está em [TODO.md](TODO.md).

@@ -20,6 +20,7 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Dashboard do prestador, avaliações e painel administrativo.
 - [x] Active Storage com Cloudinary para avatares e imagens de serviços.
 - [x] Sidekiq e Redis para processamento assíncrono e e-mails.
+- [x] Lembretes ao cliente nas 24 horas anteriores ao atendimento confirmado, com varredura no Sidekiq, trava contra duplicidade e renovação após reagendamento.
 - [x] Checkout com Mercado Pago Payment Brick e mensagens amigáveis de configuração.
 - [x] Pagamentos com preço obtido no servidor, ciclo `pending` → `approved` e confirmação condicionada ao pagamento.
 - [x] Webhook do Mercado Pago com validação de assinatura, consulta à API e processamento idempotente de reenvios.
@@ -27,7 +28,7 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 243 testes de aplicação e 971 asserções aprovados, incluindo cenários de concorrência PostgreSQL.
+- [x] Minitest compatível com Rails 7.1: 250 testes de aplicação e 1.001 asserções aprovados, incluindo cenários de concorrência PostgreSQL.
 - [x] 28 testes de sistema aprovados com Selenium e Chrome portátil (392 asserções), incluindo oito cenários mobile e sete jornadas persistidas para os estados finais do pagamento.
 - [x] Testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
 - [x] Estados finais do pagamento validados no navegador com gateway isolado, endpoint real, webhook assinado, persistência, idempotência e liberação do horário.
@@ -43,7 +44,6 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 
 ### Evoluções dependentes de infraestrutura
 
-- [ ] Enviar lembretes de atendimento com 24 horas de antecedência quando houver Background Worker ativo no ambiente hospedado.
 - [ ] Integrar os eventos estruturados do webhook a alertas e painéis operacionais.
 
 ## Manutenção contínua

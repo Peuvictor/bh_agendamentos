@@ -50,4 +50,16 @@ class AppointmentMailer < ApplicationMailer
       subject: "Pagamento reembolsado: #{@service.nome}"
     )
   end
+
+  def reminder_email(appointment)
+    @appointment = appointment
+    @client = appointment.client
+    @service = appointment.service
+    @provider = @service.user
+
+    mail(
+      to: @client.email,
+      subject: "Lembrete de atendimento: #{@service.nome}"
+    )
+  end
 end

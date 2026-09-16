@@ -3,6 +3,11 @@ expire_pending_appointments:
   class: "ExpireAppointmentsSweepJob"
   queue: "maintenance"
 
+send_appointment_reminders:
+  cron: "*/5 * * * *"
+  class: "AppointmentReminderSweepJob"
+  queue: "maintenance"
+
 purge_webhook_deliveries:
   cron: "17 3 * * *"
   class: "PurgeWebhookDeliveriesJob"

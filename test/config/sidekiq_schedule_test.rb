@@ -27,4 +27,13 @@ class SidekiqScheduleTest < ActiveSupport::TestCase
     assert_equal 'PurgeWebhookDeliveriesJob', retention_job.fetch('class')
     assert_equal 'maintenance', retention_job.fetch('queue')
   end
+
+  test 'checks appointment reminders every five minutes in the maintenance queue' do
+    schedule = YAML.safe_load_file(Rails.root.join('config/sidekiq_schedule.yml'))
+    reminder_job = schedule.fetch('send_appointment_reminders')
+
+    assert_equal '*/5 * * * *', reminder_job.fetch('cron')
+    assert_equal 'AppointmentReminderSweepJob', reminder_job.fetch('class')
+    assert_equal 'maintenance', reminder_job.fetch('queue')
+  end
 end
