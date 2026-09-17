@@ -12,6 +12,9 @@ class Appointment < ApplicationRecord
   enum :status, { confirmado: 0, cancelado: 1, pendente: 2, reembolsado: 4 }, default: :pendente
 
   validates :start_time, presence: true
+  validate(if: -> { new_record? || will_save_change_to_client_id? }) do
+    errors.add(:client, "deve possuir perfil de cliente") unless client.blank? || client.client?
+  end
   validate :service_must_be_active, if: :service_availability_validation_required?
   validate :no_overlapping_appointments
   validate :horario_deve_ser_no_futuro

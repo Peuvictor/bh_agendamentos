@@ -64,15 +64,15 @@ class ReschedulingConcurrencyTest < ActiveSupport::TestCase
     assert_equal 1, appointment.reschedulings.count
   end
 
-  # Keep the barrier at history insertion to exercise PostgreSQL foreign key locks.
-  test 'providers booking each other can reschedule concurrently without foreign key deadlocks' do
+  # Registros anteriores à restrição de perfil ainda precisam permanecer operáveis.
+  test 'legacy provider bookings can reschedule concurrently without foreign key deadlocks' do
     @extra_provider = User.create!(nome: 'Outro prestador', email: 'mutual@example.com',
                                    password: 'password123', role: :provider)
     extra_service = @extra_provider.services.create!(nome: 'Serviço adicional', duration: 30, preco: 10)
     first = @appointments.first
-    first.update!(client: @extra_provider)
+    first.update_column(:client_id, @extra_provider.id) # rubocop:disable Rails/SkipsModelValidations
     second = create_paid_appointment(service: extra_service)
-    second.update!(client: users(:one))
+    second.update_column(:client_id, users(:one).id) # rubocop:disable Rails/SkipsModelValidations
     histories_ready = Queue.new
     release_histories = Queue.new
     operations = [first, second].map do |appointment|

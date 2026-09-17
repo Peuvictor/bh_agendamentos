@@ -15,33 +15,41 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "lists appointments booked by a provider instead of appointments received by them" do
+  test "does not let a provider open the appointment form" do
     provider = users(:one)
-    other_provider = create_other_provider
-    booked_service = other_provider.services.create!(
-      nome: "Serviço reservado pelo prestador",
-      descricao: "Usado para distinguir reservas feitas e recebidas",
-      duration: 30,
-      preco: 50
-    )
-    booked_appointment = Appointment.create!(
-      client: provider,
-      service: booked_service,
-      start_time: 7.days.from_now.change(hour: 10, min: 0)
-    )
-    received_appointment = Appointment.create!(
-      client: @client,
-      service: @service,
-      start_time: 7.days.from_now.change(hour: 11, min: 0)
-    )
     sign_out @client
     sign_in provider
 
-    get appointments_url
+    get new_service_appointment_url(@service)
 
-    assert_response :success
-    assert_select "a[href='#{appointment_path(booked_appointment)}']", text: "Ver detalhes"
-    assert_select "a[href='#{appointment_path(received_appointment)}']", count: 0
+    assert_redirected_to vitrine_url
+    assert_equal "Apenas clientes podem agendar serviços.", flash[:alert]
+  end
+
+  test "does not let a provider create an appointment directly" do
+    sign_out @client
+    sign_in users(:one)
+
+    assert_no_difference("Appointment.count") do
+      post service_appointments_url(@service), params: {
+        appointment: {},
+        appointment_date: 3.days.from_now.to_date.iso8601,
+        appointment_hour: "10:00"
+      }
+    end
+
+    assert_redirected_to vitrine_url
+    assert_equal "Apenas clientes podem agendar serviços.", flash[:alert]
+  end
+
+  test "does not expose available slots to a provider booking request" do
+    sign_out @client
+    sign_in users(:one)
+
+    get available_slots_service_url(@service, date: 3.days.from_now.to_date.iso8601), as: :json
+
+    assert_response :forbidden
+    assert_equal "Apenas clientes podem agendar serviços.", response.parsed_body.fetch("error")
   end
 
   test "renders the nested appointment form" do
@@ -260,17 +268,5 @@ class AppointmentsControllerTest < ActionDispatch::IntegrationTest
 
     assert_predicate appointment.reload, :reembolsado?
     assert_redirected_to appointments_url
-  end
-
-  private
-
-  def create_other_provider
-    User.create!(
-      nome: "Outro prestador",
-      email: "outro-prestador@example.com",
-      password: "password123",
-      role: :provider,
-      bairro: "Savassi"
-    )
   end
 end

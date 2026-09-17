@@ -36,7 +36,8 @@ class AppointmentReschedulingMailerTest < ActionMailer::TestCase
 
   test 'deduplicates recipient email addresses' do
     appointment = create_paid_appointment
-    appointment.update!(client: users(:one))
+    # Simula um registro legado anterior à restrição de perfil.
+    appointment.update_column(:client_id, users(:one).id) # rubocop:disable Rails/SkipsModelValidations
 
     assert_enqueued_emails(1) { assert rescheduler(appointment, actor: users(:one)).call }
   end

@@ -134,7 +134,11 @@
                 <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">Valor</span>
                 <span class="text-lg font-black text-green-600"><%= number_to_currency(service.preco, unit: "R$ ") %></span>
               </div>
-              <%= link_to "Agendar", new_service_appointment_path(service), class: "touch-link bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-600 transition" %>
+              <% if !user_signed_in? || current_user.client? %>
+                <%= link_to "Agendar", new_service_appointment_path(service), class: "touch-link bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-600 transition" %>
+              <% else %>
+                <span class="text-sm font-semibold text-gray-500">Exclusivo para clientes</span>
+              <% end %>
             </div>
           </div>
         </div>

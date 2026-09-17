@@ -71,6 +71,7 @@ O [roteiro de atualização das capturas](docs/screenshots/README.md) descreve o
 
 ### Agenda e atendimento
 
+- Novas reservas exclusivas para contas com perfil de cliente. Prestadores e administradores consultam a vitrine sem a ação de agendar.
 - Horários calculados conforme a duração do serviço, expediente, bloqueios e reservas de todos os serviços do prestador.
 - Dias sem expediente, múltiplos turnos por dia e bloqueios de dia inteiro ou por faixa de horário.
 - Calendário diário, semanal e mensal com detalhes e histórico opcional de cancelados e reembolsados.
@@ -97,6 +98,8 @@ O [guia de pagamentos](docs/pagamentos.md) explica os estados, a expiração e a
 A interface usa Tailwind CSS, Turbo e Stimulus. O menu se adapta abaixo de 1280 px; a administração apresenta cartões abaixo de 768 px. O calendário começa na visão diária em telas pequenas e semanal no desktop.
 
 Devise autentica os usuários. Controllers e serviços verificam perfil, propriedade dos registros e participantes das operações. O cadastro público não permite criar administradores. PostgreSQL mantém UUIDs, chaves estrangeiras, índices únicos e restrições de integridade.
+
+Somente clientes autenticados podem abrir o formulário de nova reserva, consultar seus horários disponíveis e criar agendamentos. A restrição é aplicada no servidor, inclusive para requisições diretas HTML, JSON e Turbo, e o modelo rejeita a criação ou troca do cliente de uma reserva para um perfil de prestador ou administrador. Visitantes são encaminhados ao login; contas sem permissão veem “Exclusivo para clientes” na vitrine. Reservas antigas feitas por prestadores continuam operáveis, e o prestador mantém o gerenciamento e o reagendamento dos atendimentos recebidos.
 
 ## Tecnologias
 
@@ -305,7 +308,7 @@ O [GitHub Actions](.github/workflows/quality.yml) executa essas verificações e
 
 ### Testes com navegador
 
-Os 28 cenários de sistema estão em `test/system`. Para executar todos com Chrome:
+Os cenários de sistema estão em `test/system`. Para executar todos com Chrome:
 
 ```bash
 docker compose exec web env PARALLEL_WORKERS=1 SYSTEM_TEST_DRIVER=selenium \
@@ -318,6 +321,8 @@ Os caminhos acima correspondem aos binários portáteis usados na validação lo
 
 Para executar apenas os fluxos da demonstração, substitua `bin/rails test:system` por `bin/rails test test/system/demo_journeys_test.rb`. O [roteiro de demonstração](docs/demo.md) inclui os comandos dos testes de dados e uploads.
 
+Para reproduzir a revisão de permissões no Chrome, use o mesmo comando e substitua `bin/rails test:system` por `bin/rails test test/system/booking_authorization_test.rb test/system/appointments_test.rb test/system/appointment_rescheduling_test.rb`. Esses oito cenários verificam os bloqueios para prestador e administrador, a reserva por cliente e o reagendamento.
+
 Sem `SYSTEM_TEST_DRIVER=selenium`, o driver padrão é `rack_test`: ele valida requisições e HTML, e os cenários que exigem JavaScript são pulados. Execute uma suíte por vez quando utilizarem o mesmo banco de teste.
 
 Os testes mobile cobrem larguras de 320, 390, 768 e 1440 px. As jornadas de pagamento usam um gateway falso, mas atravessam os endpoints reais, persistem os estados e processam webhooks assinados. O teste de chegada ao checkout também depende da SDK externa para a renderização no navegador. Essa cobertura não certifica cobranças reais, Safari ou aparelhos físicos.
@@ -326,12 +331,15 @@ Os testes mobile cobrem larguras de 320, 390, 768 e 1440 px. As jornadas de paga
 
 | Verificação | Resultado |
 | --- | --- |
-| Aplicação, incluindo a carga de demonstração | 250 testes e 1.001 asserções aprovados na suíte completa. |
-| Selenium — fluxos, revisão mobile, demonstração e pagamentos | 28 cenários e 392 asserções aprovados. |
-| RuboCop e Zeitwerk | Verificações aprovadas nesta entrega. |
+| Aplicação — última execução completa, antes da ampliação dos testes de autorização | 255 testes e 1.014 asserções aprovados. |
+| Aplicação — revisão de autorização, reservas antigas, reagendamento e expiração | 82 testes e 330 asserções aprovados. |
+| Selenium — execução anterior de fluxos, revisão mobile, demonstração e pagamentos | 28 cenários e 392 asserções aprovados. |
+| Selenium — revisão de autorização, reserva e reagendamento | 8 cenários e 38 asserções aprovados no Chrome, sem testes pulados. |
+| RuboCop | 194 arquivos inspecionados, sem infrações na revisão de autorização. |
+| Zeitwerk | Verificação aprovada na entrega anterior. |
 | Auditoria JavaScript | Zero vulnerabilidades reportadas na validação da entrega. |
 
-Esses resultados registram as execuções concluídas durante o desenvolvimento, em setembro de 2026. Rodadas adicionais do navegador apresentaram falhas ambientais de inicialização do Chrome; os testes de demonstração mantêm a configuração que passou, com esperas explícitas para fotos e eventos. Consulte o workflow para o resultado de cada novo commit.
+Esses resultados registram execuções concluídas durante o desenvolvimento, em setembro de 2026; os recortes se sobrepõem e não devem ser somados. A revisão de autorização adicionou 26 testes e reforçou o teste existente do modelo, cobrindo acesso direto, serviços de outro prestador, parâmetros adulterados, HTML/JSON/Turbo e reservas antigas. A execução com Chrome passou após instalar as bibliotecas de sistema ausentes no container. Consulte o workflow para o resultado de cada novo commit.
 
 ## Documentação
 

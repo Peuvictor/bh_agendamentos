@@ -49,7 +49,7 @@ class ExpireAppointmentServiceTest < ActiveSupport::TestCase
     assert_predicate appointment.expired_at, :present?
 
     replacement = Appointment.new(
-      client: users(:one),
+      client: users(:two),
       service: appointment.service,
       start_time: appointment.start_time
     )

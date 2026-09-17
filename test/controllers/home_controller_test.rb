@@ -29,4 +29,24 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_select "h3", text: "Serviço Arquivado Exclusivo", count: 0
     assert_select "h3", text: "Nenhum serviço encontrado"
   end
+
+  test "does not show booking links to providers" do
+    sign_in users(:one)
+
+    get vitrine_url
+
+    assert_response :success
+    assert_select "a", text: "Agendar", count: 0
+    assert_select "span", text: "Exclusivo para clientes"
+  end
+
+  test "shows booking links to clients" do
+    sign_in users(:two)
+
+    get vitrine_url
+
+    assert_response :success
+    assert_select "a", text: "Agendar", minimum: 1
+    assert_select "span", text: "Exclusivo para clientes", count: 0
+  end
 end

@@ -1,5 +1,6 @@
 class AppointmentsController < ApplicationController
   before_action :authenticate_user!
+  before_action :require_client_role, only: %i[new create available_slots]
 
   # 1. Configurações baseadas na Rota Aninhada
   before_action :set_service, only: %i[new create available_slots]
@@ -163,6 +164,16 @@ class AppointmentsController < ApplicationController
   private :cancel_locked, :update_status_locked
 
   private
+
+  def require_client_role
+    return if current_user.client?
+
+    message = "Apenas clientes podem agendar serviços."
+    respond_to do |format|
+      format.html { redirect_to vitrine_path, alert: message }
+      format.json { render json: { error: message }, status: :forbidden }
+    end
+  end
 
   def unavailable_rescheduling
     redirect_to appointment_path(@appointment), alert: 'Este agendamento não está disponível para reagendamento.'

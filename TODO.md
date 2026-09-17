@@ -10,6 +10,8 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Testes de navegador para criar, remover e persistir múltiplos turnos da agenda.
 - [x] Reagendamento por cliente e prestador de reservas confirmadas e pagas, com duração e pagamento preservados, histórico, e-mail aos participantes e proteção contra disputas de horário.
 - [x] Autenticação e perfis de cliente, prestador e administrador com Devise.
+- [x] Novos agendamentos exclusivos para clientes, com autorização no servidor, validação no modelo e ação de agendar oculta para prestadores e administradores; reservas antigas e gerenciamento dos atendimentos recebidos preservados.
+- [x] Revisão da restrição de agendamento com 26 novos testes e reforço do teste do modelo: acesso direto, serviços de outro prestador, parâmetros adulterados, HTML/JSON/Turbo e reservas antigas; 82 testes relacionados e 330 asserções aprovados, além de oito cenários no Chrome/Selenium com 38 asserções, sem falhas ou testes pulados.
 - [x] Serviços, busca por texto e filtros por bairros de Belo Horizonte.
 - [x] Agendamentos com duração, bloqueio de horários passados e prevenção de conflitos.
 - [x] Agenda semanal configurável pelo prestador, com turnos dinâmicos, dias fechados e bloqueios gerais ou por serviço.
@@ -28,13 +30,13 @@ Estado revisado em setembro de 2026. O projeto utiliza Minitest como suíte ofic
 - [x] Expiração segura de reservas e PIX com reconciliação remota, jobs idempotentes e e-mail específico.
 - [x] Criação de cobranças protegida por trava do agendamento e prazo PIX enviado ao Mercado Pago.
 - [x] Reconciliação idempotente de reembolsos totais, com auditoria, notificação e liberação do horário.
-- [x] Minitest compatível com Rails 7.1: 250 testes de aplicação e 1.001 asserções aprovados, incluindo cenários de concorrência PostgreSQL.
-- [x] 28 testes de sistema aprovados com Selenium e Chrome portátil (392 asserções), incluindo oito cenários mobile e sete jornadas persistidas para os estados finais do pagamento.
+- [x] Minitest compatível com Rails 7.1: última execução completa anterior à ampliação dos testes de autorização com 255 testes de aplicação e 1.014 asserções aprovados, incluindo cenários de concorrência PostgreSQL.
+- [x] Execução anterior de 28 testes de sistema aprovada com Selenium e Chrome portátil (392 asserções), incluindo oito cenários mobile e sete jornadas persistidas para os estados finais do pagamento.
 - [x] Testes de navegador para bloqueios gerais, bloqueios por serviço e dias sem expediente.
 - [x] Estados finais do pagamento validados no navegador com gateway isolado, endpoint real, webhook assinado, persistência, idempotência e liberação do horário.
 - [x] Calendário validado com Selenium: navegação, detalhes, histórico e alternância entre visualizações (13 asserções aprovadas).
 - [x] Edição de bloqueios validada com Selenium pela Disponibilidade e pelo calendário, incluindo persistência após recarregar (dois testes e nove asserções aprovados).
-- [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado.
+- [x] RuboCop para Ruby, Rails e Minitest, com linha de base do legado; 194 arquivos sem infrações na revisão da restrição de agendamento.
 - [x] Banco PostgreSQL de teste isolado do banco de desenvolvimento no Docker.
 - [x] Auditoria JavaScript sem vulnerabilidades conhecidas.
 - [x] Deploy de demonstração no Render com SMTP da Brevo e Mercado Pago sandbox.
