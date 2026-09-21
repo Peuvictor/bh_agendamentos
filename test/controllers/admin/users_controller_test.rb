@@ -5,7 +5,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     @admin = User.create!(
       nome: "Admin de Teste",
       email: "admin-users@example.com",
-      password: "password123",
+      password: "Teste123!",
       role: :admin
     )
     sign_in @admin
@@ -21,7 +21,7 @@ class Admin::UsersControllerTest < ActionDispatch::IntegrationTest
     user = User.create!(
       nome: "Usuário removível",
       email: "removivel@example.com",
-      password: "password123",
+      password: "Teste123!",
       role: :client
     )
 

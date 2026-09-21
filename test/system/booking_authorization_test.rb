@@ -26,10 +26,10 @@ class BookingAuthorizationTest < ApplicationSystemTestCase
 
   def login_with_role(role)
     user = User.create!(nome: 'Conta sem permissão de reserva', email: "#{role}-browser@example.com",
-                        password: 'password123', role: role)
+                        password: 'Teste123!', role: role)
     visit new_user_session_path
     fill_in 'E-mail', with: user.email
-    fill_in 'Senha', with: 'password123'
+    fill_in 'Senha', with: 'Teste123!'
     click_button 'Entrar'
 
     assert_text 'Login efetuado com sucesso'

@@ -2,6 +2,8 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
+  PASSWORD_COMPLEXITY = /\A(?=.*\p{Lu})(?=.*\p{Ll})(?=.*[0-9])(?=.*[\p{P}\p{S}]).*\z/m
+
   # 1. CONSTANTES GEOGRÁFICAS (MAPA DE BH)
   # Agrupado por região para facilitar a UX no frontend
   BAIRROS_POR_REGIAO = {
@@ -40,6 +42,8 @@ class User < ApplicationRecord
   # 4. VALIDAÇÕES SÊNIOR
   # Garante que o bairro seja um dos oficiais da nossa lista
   validates :bairro, inclusion: { in: BAIRROS_BH, message: "deve ser um bairro válido de BH, uai!" }, allow_blank: true
+  validate :password_fits_bcrypt, if: -> { password.present? }
+  validates :password, format: { with: PASSWORD_COMPLEXITY, message: :password_complexity }, allow_blank: true
 
   # Serialize schedule changes without blocking foreign keys when providers also book as clients.
   def with_schedule_lock(&)
@@ -47,6 +51,11 @@ class User < ApplicationRecord
   end
 
   private
+
+  # bcrypt only uses the first 72 bytes, including multi-byte characters.
+  def password_fits_bcrypt
+    errors.add(:password, :too_long_in_bytes) if password.bytesize > 72
+  end
 
   def create_default_availability_periods
     (0..6).each do |weekday|

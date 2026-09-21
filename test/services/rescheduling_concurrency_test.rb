@@ -67,7 +67,7 @@ class ReschedulingConcurrencyTest < ActiveSupport::TestCase
   # Registros anteriores à restrição de perfil ainda precisam permanecer operáveis.
   test 'legacy provider bookings can reschedule concurrently without foreign key deadlocks' do
     @extra_provider = User.create!(nome: 'Outro prestador', email: 'mutual@example.com',
-                                   password: 'password123', role: :provider)
+                                   password: 'Teste123!', role: :provider)
     extra_service = @extra_provider.services.create!(nome: 'Serviço adicional', duration: 30, preco: 10)
     first = @appointments.first
     first.update_column(:client_id, @extra_provider.id) # rubocop:disable Rails/SkipsModelValidations

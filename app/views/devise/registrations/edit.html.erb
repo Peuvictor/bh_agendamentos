@@ -83,7 +83,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <%= f.label :password, "Nova Senha", class: "block text-xs font-bold text-gray-500" %>
-            <%= f.password_field :password, autocomplete: "new-password", placeholder: "Deixe em branco para manter", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1" %>
+            <%= f.password_field :password, minlength: resource.class.password_length.min, maxlength: resource.class.password_length.max, aria: { describedby: "password-requirements" }, autocomplete: "new-password", placeholder: "Deixe em branco para manter", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 mt-1" %>
+            <%= render "devise/shared/password_requirements", resource: resource %>
           </div>
           <div>
             <%= f.label :password_confirmation, "Confirmar Nova Senha", class: "block text-xs font-bold text-gray-500" %>

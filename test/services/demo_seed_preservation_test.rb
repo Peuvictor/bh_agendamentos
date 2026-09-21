@@ -29,7 +29,7 @@ class DemoSeedPreservationTest < ActiveSupport::TestCase
   test 'reexecution preserves changed examples credentials and unrelated data' do
     external = users(:one).attributes
     seed_demo
-    demo_record(User, 'user/client').update!(password: 'a-new-private-password')
+    demo_record(User, 'user/client').update!(password: 'New-private-password1!')
     demo_record(Service, 'service/beard').update!(nome: 'Barba personalizada')
     demo_record(Appointment, '2026-09-21/appointment/0').update!(start_time: Time.zone.local(2026, 9, 21, 10))
     demo_record(Appointment, '2026-09-21/appointment/3').update!(status: :cancelado, expired_at: Time.current)
@@ -38,7 +38,7 @@ class DemoSeedPreservationTest < ActiveSupport::TestCase
 
     assert_equal snapshot, demo_snapshot
     assert_equal external, users(:one).reload.attributes
-    assert demo_record(User, 'user/client').valid_password?('a-new-private-password')
+    assert demo_record(User, 'user/client').valid_password?('New-private-password1!')
   end
 
   test 'changed schedule aborts the next week without partial records' do

@@ -182,7 +182,7 @@ module Provider
       User.create!(
         nome: 'Outro prestador',
         email: "outro-prestador-#{SecureRandom.hex(4)}@example.com",
-        password: 'password123',
+        password: 'Teste123!',
         role: :provider,
         bairro: 'Savassi'
       )

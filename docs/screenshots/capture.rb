@@ -47,7 +47,7 @@ class DocumentationCapture < ApplicationSystemTestCase
     open_calendar('.fc-timeGridDay-view')
     capture('mobile-calendario')
 
-    login(@admin)
+    login(@admin, password: 'Teste123!')
     visit admin_services_path
     assert_text 'Gestão de Serviços'
     assert_button 'Reativar'
@@ -70,7 +70,7 @@ class DocumentationCapture < ApplicationSystemTestCase
     @client = users(:two)
     @client.update!(nome: 'Marina Costa')
     @admin = User.create!(nome: 'Administrador Demo', email: 'admin-docs@example.com',
-                          password: 'password123', role: :admin)
+                          password: 'Teste123!', role: :admin)
   end
 
   def prepare_schedule
@@ -125,11 +125,11 @@ class DocumentationCapture < ApplicationSystemTestCase
                                     width: width, height: 900, deviceScaleFactor: 1, mobile: false)
   end
 
-  def login(user)
+  def login(user, password: 'password123')
     Capybara.reset_sessions!
     visit new_user_session_path
     fill_in 'E-mail', with: user.email
-    fill_in 'Senha', with: 'password123'
+    fill_in 'Senha', with: password
     click_button 'Entrar'
     assert_current_path(user.admin? ? appointments_path : root_path, wait: 10)
   end

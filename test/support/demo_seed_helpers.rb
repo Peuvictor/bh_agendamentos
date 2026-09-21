@@ -2,8 +2,8 @@
 
 module DemoSeedHelpers
   def demo_env
-    { 'DEMO_SEED_ENABLED' => 'true', 'DEMO_CLIENT_PASSWORD' => 'demo-test-password',
-      'DEMO_PROVIDER_PASSWORD' => 'demo-test-password', 'DEMO_ADMIN_PASSWORD' => 'demo-test-password' }
+    { 'DEMO_SEED_ENABLED' => 'true', 'DEMO_CLIENT_PASSWORD' => 'Demo-test-password1!',
+      'DEMO_PROVIDER_PASSWORD' => 'Demo-test-password1!', 'DEMO_ADMIN_PASSWORD' => 'Demo-test-password1!' }
   end
 
   def seed_demo(images: false, env: demo_env)

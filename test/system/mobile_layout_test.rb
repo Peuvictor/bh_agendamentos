@@ -113,10 +113,10 @@ class MobileLayoutTest < ApplicationSystemTestCase
   end
 
   test 'admin records become cards and keep service actions' do
-    admin = User.create!(nome: 'Administrador', email: 'admin-mobile@example.com', password: 'password123',
+    admin = User.create!(nome: 'Administrador', email: 'admin-mobile@example.com', password: 'Teste123!',
                          role: :admin)
     create_paid_appointment
-    mobile_login(admin)
+    mobile_login(admin, password: 'Teste123!')
     click_button 'Menu'
 
     assert_link '👑 MODO DEUS'

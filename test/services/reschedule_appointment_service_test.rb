@@ -40,7 +40,7 @@ class RescheduleAppointmentServiceTest < ActiveSupport::TestCase
   end
 
   test 'rejects another actor without history or notification' do
-    stranger = User.create!(nome: 'Terceiro', email: 'third@example.com', password: 'password123')
+    stranger = User.create!(nome: 'Terceiro', email: 'third@example.com', password: 'Teste123!')
 
     assert_no_enqueued_emails do
       assert_no_difference('AppointmentRescheduling.count') do

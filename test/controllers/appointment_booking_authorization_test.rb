@@ -103,7 +103,7 @@ class AppointmentBookingAuthorizationTest < ActionDispatch::IntegrationTest
 
   def restricted_user(role)
     User.create!(nome: 'Conta sem permissão de reserva', email: "#{role}-booking@example.com",
-                 password: 'password123', role: role)
+                 password: 'Teste123!', role: role)
   end
 
   def booking_params(client)

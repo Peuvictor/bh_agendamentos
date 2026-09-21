@@ -7,15 +7,13 @@
 
     <div class="field mb-4">
       <p><%= f.label :password, "Nova senha" %></p>
-      <% if @minimum_password_length %>
-        <p><em>(<%= @minimum_password_length %> caracteres no mínimo)</em></p>
-      <% end %>
-      <p><%= f.password_field :password, autofocus: true, autocomplete: "new-password" %></p>
+      <p><%= f.password_field :password, minlength: resource.class.password_length.min, maxlength: resource.class.password_length.max, aria: { describedby: "password-requirements" }, required: true, autofocus: true, autocomplete: "new-password" %></p>
+      <%= render "devise/shared/password_requirements", resource: resource %>
     </div>
 
     <div class="field mb-4">
       <p><%= f.label :password_confirmation, "Confirmar nova senha" %></p>
-      <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
+      <p><%= f.password_field :password_confirmation, required: true, autocomplete: "new-password" %></p>
     </div>
 
     <div class="actions mt-6 mb-4">

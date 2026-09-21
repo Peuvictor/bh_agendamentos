@@ -6,10 +6,10 @@ module MobileBrowserHelpers
                                     width: width, height: 900, deviceScaleFactor: 1, mobile: false)
   end
 
-  def mobile_login(user)
+  def mobile_login(user, password: 'password123')
     visit new_user_session_path
     fill_in 'E-mail', with: user.email
-    fill_in 'Senha', with: 'password123'
+    fill_in 'Senha', with: password
     click_button 'Entrar'
 
     assert_current_path(user.admin? ? appointments_path : root_path, wait: 10)

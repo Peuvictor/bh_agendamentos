@@ -17,7 +17,7 @@ class DemoSeedTest < ActiveSupport::TestCase
       user = demo_record(User, "user/#{role}")
 
       assert_equal role.to_s, user.role
-      assert user.valid_password?('demo-test-password')
+      assert user.valid_password?('Demo-test-password1!')
     end
     assert_predicate demo_record(Service, 'service/archived'), :archived?
   end

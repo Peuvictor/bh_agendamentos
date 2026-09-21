@@ -10,5 +10,7 @@ pt-BR:
         status: "Status"
   errors:
     messages:
+      password_complexity: "deve incluir letra maiúscula, letra minúscula, número e caractere especial"
+      too_long_in_bytes: "é muito longa; use até 72 caracteres sem acentos, ou uma frase menor se incluir acentos ou emojis"
       blank: "não pode ficar em branco"
       after: "deve ser depois de %{restriction}"

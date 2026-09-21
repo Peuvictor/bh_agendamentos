@@ -15,8 +15,9 @@ DEMO_PROVIDER_PASSWORD=
 DEMO_ADMIN_PASSWORD=
 ```
 
-Preencha cada senha com um valor privado distinto, respeitando o mínimo do Devise (6 caracteres)
-e o máximo de 72 bytes. Não há senha padrão; a configuração é validada antes de qualquer gravação.
+Preencha cada senha com um valor privado distinto, com no mínimo 8 caracteres, incluindo letra
+maiúscula, letra minúscula, número e caractere especial, e no máximo 72 bytes.
+Não há senha padrão; a configuração é validada antes de qualquer gravação.
 O Docker Compose repassa as variáveis do `.env` ao serviço web. Configure também `CLOUDINARY_URL`
 para o armazenamento utilizado em desenvolvimento e produção.
 

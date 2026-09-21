@@ -5,7 +5,7 @@ class Admin::ServicesControllerTest < ActionDispatch::IntegrationTest
     @admin = User.create!(
       nome: "Admin de Teste",
       email: "admin-services@example.com",
-      password: "password123",
+      password: "Teste123!",
       role: :admin
     )
     sign_in @admin

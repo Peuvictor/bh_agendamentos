@@ -42,12 +42,18 @@ module Demo
       %i[client provider admin].to_h do |role|
         variable = "DEMO_#{role.to_s.upcase}_PASSWORD"
         password = @env[variable].to_s
-        unless Devise.password_length.cover?(password.length) && password.bytesize <= 72
-          raise Error, "Configure #{variable} com #{Devise.password_length.min} a 72 caracteres (máximo de 72 bytes)."
-        end
+        validate_password!(variable, password)
 
         [role, password]
       end
+    end
+
+    def validate_password!(variable, password)
+      return if Devise.password_length.cover?(password.length) && password.bytesize <= 72 &&
+                password.match?(User::PASSWORD_COMPLEXITY)
+
+      raise Error, "Configure #{variable} com #{Devise.password_length.min} a 72 caracteres (máximo de 72 bytes), " \
+                   'incluindo maiúscula, minúscula, número e caractere especial.'
     end
 
     def load_records(passwords)

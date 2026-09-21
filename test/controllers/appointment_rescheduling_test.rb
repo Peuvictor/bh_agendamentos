@@ -64,7 +64,7 @@ class AppointmentReschedulingTest < ActionDispatch::IntegrationTest
     get edit_appointment_url(@appointment)
 
     assert_redirected_to new_user_session_url
-    sign_in User.create!(nome: 'Terceiro', email: 'third@example.com', password: 'password123')
+    sign_in User.create!(nome: 'Terceiro', email: 'third@example.com', password: 'Teste123!')
     get available_slots_appointment_url(@appointment), params: { date: Date.tomorrow.iso8601 }
 
     assert_redirected_to root_url

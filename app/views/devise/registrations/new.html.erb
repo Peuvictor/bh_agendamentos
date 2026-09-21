@@ -76,7 +76,8 @@
       <div>
         <%= f.label :password, "Senha", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
-          <%= f.password_field :password, autocomplete: "new-password", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.password_field :password, minlength: resource.class.password_length.min, maxlength: resource.class.password_length.max, aria: { describedby: "password-requirements" }, required: true, autocomplete: "new-password", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= render "devise/shared/password_requirements", resource: resource %>
         </div>
       </div>
 
@@ -84,7 +85,7 @@
       <div>
         <%= f.label :password_confirmation, "Confirmar Senha", class: "block text-sm font-bold text-gray-700" %>
         <div class="mt-1">
-          <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
         </div>
       </div>
 
